@@ -2,7 +2,12 @@ package com.stateofflux.chess.model;
 
 import java.util.BitSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Board {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
+
     protected BitSet whiteKing;
     protected BitSet whiteQueens;
     protected BitSet whiteRooks;
@@ -104,6 +109,7 @@ public class Board {
                     case 9: return "BB";
                     case 10: return "BN";
                     case 11: return "BP";
+                    default: return "XX";
                 }
             }
         }
@@ -122,9 +128,21 @@ public class Board {
 
         for (int i = 7; i >= 0; i--) {
             boardChars[i] = prettyBoard.subSequence(i * 8 * pieceChars, (i + 1) * pieceChars * 8);
-            System.out.printf("%d: %s\n", i + 1, boardChars[i]);
+            LOGGER.info("{}: {}", Integer.valueOf(i + 1), boardChars[i]);
         }
 
-        System.out.println("   a b c d e f g h");
+        LOGGER.info("   a b c d e f g h");
     }
+
+    public static void showBits(int param) {
+        int mask = 1 << 31;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= 32; i++, param <<= 1) {
+            sb.append((param & mask) == 0 ? "0" : "1");
+            if (i % 8 == 0)
+                sb.append(" ");
+        }
+        if(LOGGER.isInfoEnabled())
+            LOGGER.info(sb.toString());
+     }
 }
