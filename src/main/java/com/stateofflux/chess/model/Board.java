@@ -77,6 +77,30 @@ public class Board {
      *
      */
     public Board() {
+        setupEmptyBitMaps();
+
+        this.whiteKing.set(4);
+        this.whiteQueens.set(3);
+        this.whiteRooks.set(0);
+        this.whiteRooks.set(7);
+        this.whiteBishops.set(2);
+        this.whiteBishops.set(5);
+        this.whiteKnights.set(1);
+        this.whiteKnights.set(6);
+        this.whitePawns.set(8, 16);
+
+        this.blackKing.set(60);
+        this.blackQueens.set(59);
+        this.blackRooks.set(56);
+        this.blackRooks.set(63);
+        this.blackBishops.set(58);
+        this.blackBishops.set(61);
+        this.blackKnights.set(57);
+        this.blackKnights.set(62);
+        this.blackPawns.set(48, 56);
+    }
+
+    private void setupEmptyBitMaps() {
         this.whiteKing = new BitSet(64);
         this.whiteQueens = new BitSet(64);
         this.whiteRooks = new BitSet(64);
@@ -119,26 +143,37 @@ public class Board {
                 BLACK_KNIGHTS_CHAR,
                 BLACK_PAWNS_CHAR
         };
+    }
 
-        this.whiteKing.set(4);
-        this.whiteQueens.set(3);
-        this.whiteRooks.set(0);
-        this.whiteRooks.set(7);
-        this.whiteBishops.set(2);
-        this.whiteBishops.set(5);
-        this.whiteKnights.set(1);
-        this.whiteKnights.set(6);
-        this.whitePawns.set(8, 16);
+    /*
+     * Build a board using a fen string
+     */
+    public Board(String fen) {
+        setupEmptyBitMaps();
 
-        this.blackKing.set(60);
-        this.blackQueens.set(59);
-        this.blackRooks.set(56);
-        this.blackRooks.set(63);
-        this.blackBishops.set(58);
-        this.blackBishops.set(61);
-        this.blackKnights.set(57);
-        this.blackKnights.set(62);
-        this.blackPawns.set(48, 56);
+        char[] fenCh = fen.toCharArray();
+        int boardPosition = 0;
+
+        for(int i = 0; i < fenCh.length; i++) {
+            if(fenCh[i] == '/') {
+                continue;
+            }
+
+            // break if the fenCH[i] is a digit
+            if(Character.isDigit(fenCh[i])) {
+                boardPosition += Character.digit(fenCh[i], 10);
+                continue;
+            }
+
+            for(int j = 0; j < this.boardChars.length; j++) {
+                if(fenCh[i] == this.boardChars[j]) {
+                    System.out.println("i: " + i + ", Setting " + fenCh[i] + " at " + boardPosition + "");
+                    this.boards[j].set(boardPosition);
+                    boardPosition++;
+                    break;
+                }
+            }
+        }
     }
 
     protected char getPieceAtLocation(int location) {
@@ -147,6 +182,56 @@ public class Board {
                 return this.boardChars[boardCount];
         }
         return ' ';
+    }
+
+    // starting from location, but not looking ahead more than max, find the next piece on the board
+    // TODO: Could this be done as a BitSet operation?
+    protected int nextPiece(int location, int max) {
+        int i = 1;
+
+        while (location + i < 64 &&
+                i < max &&
+                this.getPieceAtLocation(location + i) == ' ')
+            i++;
+
+        return i + location;
+    }
+
+    // implement Forsyth–Edwards Notation (FEN) parser
+    public void fromFenString(String fen) {
+
+    }
+
+    // implement a Forsyth-Edwards toString() method
+    public String toFenString() {
+        StringBuilder f = new StringBuilder();  // TODO - initialize with size.
+
+        int i = 0;
+        int n = 0;
+        int max = 0;
+        char currentPiece;
+
+        while(i < 64) {
+            currentPiece = getPieceAtLocation(i);
+
+            // if the next space is empty, look to the end of the line to see how many
+            // emptpy chars exists and concat the number of empty spaces as an int.
+            // otherwise, add the next piece to the string.
+            if(currentPiece == ' ') {
+                max = 8 - (i % 8);
+                n = this.nextPiece(i, max);
+                f.append(n - i);  // use a number to show how many spaces are left
+            } else {
+                f.append(currentPiece);
+                n = i + 1;
+            }
+
+            i = n;
+
+            if(i % 8 == 0 && i != 64) f.append('/');
+        }
+
+        return f.toString();
     }
 
     public void printBoard() {
