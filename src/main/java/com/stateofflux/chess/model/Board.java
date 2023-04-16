@@ -8,31 +8,31 @@ import org.slf4j.LoggerFactory;
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
-    protected static int WHITE_KING_INDEX = 0;
-    protected static int WHITE_QUEENS_INDEX = 1;
-    protected static int WHITE_ROOKS_INDEX = 2;
-    protected static int WHITE_BISHOPS_INDEX = 3;
-    protected static int WHITE_KNIGHTS_INDEX = 4;
-    protected static int WHITE_PAWNS_INDEX = 5;
-    protected static int BLACK_KING_INDEX = 6;
-    protected static int BLACK_QUEENS_INDEX = 7;
-    protected static int BLACK_ROOKS_INDEX = 8;
-    protected static int BLACK_BISHOPS_INDEX = 9;
-    protected static int BLACK_KNIGHTS_INDEX = 10;
-    protected static int BLACK_PAWNS_INDEX = 11;
+    protected static final int WHITE_KING_INDEX = 0;
+    protected static final int WHITE_QUEENS_INDEX = 1;
+    protected static final int WHITE_ROOKS_INDEX = 2;
+    protected static final int WHITE_BISHOPS_INDEX = 3;
+    protected static final int WHITE_KNIGHTS_INDEX = 4;
+    protected static final int WHITE_PAWNS_INDEX = 5;
+    protected static final int BLACK_KING_INDEX = 6;
+    protected static final int BLACK_QUEENS_INDEX = 7;
+    protected static final int BLACK_ROOKS_INDEX = 8;
+    protected static final int BLACK_BISHOPS_INDEX = 9;
+    protected static final int BLACK_KNIGHTS_INDEX = 10;
+    protected static final int BLACK_PAWNS_INDEX = 11;
 
-    protected static char WHITE_KING_CHAR = 'k';
-    protected static char WHITE_QUEENS_CHAR = 'q';
-    protected static char WHITE_ROOKS_CHAR = 'r';
-    protected static char WHITE_BISHOPS_CHAR = 'b';
-    protected static char WHITE_KNIGHTS_CHAR = 'n';
-    protected static char WHITE_PAWNS_CHAR = 'p';
-    protected static char BLACK_KING_CHAR = 'K';
-    protected static char BLACK_QUEENS_CHAR = 'Q';
-    protected static char BLACK_ROOKS_CHAR = 'R';
-    protected static char BLACK_BISHOPS_CHAR = 'B';
-    protected static char BLACK_KNIGHTS_CHAR = 'N';
-    protected static char BLACK_PAWNS_CHAR = 'P';
+    protected static final char WHITE_KING_CHAR = 'k';
+    protected static final char WHITE_QUEENS_CHAR = 'q';
+    protected static final char WHITE_ROOKS_CHAR = 'r';
+    protected static final char WHITE_BISHOPS_CHAR = 'b';
+    protected static final char WHITE_KNIGHTS_CHAR = 'n';
+    protected static final char WHITE_PAWNS_CHAR = 'p';
+    protected static final char BLACK_KING_CHAR = 'K';
+    protected static final char BLACK_QUEENS_CHAR = 'Q';
+    protected static final char BLACK_ROOKS_CHAR = 'R';
+    protected static final char BLACK_BISHOPS_CHAR = 'B';
+    protected static final char BLACK_KNIGHTS_CHAR = 'N';
+    protected static final char BLACK_PAWNS_CHAR = 'P';
 
     protected BitSet whiteKing;
     protected BitSet whiteQueens;
@@ -100,6 +100,36 @@ public class Board {
         this.blackPawns.set(48, 56);
     }
 
+    /*
+     * Build a board using a fen string
+     */
+    public Board(String fen) {
+        setupEmptyBitMaps();
+
+        char[] fenCh = fen.toCharArray();
+        int boardPosition = 0;
+
+        for(int i = 0; i < fenCh.length; i++) {
+            if(fenCh[i] == '/') {
+                continue;
+            }
+
+            // break if the fenCH[i] is a digit
+            if(Character.isDigit(fenCh[i])) {
+                boardPosition += Character.digit(fenCh[i], 10);
+                continue;
+            }
+
+            for(int j = 0; j < this.boardChars.length; j++) {
+                if(fenCh[i] == this.boardChars[j]) {
+                    this.boards[j].set(boardPosition);
+                    boardPosition++;
+                    break;
+                }
+            }
+        }
+    }
+
     private void setupEmptyBitMaps() {
         this.whiteKing = new BitSet(64);
         this.whiteQueens = new BitSet(64);
@@ -143,37 +173,6 @@ public class Board {
                 BLACK_KNIGHTS_CHAR,
                 BLACK_PAWNS_CHAR
         };
-    }
-
-    /*
-     * Build a board using a fen string
-     */
-    public Board(String fen) {
-        setupEmptyBitMaps();
-
-        char[] fenCh = fen.toCharArray();
-        int boardPosition = 0;
-
-        for(int i = 0; i < fenCh.length; i++) {
-            if(fenCh[i] == '/') {
-                continue;
-            }
-
-            // break if the fenCH[i] is a digit
-            if(Character.isDigit(fenCh[i])) {
-                boardPosition += Character.digit(fenCh[i], 10);
-                continue;
-            }
-
-            for(int j = 0; j < this.boardChars.length; j++) {
-                if(fenCh[i] == this.boardChars[j]) {
-                    System.out.println("i: " + i + ", Setting " + fenCh[i] + " at " + boardPosition + "");
-                    this.boards[j].set(boardPosition);
-                    boardPosition++;
-                    break;
-                }
-            }
-        }
     }
 
     protected char getPieceAtLocation(int location) {
