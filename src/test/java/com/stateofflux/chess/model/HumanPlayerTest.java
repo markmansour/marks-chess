@@ -9,7 +9,9 @@ public class HumanPlayerTest {
     }
 
     @Test
-    public void aTest() {
-        Player p = new HumanPlayer();
+    public void moveBasic() {
+        Board b = new Board(); // default board
+        HumanPlayer p = new HumanPlayer(b);
+        p.move("e2", "e4");
     }
 }

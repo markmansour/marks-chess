@@ -175,12 +175,23 @@ public class Board {
         };
     }
 
+    /*
+     * return the characture representing a piece
+     */
     protected char getPieceAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
             if (this.boards[boardCount].get(location))
                 return this.boardChars[boardCount];
         }
         return ' ';
+    }
+
+    protected int getBitSetIndexAtLocation(int location) {
+        for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
+            if (this.boards[boardCount].get(location))
+                return boardCount;
+        }
+        return -1;
     }
 
     // starting from location, but not looking ahead more than max, find the next piece on the board
@@ -194,11 +205,6 @@ public class Board {
             i++;
 
         return i + location;
-    }
-
-    // implement Forsyth–Edwards Notation (FEN) parser
-    public void fromFenString(String fen) {
-
     }
 
     // implement a Forsyth-Edwards toString() method
@@ -231,6 +237,31 @@ public class Board {
         }
 
         return f.toString();
+    }
+
+    /*
+     * Move a piece on the board, but do not perform validation.
+     */
+    public boolean move(String from, String to) {
+        int fromIndex = Board.convertStringToIndex(from);
+        int toIndex = Board.convertStringToIndex(to);
+
+        // attempting to move from an empty location
+        if(fromIndex == -1)
+            return false;  // I should throw an exception as this should never happen.
+
+        int bitsetIndex = this.getBitSetIndexAtLocation(fromIndex);
+        this.boards[bitsetIndex].clear(fromIndex);
+        this.boards[bitsetIndex].set(toIndex);
+
+        return true;
+    }
+
+    public static int convertStringToIndex(String position) {
+        int rank = Integer.parseInt(position.substring(1, 2));
+        int file = position.charAt(0) - 'a';
+
+        return (rank - 1) * 8 + file;
     }
 
     public void printBoard() {
