@@ -109,19 +109,19 @@ public class Board {
         char[] fenCh = fen.toCharArray();
         int boardPosition = 0;
 
-        for(int i = 0; i < fenCh.length; i++) {
-            if(fenCh[i] == '/') {
+        for (char element : fenCh) {
+            if(element == '/') {
                 continue;
             }
 
             // break if the fenCH[i] is a digit
-            if(Character.isDigit(fenCh[i])) {
-                boardPosition += Character.digit(fenCh[i], 10);
+            if(Character.isDigit(element)) {
+                boardPosition += Character.digit(element, 10);
                 continue;
             }
 
             for(int j = 0; j < this.boardChars.length; j++) {
-                if(fenCh[i] == this.boardChars[j]) {
+                if(element == this.boardChars[j]) {
                     this.boards[j].set(boardPosition);
                     boardPosition++;
                     break;
@@ -279,17 +279,5 @@ public class Board {
         }
 
         LOGGER.info("   a b c d e f g h");
-    }
-
-    public static void showBits(int param) {
-        int mask = 1 << 31;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i <= 32; i++, param <<= 1) {
-            sb.append((param & mask) == 0 ? "0" : "1");
-            if (i % 8 == 0)
-                sb.append(" ");
-        }
-        if (LOGGER.isInfoEnabled())
-            LOGGER.info(sb.toString());
     }
 }

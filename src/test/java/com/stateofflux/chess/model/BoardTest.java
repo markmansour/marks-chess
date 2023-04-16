@@ -104,6 +104,7 @@ public class BoardTest {
     assertThat(b.toFenString())
         .as("Initial board setup")
         .isEqualTo("rn1qkbnr/p1pppppp/bp6/8/8/8/PPPPPPPP/RNBQKBNR");
+    b.printBoard();
   }
 
   @Test
