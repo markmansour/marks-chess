@@ -39,20 +39,34 @@ public class Board {
     protected static final char BLACK_KNIGHTS_CHAR = 'N';
     protected static final char BLACK_PAWNS_CHAR = 'P';
 
-    protected BitSet whiteKing;
-    protected BitSet whiteQueens;
-    protected BitSet whiteRooks;
-    protected BitSet whiteBishops;
-    protected BitSet whiteKnights;
-    protected BitSet whitePawns;
-    protected BitSet blackKing;
-    protected BitSet blackQueens;
-    protected BitSet blackRooks;
-    protected BitSet blackBishops;
-    protected BitSet blackKnights;
-    protected BitSet blackPawns;
-    protected BitSet[] boards;
-    protected char[] boardChars;
+    protected static final char[] boardChars = new char[] {
+            WHITE_KING_CHAR,
+            WHITE_QUEENS_CHAR,
+            WHITE_ROOKS_CHAR,
+            WHITE_BISHOPS_CHAR,
+            WHITE_KNIGHTS_CHAR,
+            WHITE_PAWNS_CHAR,
+            BLACK_KING_CHAR,
+            BLACK_QUEENS_CHAR,
+            BLACK_ROOKS_CHAR,
+            BLACK_BISHOPS_CHAR,
+            BLACK_KNIGHTS_CHAR,
+            BLACK_PAWNS_CHAR
+    };
+
+    protected long whiteKing;
+    protected long whiteQueens;
+    protected long whiteRooks;
+    protected long whiteBishops;
+    protected long whiteKnights;
+    protected long whitePawns;
+    protected long blackKing;
+    protected long blackQueens;
+    protected long blackRooks;
+    protected long blackBishops;
+    protected long blackKnights;
+    protected long blackPawns;
+    protected long[] boards;
 
     /**
      * RANKS:
@@ -82,52 +96,46 @@ public class Board {
      *
      */
     public Board() {
-        setupEmptyBitMaps();
+        this.whiteKing = 1L << 4;
+        this.whiteQueens = 1L << 3;
+        this.whiteRooks = 1L | 1L << 7;
+        this.whiteBishops = 1L << 2 | 1L << 5;
+        this.whiteKnights = 1L << 1 | 1L << 6;
+        this.whitePawns = 255L << 8;
 
-        this.whiteKing.set(4);
-        this.whiteQueens.set(3);
-        this.whiteRooks.set(0);
-        this.whiteRooks.set(7);
-        this.whiteBishops.set(2);
-        this.whiteBishops.set(5);
-        this.whiteKnights.set(1);
-        this.whiteKnights.set(6);
-        this.whitePawns.set(8, 16);
+        this.blackKing = 1L << 60;
+        this.blackQueens = 1L << 59;
+        this.blackRooks = 1L << 63 | 1L << 56;
+        this.blackBishops = 1L << 58 | 1L << 61;
+        this.blackKnights = 1L << 57 | 1L << 62;
+        this.blackPawns = 255L << 48;
 
-        this.blackKing.set(60);
-        this.blackQueens.set(59);
-        this.blackRooks.set(56);
-        this.blackRooks.set(63);
-        this.blackBishops.set(58);
-        this.blackBishops.set(61);
-        this.blackKnights.set(57);
-        this.blackKnights.set(62);
-        this.blackPawns.set(48, 56);
+        updateBoardsArray();  // initialize the boards with values
     }
 
     /*
      * Build a board using a fen string
      */
     public Board(String fen) {
-        setupEmptyBitMaps();
+        updateBoardsArray();  // start with empty boards
 
         char[] fenCh = fen.toCharArray();
         int boardPosition = 0;
 
         for (char element : fenCh) {
-            if(element == '/') {
+            if (element == '/') {
                 continue;
             }
 
             // break if the fenCH[i] is a digit
-            if(Character.isDigit(element)) {
+            if (Character.isDigit(element)) {
                 boardPosition += Character.digit(element, 10);
                 continue;
             }
 
-            for(int j = 0; j < this.boardChars.length; j++) {
-                if(element == this.boardChars[j]) {
-                    this.boards[j].set(boardPosition);
+            for (int j = 0; j < this.boardChars.length; j++) {
+                if (element == this.boardChars[j]) {
+                    this.boards[j] |= 1L << boardPosition;
                     boardPosition++;
                     break;
                 }
@@ -135,23 +143,12 @@ public class Board {
         }
     }
 
-    private void setupEmptyBitMaps() {
-        // BitSet is inefficient according to https://github.com/brettwooldridge/SparseBitSet which
+    private void updateBoardsArray() {
+        // BitSet is inefficient according to
+        // https://github.com/brettwooldridge/SparseBitSet which
         // proposes a more efficient and faster solution (according to the author).
-        this.whiteKing = new BitSet(64);
-        this.whiteQueens = new BitSet(64);
-        this.whiteRooks = new BitSet(64);
-        this.whiteBishops = new BitSet(64);
-        this.whiteKnights = new BitSet(64);
-        this.whitePawns = new BitSet(64);
-        this.blackKing = new BitSet(64);
-        this.blackQueens = new BitSet(64);
-        this.blackRooks = new BitSet(64);
-        this.blackBishops = new BitSet(64);
-        this.blackKnights = new BitSet(64);
-        this.blackPawns = new BitSet(64);
-
-        this.boards = new BitSet[] {
+        // or just use a "long" as it has 64 bits.
+        this.boards = new long[] {
                 this.whiteKing,
                 this.whiteQueens,
                 this.whiteRooks,
@@ -165,53 +162,40 @@ public class Board {
                 this.blackKnights,
                 this.blackPawns
         };
-
-        this.boardChars = new char[] {
-                WHITE_KING_CHAR,
-                WHITE_QUEENS_CHAR,
-                WHITE_ROOKS_CHAR,
-                WHITE_BISHOPS_CHAR,
-                WHITE_KNIGHTS_CHAR,
-                WHITE_PAWNS_CHAR,
-                BLACK_KING_CHAR,
-                BLACK_QUEENS_CHAR,
-                BLACK_ROOKS_CHAR,
-                BLACK_BISHOPS_CHAR,
-                BLACK_KNIGHTS_CHAR,
-                BLACK_PAWNS_CHAR
-        };
-    }
+    };
 
     /*
      * return the characture representing a piece
      */
     protected char getPieceAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
-            if (this.boards[boardCount].get(location))
+            // is the location occupied for this board?
+            if ((this.boards[boardCount] & (1L << location)) != 0) // can return both +ve and -ve
                 return this.boardChars[boardCount];
         }
         return ' ';
     }
 
-    public BitSet getOccupied() {
-        BitSet occupied = new BitSet(64);
+    // public BitSet getOccupied() {
+    // BitSet occupied = new BitSet(64);
 
-        for(int i = 0; i < this.boards.length; i++) {
-            occupied.or(this.boards[i]);
-        }
+    // for(int i = 0; i < this.boards.length; i++) {
+    // occupied.or(this.boards[i]);
+    // }
 
-        return occupied;
-    }
+    // return occupied;
+    // }
 
     protected int getBitSetIndexAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
-            if (this.boards[boardCount].get(location))
+            if ((this.boards[boardCount] & (1L << location)) > 0)
                 return boardCount;
         }
         return -1;
     }
 
-    // starting from location, but not looking ahead more than max, find the next piece on the board
+    // starting from location, but not looking ahead more than max, find the next
+    // piece on the board
     // TODO: Could this be done as a BitSet operation?
     protected int nextPiece(int location, int max) {
         int i = 1;
@@ -226,23 +210,23 @@ public class Board {
 
     // implement a Forsyth-Edwards toString() method
     public String toFenString() {
-        StringBuilder f = new StringBuilder();  // TODO - initialize with size.
+        StringBuilder f = new StringBuilder(); // TODO - initialize with size.
 
         int i = 0;
         int n = 0;
         int max = 0;
         char currentPiece;
 
-        while(i < 64) {
+        while (i < 64) {
             currentPiece = getPieceAtLocation(i);
 
             // if the next space is empty, look to the end of the line to see how many
             // emptpy chars exists and concat the number of empty spaces as an int.
             // otherwise, add the next piece to the string.
-            if(currentPiece == ' ') {
+            if (currentPiece == ' ') {
                 max = 8 - (i % 8);
                 n = this.nextPiece(i, max);
-                f.append(n - i);  // use a number to show how many spaces are left
+                f.append(n - i); // use a number to show how many spaces are left
             } else {
                 f.append(currentPiece);
                 n = i + 1;
@@ -250,7 +234,8 @@ public class Board {
 
             i = n;
 
-            if(i % 8 == 0 && i != 64) f.append('/');
+            if (i % 8 == 0 && i != 64)
+                f.append('/');
         }
 
         return f.toString();
@@ -264,12 +249,12 @@ public class Board {
         int toIndex = Board.convertStringToIndex(to);
 
         // attempting to move from an empty location
-        if(fromIndex == -1)
-            return false;  // I should throw an exception as this should never happen.
+        if (fromIndex == -1)
+            return false; // I should throw an exception as this should never happen.
 
-        int bitsetIndex = this.getBitSetIndexAtLocation(fromIndex);
-        this.boards[bitsetIndex].clear(fromIndex);
-        this.boards[bitsetIndex].set(toIndex);
+        int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
+        this.boards[boardIndex] ^= (1L << fromIndex); // clear
+        this.boards[boardIndex] |= (1L << toIndex); // set
 
         return true;
     }

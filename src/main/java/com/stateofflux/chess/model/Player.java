@@ -65,7 +65,7 @@ public class Player {
         // very advanced
         // en passent
         // castling
-        BitSet occupied = this.board.getOccupied();
+        // BitSet occupied = this.board.getOccupied();
 
         return null;
     }
