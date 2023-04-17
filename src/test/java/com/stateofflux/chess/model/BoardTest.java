@@ -130,7 +130,7 @@ public class BoardTest {
   @Test
   public void convertA1toIndex() {
     assertThat(Board.convertStringToIndex("a1"))
-        .isEqualTo(0);
+        .isZero();
   }
 
   @Test

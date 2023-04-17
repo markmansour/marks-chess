@@ -5,6 +5,11 @@ import java.util.BitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * Class uses Forsyth–Edwards Notation
+ *
+ * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
+ */
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
@@ -131,6 +136,8 @@ public class Board {
     }
 
     private void setupEmptyBitMaps() {
+        // BitSet is inefficient according to https://github.com/brettwooldridge/SparseBitSet which
+        // proposes a more efficient and faster solution (according to the author).
         this.whiteKing = new BitSet(64);
         this.whiteQueens = new BitSet(64);
         this.whiteRooks = new BitSet(64);
@@ -184,6 +191,16 @@ public class Board {
                 return this.boardChars[boardCount];
         }
         return ' ';
+    }
+
+    public BitSet getOccupied() {
+        BitSet occupied = new BitSet(64);
+
+        for(int i = 0; i < this.boards.length; i++) {
+            occupied.or(this.boards[i]);
+        }
+
+        return occupied;
     }
 
     protected int getBitSetIndexAtLocation(int location) {

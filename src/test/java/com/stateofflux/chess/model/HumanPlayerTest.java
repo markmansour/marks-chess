@@ -11,7 +11,7 @@ public class HumanPlayerTest {
     @Test
     public void moveBasic() {
         Board b = new Board(); // default board
-        HumanPlayer p = new HumanPlayer(b);
+        HumanPlayer p = new HumanPlayer(b, PlayerColor.BLACK);
         p.move("e2", "e4");
     }
 }

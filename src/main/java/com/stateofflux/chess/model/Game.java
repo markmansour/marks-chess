@@ -7,7 +7,7 @@ public class Game {
 
     public Game() {
         this.board = new Board();
-        this.white = new HumanPlayer(this.board);
-        this.black = new HumanPlayer(this.board);
+        this.white = new HumanPlayer(this.board, PlayerColor.WHITE);
+        this.black = new HumanPlayer(this.board, PlayerColor.BLACK);
     }
 }
