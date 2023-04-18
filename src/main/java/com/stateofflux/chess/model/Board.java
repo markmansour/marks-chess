@@ -26,18 +26,18 @@ public class Board {
     protected static final int BLACK_KNIGHTS_INDEX = 10;
     protected static final int BLACK_PAWNS_INDEX = 11;
 
-    protected static final char WHITE_KING_CHAR = 'k';
-    protected static final char WHITE_QUEENS_CHAR = 'q';
-    protected static final char WHITE_ROOKS_CHAR = 'r';
-    protected static final char WHITE_BISHOPS_CHAR = 'b';
-    protected static final char WHITE_KNIGHTS_CHAR = 'n';
-    protected static final char WHITE_PAWNS_CHAR = 'p';
-    protected static final char BLACK_KING_CHAR = 'K';
-    protected static final char BLACK_QUEENS_CHAR = 'Q';
-    protected static final char BLACK_ROOKS_CHAR = 'R';
-    protected static final char BLACK_BISHOPS_CHAR = 'B';
-    protected static final char BLACK_KNIGHTS_CHAR = 'N';
-    protected static final char BLACK_PAWNS_CHAR = 'P';
+    protected static final char WHITE_KING_CHAR = 'K';
+    protected static final char WHITE_QUEENS_CHAR = 'Q';
+    protected static final char WHITE_ROOKS_CHAR = 'R';
+    protected static final char WHITE_BISHOPS_CHAR = 'B';
+    protected static final char WHITE_KNIGHTS_CHAR = 'N';
+    protected static final char WHITE_PAWNS_CHAR = 'P';
+    protected static final char BLACK_KING_CHAR = 'k';
+    protected static final char BLACK_QUEENS_CHAR = 'q';
+    protected static final char BLACK_ROOKS_CHAR = 'r';
+    protected static final char BLACK_BISHOPS_CHAR = 'b';
+    protected static final char BLACK_KNIGHTS_CHAR = 'n';
+    protected static final char BLACK_PAWNS_CHAR = 'p';
 
     protected static final char[] boardChars = new char[] {
             WHITE_KING_CHAR,
@@ -170,7 +170,7 @@ public class Board {
     protected char getPieceAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
             // is the location occupied for this board?
-            if ((this.boards[boardCount] & (1L << location)) != 0) // can return both +ve and -ve
+            if ((this.boards[boardCount] & (1L << location)) != 0) // can return both +ve and -ve as longs are signed
                 return this.boardChars[boardCount];
         }
         return ' ';

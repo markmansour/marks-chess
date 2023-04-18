@@ -14,15 +14,15 @@ public class BoardTest {
     Board b = new Board();
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-  }
+        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+        }
 
   @Test
   public void StandardBoardWithFenStringg() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    Board b = new Board("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
@@ -35,34 +35,34 @@ public class BoardTest {
 
   @Test
   public void boardWithEmptyA1() {
-    Board b = new Board("1nbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    Board b = new Board("1NBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
     assertThat(b.toFenString())
         .as("Empty A1")
-        .isEqualTo("1nbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("1NBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
   public void boardWithEmptyH8() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN1");
+    Board b = new Board("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbn1");
     assertThat(b.toFenString())
         .as("Empty H8")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBN1");
+        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbn1");
   }
 
   @Test
   public void boardWithHalfRowEmptyStart() {
-    Board b = new Board("rnbqkbnr/4pppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    Board b = new Board("RNBQKBNR/4PPPP/8/8/8/8/pppppppp/rnbqkbnr");
     assertThat(b.toFenString())
         .as("Empty start of row")
-        .isEqualTo("rnbqkbnr/4pppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNBQKBNR/4PPPP/8/8/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
   public void boardWithHalfRowEmptyEnd() {
-    Board b = new Board("rnbqkbnr/pppp4/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    Board b = new Board("RNBQKBNR/PPPP4/8/8/8/8/pppppppp/rnbqkbnr");
     assertThat(b.toFenString())
         .as("Empty end of row")
-        .isEqualTo("rnbqkbnr/pppp4/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNBQKBNR/PPPP4/8/8/8/8/pppppppp/rnbqkbnr");
   }
 
   // ---------------------- Moving -------------------------------------
@@ -73,7 +73,7 @@ public class BoardTest {
     b.move("e1", "e2");
     assertThat(b.toFenString())
         .as("Move King")
-        .isEqualTo("rnbq1bnr/ppppkppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNBQ1BNR/PPPPKPPP/8/4P3/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
@@ -83,7 +83,7 @@ public class BoardTest {
     b.move("d1", "a4");  // move queen NW 4 places
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("rnb1kbnr/ppp1pppp/3p4/q7/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNB1KBNR/PPP1PPPP/3P4/Q7/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
@@ -93,7 +93,7 @@ public class BoardTest {
     b.move("a1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("1nbqkbnr/1ppppppp/r7/p7/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("1NBQKBNR/1PPPPPPP/R7/P7/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
@@ -103,7 +103,7 @@ public class BoardTest {
     b.move("c1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("rn1qkbnr/p1pppppp/bp6/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RN1QKBNR/P1PPPPPP/BP6/8/8/8/pppppppp/rnbqkbnr");
     b.printBoard();
   }
 
@@ -113,7 +113,7 @@ public class BoardTest {
     b.move("b1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("r1bqkbnr/pppppppp/n7/8/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("R1BQKBNR/PPPPPPPP/N7/8/8/8/pppppppp/rnbqkbnr");
   }
 
   @Test
@@ -122,7 +122,7 @@ public class BoardTest {
     b.move("a2", "a4");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/1ppppppp/8/p7/8/8/PPPPPPPP/RNBQKBNR");
+        .isEqualTo("RNBQKBNR/1PPPPPPP/8/P7/8/8/pppppppp/rnbqkbnr");
   }
 
 
