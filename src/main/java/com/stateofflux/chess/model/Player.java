@@ -1,7 +1,5 @@
 package com.stateofflux.chess.model;
 
-import java.util.BitSet;
-
 public class Player {
     protected Board board;
     protected PlayerColor color;
@@ -14,16 +12,16 @@ public class Player {
     public String[] validMoves(String position) {
         // 1. get the piece at the poisition
         int location = Board.convertStringToIndex(position);
-        int sign = (color == PlayerColor.WHITE) ? 1 : -1;
-        char piece = this.board.getPieceAtLocation(location);
+//        int sign = (color == PlayerColor.WHITE) ? 1 : -1;
+        Piece piece = this.board.getPieceAtLocation(location);
 
         // check if player is trying to move a valid piece
-        if(Character.isUpperCase(piece) && color == PlayerColor.BLACK ||
-            Character.isLowerCase(piece) && color == PlayerColor.WHITE) {
-                return new String[] { "You can't move your opponent's pieces!" };
-        }
+        if(this.color != piece.getColor())
+            return new String[] { "You can't move your opponent's pieces!" };
 
-        // basics
+        return null;
+
+/*         // basics
         // 2. that piece has allowed moves (e.g. pawn 1-2 forward, rook horizontal/vertical, bishop diagonal, etc)
         switch(Character.toLowerCase(piece)) {
             case 'p':
@@ -56,7 +54,7 @@ public class Player {
             // this should never happen!!!!
             default:
             break;
-        }
+        } */
 
         // 3. all pieces except pawns can finish their move on top of another piece
         // 4. all pieces except pawn and knights need a clear run to their final position
@@ -67,7 +65,6 @@ public class Player {
         // castling
         // BitSet occupied = this.board.getOccupied();
 
-        return null;
     }
 
     public void move(String from, String to) {

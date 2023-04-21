@@ -1,7 +1,5 @@
 package com.stateofflux.chess.model;
 
-import java.util.BitSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,64 +7,25 @@ import org.slf4j.LoggerFactory;
  * Class uses Forsyth–Edwards Notation
  *
  * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
+ *
+ * https://en.wikipedia.org/wiki/Shannon_number describes the number of possible games.
+ * For a depth of 10 (known as ply) there are 69 trillion possible games.
+ *
+ * Note: Assume that each game needs a copy of this board.
+ *
+ * There are 11 longs (64 bits / 8 bytes each) to represent the board, a total of 88 bytes (11 * 8 bytes) plus object overhead.
+ *
+ * Therefore 88 bytes * 69 trillion games is 69,000,000,000,000/1024/1024/1024
+ *   => 64,261 Gigabytes of memory.  This assumes no pruning of branches that would be a low yield.
+ *
+ * Useful links
+ * * https://en.wikipedia.org/wiki/Portal:Chess
+ * * https://chessify.me/blog/what-is-depth-in-chess-different-depths-for-stockfish-and-lczero
  */
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
-    protected static final int WHITE_KING_INDEX = 0;
-    protected static final int WHITE_QUEENS_INDEX = 1;
-    protected static final int WHITE_ROOKS_INDEX = 2;
-    protected static final int WHITE_BISHOPS_INDEX = 3;
-    protected static final int WHITE_KNIGHTS_INDEX = 4;
-    protected static final int WHITE_PAWNS_INDEX = 5;
-    protected static final int BLACK_KING_INDEX = 6;
-    protected static final int BLACK_QUEENS_INDEX = 7;
-    protected static final int BLACK_ROOKS_INDEX = 8;
-    protected static final int BLACK_BISHOPS_INDEX = 9;
-    protected static final int BLACK_KNIGHTS_INDEX = 10;
-    protected static final int BLACK_PAWNS_INDEX = 11;
-
-    protected static final char WHITE_KING_CHAR = 'K';
-    protected static final char WHITE_QUEENS_CHAR = 'Q';
-    protected static final char WHITE_ROOKS_CHAR = 'R';
-    protected static final char WHITE_BISHOPS_CHAR = 'B';
-    protected static final char WHITE_KNIGHTS_CHAR = 'N';
-    protected static final char WHITE_PAWNS_CHAR = 'P';
-    protected static final char BLACK_KING_CHAR = 'k';
-    protected static final char BLACK_QUEENS_CHAR = 'q';
-    protected static final char BLACK_ROOKS_CHAR = 'r';
-    protected static final char BLACK_BISHOPS_CHAR = 'b';
-    protected static final char BLACK_KNIGHTS_CHAR = 'n';
-    protected static final char BLACK_PAWNS_CHAR = 'p';
-
-    protected static final char[] boardChars = new char[] {
-            WHITE_KING_CHAR,
-            WHITE_QUEENS_CHAR,
-            WHITE_ROOKS_CHAR,
-            WHITE_BISHOPS_CHAR,
-            WHITE_KNIGHTS_CHAR,
-            WHITE_PAWNS_CHAR,
-            BLACK_KING_CHAR,
-            BLACK_QUEENS_CHAR,
-            BLACK_ROOKS_CHAR,
-            BLACK_BISHOPS_CHAR,
-            BLACK_KNIGHTS_CHAR,
-            BLACK_PAWNS_CHAR
-    };
-
-    protected long whiteKing;
-    protected long whiteQueens;
-    protected long whiteRooks;
-    protected long whiteBishops;
-    protected long whiteKnights;
-    protected long whitePawns;
-    protected long blackKing;
-    protected long blackQueens;
-    protected long blackRooks;
-    protected long blackBishops;
-    protected long blackKnights;
-    protected long blackPawns;
-    protected long[] boards;
+    protected long[] boards = new long[Piece.SIZE];
 
     /**
      * RANKS:
@@ -96,31 +55,30 @@ public class Board {
      *
      */
     public Board() {
-        this.whiteKing = 1L << 4;
-        this.whiteQueens = 1L << 3;
-        this.whiteRooks = 1L | 1L << 7;
-        this.whiteBishops = 1L << 2 | 1L << 5;
-        this.whiteKnights = 1L << 1 | 1L << 6;
-        this.whitePawns = 255L << 8;
+        boards = new long[Piece.SIZE];
 
-        this.blackKing = 1L << 60;
-        this.blackQueens = 1L << 59;
-        this.blackRooks = 1L << 63 | 1L << 56;
-        this.blackBishops = 1L << 58 | 1L << 61;
-        this.blackKnights = 1L << 57 | 1L << 62;
-        this.blackPawns = 255L << 48;
+        // Consider moving these to an ENUM
+        this.boards[Piece.WHITE_KING.getIndex()] = 1L << 4;
+        this.boards[Piece.WHITE_QUEEN.getIndex()] = 1L << 3;
+        this.boards[Piece.WHITE_ROOK.getIndex()] = 1L | 1L << 7;
+        this.boards[Piece.WHITE_BISHOP.getIndex()] = 1L << 2 | 1L << 5;
+        this.boards[Piece.WHITE_KNIGHT.getIndex()] = 1L << 1 | 1L << 6;
+        this.boards[Piece.WHITE_PAWN.getIndex()] = 255L << 8;
 
-        updateBoardsArray();  // initialize the boards with values
+        this.boards[Piece.BLACK_KING.getIndex()] = 1L << 60;
+        this.boards[Piece.BLACK_QUEEN.getIndex()] = 1L << 59;
+        this.boards[Piece.BLACK_ROOK.getIndex()] = 1L << 63 | 1L << 56;
+        this.boards[Piece.BLACK_BISHOP.getIndex()] = 1L << 58 | 1L << 61;
+        this.boards[Piece.BLACK_KNIGHT.getIndex()] = 1L << 57 | 1L << 62;
+        this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
     }
 
     /*
      * Build a board using a fen string
      */
     public Board(String fen) {
-        updateBoardsArray();  // start with empty boards
-
         char[] fenCh = fen.toCharArray();
-        int boardPosition = 0;
+        int location = 0;
 
         for (char element : fenCh) {
             if (element == '/') {
@@ -129,69 +87,48 @@ public class Board {
 
             // break if the fenCH[i] is a digit
             if (Character.isDigit(element)) {
-                boardPosition += Character.digit(element, 10);
+                location += Character.digit(element, 10);
                 continue;
             }
 
-            for (int j = 0; j < this.boardChars.length; j++) {
-                if (element == this.boardChars[j]) {
-                    this.boards[j] |= 1L << boardPosition;
-                    boardPosition++;
+            for (Piece piece : Piece.values()) {
+                if (element == piece.getPieceChar()) {
+                    setPieceOnBoard(piece, location);
+                    location++;
                     break;
                 }
             }
         }
     }
 
-    private void updateBoardsArray() {
-        // BitSet is inefficient according to
-        // https://github.com/brettwooldridge/SparseBitSet which
-        // proposes a more efficient and faster solution (according to the author).
-        // or just use a "long" as it has 64 bits.
-        this.boards = new long[] {
-                this.whiteKing,
-                this.whiteQueens,
-                this.whiteRooks,
-                this.whiteBishops,
-                this.whiteKnights,
-                this.whitePawns,
-                this.blackKing,
-                this.blackQueens,
-                this.blackRooks,
-                this.blackBishops,
-                this.blackKnights,
-                this.blackPawns
-        };
-    };
+    public long setPieceOnBoard(Piece piece, int location) {
+        if (piece == Piece.EMPTY)
+            throw new IllegalArgumentException("Cannot place empty piece");
+
+        return this.boards[piece.getIndex()] |= 1L << location;
+    }
 
     /*
      * return the characture representing a piece
      */
-    protected char getPieceAtLocation(int location) {
-        for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
-            // is the location occupied for this board?
-            if ((this.boards[boardCount] & (1L << location)) != 0) // can return both +ve and -ve as longs are signed
-                return this.boardChars[boardCount];
+    protected Piece getPieceAtLocation(int location) {
+        long bitLocation = 1L << location;
+
+        for (int i = 0; i < this.boards.length; i++) {
+            if ((this.boards[i] & bitLocation) != 0)
+                return Piece.getPieceByIndex(i);
         }
-        return ' ';
+
+        return Piece.EMPTY;
     }
-
-    // public BitSet getOccupied() {
-    // BitSet occupied = new BitSet(64);
-
-    // for(int i = 0; i < this.boards.length; i++) {
-    // occupied.or(this.boards[i]);
-    // }
-
-    // return occupied;
-    // }
 
     protected int getBitSetIndexAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
             if ((this.boards[boardCount] & (1L << location)) > 0)
                 return boardCount;
         }
-        return -1;
+
+        throw new AssertionError("Location not found: " + this);
     }
 
     // starting from location, but not looking ahead more than max, find the next
@@ -202,7 +139,7 @@ public class Board {
 
         while (location + i < 64 &&
                 i < max &&
-                this.getPieceAtLocation(location + i) == ' ')
+                this.getPieceAtLocation(location + i) == Piece.EMPTY)
             i++;
 
         return i + location;
@@ -215,7 +152,7 @@ public class Board {
         int i = 0;
         int n = 0;
         int max = 0;
-        char currentPiece;
+        Piece currentPiece;
 
         while (i < 64) {
             currentPiece = getPieceAtLocation(i);
@@ -223,7 +160,7 @@ public class Board {
             // if the next space is empty, look to the end of the line to see how many
             // emptpy chars exists and concat the number of empty spaces as an int.
             // otherwise, add the next piece to the string.
-            if (currentPiece == ' ') {
+            if (currentPiece == Piece.EMPTY) {
                 max = 8 - (i % 8);
                 n = this.nextPiece(i, max);
                 f.append(n - i); // use a number to show how many spaces are left
@@ -250,9 +187,10 @@ public class Board {
 
         // attempting to move from an empty location
         if (fromIndex == -1)
-            return false; // I should throw an exception as this should never happen.
+            throw new AssertionError("Source location not found: " + this);
 
         int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
+
         this.boards[boardIndex] ^= (1L << fromIndex); // clear
         this.boards[boardIndex] |= (1L << toIndex); // set
 
@@ -280,6 +218,6 @@ public class Board {
             LOGGER.info("{}: {}", Integer.valueOf(i + 1), ranks[i]);
         }
 
-        LOGGER.info("   a b c d e f g h");
+        LOGGER.info("   abcdefgh");
     }
 }
