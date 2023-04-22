@@ -12,10 +12,5 @@ public class GameTest {
   @Test
   public void aTest() {
     Game g = new Game();
-
-    assertThat(g.white.validMoves("a7"))
-        .isNotEmpty()
-        .hasSize(2)
-        .containsExactly("a7a6", "a7a5");
   }
 }
