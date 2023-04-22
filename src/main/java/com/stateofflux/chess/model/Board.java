@@ -224,7 +224,10 @@ public class Board {
     public boolean move(String from, String to) {
         int fromIndex = Board.convertPositionToLocation(from);
         int toIndex = Board.convertPositionToLocation(to);
+        return move(fromIndex, toIndex);
+    }
 
+    public boolean move(int fromIndex, int toIndex) {
         // attempting to move from an empty location
         if (fromIndex == -1)
             throw new AssertionError("Source location not found: " + this);

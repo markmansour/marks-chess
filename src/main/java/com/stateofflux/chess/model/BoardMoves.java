@@ -1,66 +1,65 @@
 package com.stateofflux.chess.model;
 
-public class BoardMoves {
+public abstract class BoardMoves {
     private final Board board;
-    private long emptyBoard;
+    // private long emptyBoard;
     private long nonCaptureMoves;
     private long captureMoves;
 
-    // private int location;
-    // private PlayerColor color;
-    // private long usedBoard;
-    // private int max;
-    // private Direction[] directions;
-    // private Piece piece;
-
-    public static class Builder {
-        private Board board;
-        private int location = 0;
-        // private PlayerColor color;
+    abstract static class Builder<T extends Builder<T>> {
+        protected Board board;
+        protected int location = 0;
+        // protected PlayerColor color;
 
         // boards
-        private long occupiedBoard;
-        private long emptyBoard;
-        private long opponentBoard;
+        protected long occupiedBoard;
+        // private long emptyBoard;
+        protected long opponentBoard;
 
-        private int max = 0;
-        private Direction[] directions;
-        private Piece piece;
-        private long nonCaptureMoves = 0L;
-        private long captureMoves = 0L;
-        private boolean includeTakingOpponent = false;
+        protected int max = 7; // max number of moves in any direction
+        protected Direction[] directions;
+        protected Piece piece;
+        protected long nonCaptureMoves = 0L;
+        protected long captureMoves = 0L;
+        protected boolean includeTakingOpponent = false;
 
-        public Builder(Board board, int location) {
+        protected Builder(Board board, int location) {
             this.board = board;
             this.location = location;
 
             this.piece = board.getPieceAtLocation(location);
 
             this.occupiedBoard = this.board.getOccupiedBoard();
-            this.emptyBoard = ~occupiedBoard;
-            // this.max = 1;
+            // this.emptyBoard = ~occupiedBoard;
         }
 
-        public Builder moving(Direction[] directions) {
+        // Subclasses must override this method to return "this"
+        protected abstract T self();
+
+        abstract BoardMoves build();
+
+        protected Builder<T> moving(Direction[] directions) {
             this.directions = directions;
-            return this;
+            return self();
         }
 
-        public Builder max(int max) {
+        protected Builder<T> max(int max) {
             this.max = max;
-            return this;
+            return self();
         }
 
-        // make this the default
-        public Builder onlyIfEmpty() {
-            return this;
-        }
+        /*
+         * // make this the default
+         * public Builder<T> onlyIfEmpty() {
+         * return this;
+         * }
+         *
+         * public Builder<T> onlyIfOpponent() {
+         * return this;
+         * }
+         */
 
-        public Builder onlyIfOpponent() {
-            return this;
-        }
-
-        public Builder includeTakingOpponent() {
+        protected Builder<T> includeTakingOpponent() {
             this.includeTakingOpponent = true;
 
             this.opponentBoard = switch (this.piece.getColor()) {
@@ -69,14 +68,23 @@ public class BoardMoves {
                 default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
             };
 
-            return this;
+            return self();
         }
 
-        public BoardMoves build() {
+        protected long getCurrentPlayerBoard() {
+            return switch (this.piece.getColor()) {
+                case WHITE -> this.board.getWhiteBoard();
+                case BLACK -> this.board.getBlackBoard();
+                default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
+            };
+        }
+
+        public void findMovesInStraightLines() {
             // validation here - throw IllegalArgumentException with details when invalid
             int nextPosition;
             long nextPositionBit;
             long boardMax;
+            long currentPlayerBoard = getCurrentPlayerBoard();  // should this be an instance var?
 
             // calculate the max moves
             for (Direction d : this.directions) {
@@ -92,6 +100,10 @@ public class BoardMoves {
                     if ((this.occupiedBoard & nextPositionBit) == 0)
                         this.nonCaptureMoves |= nextPositionBit;
 
+                    // if the next position is the same color, stop
+                    if((currentPlayerBoard & nextPositionBit) != 0)
+                        break; // stop looking in the current direction
+
                     // if the next position is occupied, add it to the bitmap and stop
                     if (this.includeTakingOpponent && (this.opponentBoard & nextPositionBit) != 0) {
                         this.captureMoves |= nextPositionBit;
@@ -99,7 +111,6 @@ public class BoardMoves {
                     }
                 }
             }
-            return new BoardMoves(this);
         }
     }
 
@@ -134,7 +145,8 @@ public class BoardMoves {
         // check to see we're not going off the board.
     }
 
-    private BoardMoves(Builder builder) {
+    protected BoardMoves(Builder<?> builder) {
+        // need to clone enums? See Item 50 in Effective Java
         this.board = builder.board;
         this.nonCaptureMoves = builder.nonCaptureMoves;
         this.captureMoves = builder.captureMoves;
