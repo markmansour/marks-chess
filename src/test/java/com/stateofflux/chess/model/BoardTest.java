@@ -15,7 +15,7 @@ public class BoardTest {
     assertThat(b.toFenString())
         .as("Initial board setup")
         .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
-        }
+  }
 
   @Test
   public void StandardBoardWithFenStringg() {
@@ -79,8 +79,8 @@ public class BoardTest {
   @Test
   public void moveQueen() {
     Board b = new Board();
-    b.move("d2", "d3");  // move pawn up
-    b.move("d1", "a4");  // move queen NW 4 places
+    b.move("d2", "d3"); // move pawn up
+    b.move("d1", "a4"); // move queen NW 4 places
     assertThat(b.toFenString())
         .as("Initial board setup")
         .isEqualTo("RNB1KBNR/PPP1PPPP/3P4/Q7/8/8/pppppppp/rnbqkbnr");
@@ -99,7 +99,7 @@ public class BoardTest {
   @Test
   public void moveBishop() {
     Board b = new Board();
-    b.move("b2", "b3");  // move pawn up
+    b.move("b2", "b3"); // move pawn up
     b.move("c1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
@@ -125,17 +125,16 @@ public class BoardTest {
         .isEqualTo("RNBQKBNR/1PPPPPPP/8/P7/8/8/pppppppp/rnbqkbnr");
   }
 
-
   // ---------------------- Utility functions --------------------------
   @Test
   public void convertA1toIndex() {
-    assertThat(Board.convertStringToIndex("a1"))
+    assertThat(Board.convertPositionToLocation("a1"))
         .isZero();
   }
 
   @Test
   public void convertH8toIndex() {
-    assertThat(Board.convertStringToIndex("h8"))
+    assertThat(Board.convertPositionToLocation("h8"))
         .isEqualTo(63);
   }
 }

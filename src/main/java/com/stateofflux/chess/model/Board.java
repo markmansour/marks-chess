@@ -1,5 +1,8 @@
 package com.stateofflux.chess.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +76,61 @@ public class Board {
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
     }
 
+    // --------------------------- Static Methods ---------------------------
+    public static int convertPositionToLocation(String position) {
+        int rank = Integer.parseInt(position.substring(1, 2));
+        int file = position.charAt(0) - 'a';
+
+        return (rank - 1) * 8 + file;
+    }
+
+    // useful for debugging.
+    public static void printBoard(long board) {
+        StringBuilder rankString;
+        List<String> ranks = new ArrayList<>();
+
+        for (int rank = 8; rank > 0; rank--) {
+            rankString = new StringBuilder(8);
+            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
+                rankString.append((board & (1L << location)) == 0 ? '0' : '1');
+            }
+
+            ranks.add(rankString.toString());
+        }
+
+        int i = 0;
+        for (String r : ranks) {
+            LOGGER.info("{}: {}", Integer.valueOf(8 - i), r);
+            i++;
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    public static String longToReversedBinaryString(long l) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Long.numberOfLeadingZeros(l); i++) {
+            sb.append('0');
+        }
+
+        sb.append(Long.toBinaryString(l));
+
+        return sb.reverse().toString();
+    }
+
+    public static void printBoardv2(long board) {
+        String reversedLong = longToReversedBinaryString(board);
+
+        for (int rank = 7; rank >= 0; rank--) {
+            LOGGER.info("{}: {}",
+                    Integer.valueOf(rank),
+                    reversedLong.substring(rank * 8, (rank + 1) * 8));
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    // --------------------------- Constructors ---------------------------
     /*
      * Build a board using a fen string
      */
@@ -91,14 +149,20 @@ public class Board {
                 continue;
             }
 
-            for (Piece piece : Piece.values()) {
-                if (element == piece.getPieceChar()) {
-                    setPieceOnBoard(piece, location);
-                    location++;
-                    break;
-                }
+            location = setPieceOnBoard(element, location);
+        }
+    }
+
+    // --------------------------- Instance Methods ---------------------------
+    public int setPieceOnBoard(char element, int location) {
+        for (Piece piece : Piece.values()) {
+            if (element == piece.getPieceChar()) {
+                setPieceOnBoard(piece, location);
+                location++;
+                break;
             }
         }
+        return location;
     }
 
     public long setPieceOnBoard(Piece piece, int location) {
@@ -106,6 +170,15 @@ public class Board {
             throw new IllegalArgumentException("Cannot place empty piece");
 
         return this.boards[piece.getIndex()] |= 1L << location;
+    }
+
+    public void removePieceFromBoard(int location) {
+        long bitLocation = 1L << location;
+
+        for (int i = 0; i < this.boards.length; i++) {
+            if ((this.boards[i] & bitLocation) != 0)
+                this.boards[i] ^= bitLocation;
+        }
     }
 
     /*
@@ -145,9 +218,62 @@ public class Board {
         return i + location;
     }
 
+    /*
+     * Move a piece on the board, but do not perform validation.
+     */
+    public boolean move(String from, String to) {
+        int fromIndex = Board.convertPositionToLocation(from);
+        int toIndex = Board.convertPositionToLocation(to);
+
+        // attempting to move from an empty location
+        if (fromIndex == -1)
+            throw new AssertionError("Source location not found: " + this);
+
+        int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
+
+        this.boards[boardIndex] ^= (1L << fromIndex); // clear
+        this.boards[boardIndex] |= (1L << toIndex); // set
+
+        return true;
+    }
+
+    public boolean isEmpty(int location) {
+        return (~this.getOccupiedBoard() & (1L << location)) != 0;
+    }
+
+    // this can be optimized.
+    public long getOccupiedBoard() {
+        long usedBoard = 0L;
+
+        for (long board : boards) {
+            usedBoard |= board;
+        }
+
+        return usedBoard;
+    }
+
+    public long getBlackBoard() {
+        return this.boards[Piece.BLACK_PAWN.getIndex()] |
+                this.boards[Piece.BLACK_KNIGHT.getIndex()] |
+                this.boards[Piece.BLACK_BISHOP.getIndex()] |
+                this.boards[Piece.BLACK_ROOK.getIndex()] |
+                this.boards[Piece.BLACK_QUEEN.getIndex()] |
+                this.boards[Piece.BLACK_KING.getIndex()];
+    }
+
+    public long getWhiteBoard() {
+        return this.boards[Piece.WHITE_PAWN.getIndex()] |
+                this.boards[Piece.WHITE_KNIGHT.getIndex()] |
+                this.boards[Piece.WHITE_BISHOP.getIndex()] |
+                this.boards[Piece.WHITE_ROOK.getIndex()] |
+                this.boards[Piece.WHITE_QUEEN.getIndex()] |
+                this.boards[Piece.WHITE_KING.getIndex()];
+    }
+
+    // --------------------------- Visualization ---------------------------
     // implement a Forsyth-Edwards toString() method
     public String toFenString() {
-        StringBuilder f = new StringBuilder(); // TODO - initialize with size.
+        StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
 
         int i = 0;
         int n = 0;
@@ -176,32 +302,6 @@ public class Board {
         }
 
         return f.toString();
-    }
-
-    /*
-     * Move a piece on the board, but do not perform validation.
-     */
-    public boolean move(String from, String to) {
-        int fromIndex = Board.convertStringToIndex(from);
-        int toIndex = Board.convertStringToIndex(to);
-
-        // attempting to move from an empty location
-        if (fromIndex == -1)
-            throw new AssertionError("Source location not found: " + this);
-
-        int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
-
-        this.boards[boardIndex] ^= (1L << fromIndex); // clear
-        this.boards[boardIndex] |= (1L << toIndex); // set
-
-        return true;
-    }
-
-    public static int convertStringToIndex(String position) {
-        int rank = Integer.parseInt(position.substring(1, 2));
-        int file = position.charAt(0) - 'a';
-
-        return (rank - 1) * 8 + file;
     }
 
     public void printBoard() {
