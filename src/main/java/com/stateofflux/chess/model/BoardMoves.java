@@ -22,6 +22,7 @@ public abstract class BoardMoves {
         protected long nonCaptureMoves = 0L;
         protected long captureMoves = 0L;
         protected boolean includeTakingOpponent = false;
+        protected boolean takingOpponentSetByUser = false;
 
         protected Builder(Board board, int location) {
             this.board = board;
@@ -36,7 +37,35 @@ public abstract class BoardMoves {
         // Subclasses must override this method to return "this"
         protected abstract T self();
 
-        abstract BoardMoves build();
+        protected abstract BoardMoves getInstance();
+
+        protected BoardMoves build() {
+            // set the defaults if not set by user
+            if (!takingOpponentSetByUser)
+                includeCaptureMoves(true);
+
+            allowedDirections();
+            findMovesInStraightLines();
+
+            return getInstance();
+        }
+
+        /**
+         * @implSpec override this method to set the directions allowed for the piece.
+         */
+        protected void allowedDirections() {
+            this.directions = new Direction[] {
+                    Direction.UP_LEFT,
+                    Direction.UP,
+                    Direction.UP_RIGHT,
+                    Direction.RIGHT,
+                    Direction.DOWN_RIGHT,
+                    Direction.DOWN,
+                    Direction.DOWN_LEFT,
+                    Direction.LEFT
+
+            };
+        }
 
         protected Builder<T> moving(Direction[] directions) {
             this.directions = directions;
@@ -59,14 +88,17 @@ public abstract class BoardMoves {
          * }
          */
 
-        protected Builder<T> includeTakingOpponent() {
-            this.includeTakingOpponent = true;
+        protected Builder<T> includeCaptureMoves(boolean flag) {
+            this.includeTakingOpponent = flag;
+            this.takingOpponentSetByUser = true;
 
-            this.opponentBoard = switch (this.piece.getColor()) {
-                case WHITE -> this.board.getBlackBoard();
-                case BLACK -> this.board.getWhiteBoard();
-                default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
-            };
+            if (includeTakingOpponent) {
+                this.opponentBoard = switch (this.piece.getColor()) {
+                    case WHITE -> this.board.getBlackBoard();
+                    case BLACK -> this.board.getWhiteBoard();
+                    default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
+                };
+            }
 
             return self();
         }
@@ -84,7 +116,7 @@ public abstract class BoardMoves {
             int nextPosition;
             long nextPositionBit;
             long boardMax;
-            long currentPlayerBoard = getCurrentPlayerBoard();  // should this be an instance var?
+            long currentPlayerBoard = getCurrentPlayerBoard(); // should this be an instance var?
 
             // calculate the max moves
             for (Direction d : this.directions) {
@@ -101,7 +133,7 @@ public abstract class BoardMoves {
                         this.nonCaptureMoves |= nextPositionBit;
 
                     // if the next position is the same color, stop
-                    if((currentPlayerBoard & nextPositionBit) != 0)
+                    if ((currentPlayerBoard & nextPositionBit) != 0)
                         break; // stop looking in the current direction
 
                     // if the next position is occupied, add it to the bitmap and stop

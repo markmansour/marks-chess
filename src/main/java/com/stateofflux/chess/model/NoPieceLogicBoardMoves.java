@@ -9,8 +9,7 @@ public class NoPieceLogicBoardMoves extends BoardMoves {
         }
 
         @Override
-        public BoardMoves build() {
-            findMovesInStraightLines();
+        protected BoardMoves getInstance() {
             return new NoPieceLogicBoardMoves(this);
         }
 

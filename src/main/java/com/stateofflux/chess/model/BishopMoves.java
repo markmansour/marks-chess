@@ -14,6 +14,7 @@ public class BishopMoves extends BoardMoves {
             return self();
         }
 
+        @Override
         protected void allowedDirections() {
             this.directions = new Direction[] {
                     Direction.UP_LEFT,
@@ -24,13 +25,7 @@ public class BishopMoves extends BoardMoves {
         }
 
         @Override
-        public BishopMoves build() {
-            includeTakingOpponent();
-
-            // Bishops move in straight lines
-            this.allowedDirections();
-
-            findMovesInStraightLines();
+        protected BoardMoves getInstance() {
             return new BishopMoves(this);
         }
 

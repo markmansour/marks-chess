@@ -1,6 +1,6 @@
 package com.stateofflux.chess.model;
 
-public class PawnMoves extends BoardMoves {
+public class QueenMoves extends BoardMoves {
     public static class Builder extends BoardMoves.Builder<Builder> {
 
         protected Builder(Board board, int location) {
@@ -9,16 +9,23 @@ public class PawnMoves extends BoardMoves {
         }
 
         @Override
-        protected BoardMoves getInstance() {
-            return new PawnMoves(this);
+        protected Builder moving(Direction[] directions) {
+            // do nothing. Should this method exist?
+            return self();
         }
 
         @Override
-        protected Builder self() { return this; }
+        protected BoardMoves getInstance() {
+            return new QueenMoves(this);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
     }
 
-    private PawnMoves(Builder builder) {
+    private QueenMoves(Builder builder) {
         super(builder);
-        // TODO Auto-generated constructor stub
     }
 }

@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NoPieceLoicBoardMoves {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMoves.class);
+public class NoPieceLoicBoardMovesTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
 
     @Test
     public void movingUpIntoEmptySpace() {
@@ -15,58 +15,67 @@ public class NoPieceLoicBoardMoves {
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
         BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.UP })
                 .max(2)
                 .build();
 
         assertThat(bm.getNonCaptureMoves())
-                .isEqualTo(1L << 16 | 1L << 24);// both 1 & 2 squares forward
+                .isEqualTo(1L << 16 | 1L << 24 |
+                        1L << 17 | 1L << 26);// both 1 & 2 squares forward
     }
 
     @Test
     public void movingUpIntoOccupiedSpaceOfOpponent() {
-        // occupied by my own piece
         Board openingBoard = new Board();
-        // starting at position 8, moving up 5 squares should give an answer
-        // of 16 | 24 | 32 | 40 (but not 48).
         BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.UP })
                 .max(5)
                 .build();
 
-        assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 16 | 1L << 24 | 1L << 32 | 1L << 40);
+        assertThat(bm.getNonCaptureMoves()).isEqualTo(
+                1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | // up
+                        1L << 17 | 1L << 26 | 1L << 35 | 1L << 44 // up_right
+        );
     }
 
     @Test
     public void movingUpIntoOccupiedSpaceOfSelf() {
         // occupied by my own piece
         Board openingBoard = new Board();
-        // starting at position 8, moving up 5 squares should give an answer of 16 | 24
-        // | 32 | 40 (but not 48).
         BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.RIGHT })
+                // .moving(new Direction[] { Direction.RIGHT })
                 .max(5)
                 .build();
 
-        assertThat(bm.getNonCaptureMoves()).isZero();// there are no valid positions
-    }
-
-    @Test
-    public void movingUpIntoOpponentSpace() {
-        // occupied by opponent's piece
-        Board openingBoard = new Board();
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.UP })
-                .max(5)
-                .includeTakingOpponent()
-                .build();
-
-        assertThat(bm.getCaptureMoves()).isEqualTo(1L << 48);// there are no valid positions
+        assertThat(bm.getNonCaptureMoves()).isEqualTo(
+                1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | // up
+                        1L << 17 | 1L << 26 | 1L << 35 | 1L << 44 // up_right
+        );
     }
 
     @Test
     public void movingUpStoppingAtEndOfBoard() {
         Board openingBoard = new Board();
+
+        openingBoard.removePieceFromBoard(48);
+        openingBoard.removePieceFromBoard(56);
+        openingBoard.removePieceFromBoard(0); // check for wrap around and going backwards
+
+        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
+                .moving(new Direction[] { Direction.UP })
+                .max(10)
+                .build();
+
+        assertThat(bm.getNonCaptureMoves()).isEqualTo(
+                1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | 1L << 48 | 1L << 56 |
+                        1L << 17 | 1L << 26 | 1L << 35 | 1L << 44 | // up_right
+                        1L << 0 // down
+        );
+        assertThat(bm.getCaptureMoves()).isEqualTo(1L << 53);
+    }
+
+    @Test
+    public void dontShowCaptureMoves() {
+        Board openingBoard = new Board();
+
         openingBoard.removePieceFromBoard(48);
         openingBoard.removePieceFromBoard(56);
         openingBoard.removePieceFromBoard(0); // check for wrap around
@@ -74,10 +83,14 @@ public class NoPieceLoicBoardMoves {
         BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
                 .moving(new Direction[] { Direction.UP })
                 .max(10)
-                .includeTakingOpponent()
+                .includeCaptureMoves(false)
                 .build();
 
-        assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | 1L << 48 | 1L << 56);
+        assertThat(bm.getNonCaptureMoves()).isEqualTo(
+                1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | 1L << 48 | 1L << 56 |
+                        1L << 17 | 1L << 26 | 1L << 35 | 1L << 44 | // up_right
+                        1L << 0 // down
+        );
         assertThat(bm.getCaptureMoves()).isZero();
     }
 
