@@ -1,11 +1,11 @@
 package com.stateofflux.chess.model;
 
-public class BishopMoves extends BoardMoves {
+public class KingMoves extends BoardMoves {
     public static class Builder extends BoardMoves.Builder<Builder> {
 
         protected Builder(Board board, int location) {
             super(board, location);
-            // TODO Auto-generated constructor stub
+            this.max = 1;
         }
 /*
         @Override
@@ -15,18 +15,8 @@ public class BishopMoves extends BoardMoves {
         }
  */
         @Override
-        protected void allowedDirections() {
-            this.directions = new Direction[] {
-                    Direction.UP_LEFT,
-                    Direction.UP_RIGHT,
-                    Direction.DOWN_LEFT,
-                    Direction.DOWN_RIGHT
-            };
-        }
-
-        @Override
         protected BoardMoves getInstance() {
-            return new BishopMoves(this);
+            return new KingMoves(this);
         }
 
         @Override
@@ -35,8 +25,8 @@ public class BishopMoves extends BoardMoves {
         }
     }
 
-    private BishopMoves(Builder builder) {
+    private KingMoves(Builder builder) {
         super(builder);
-        // TODO Auto-generated constructor stub
     }
+
 }

@@ -60,7 +60,6 @@ public class NoPieceLoicBoardMovesTest {
         openingBoard.removePieceFromBoard(0); // check for wrap around and going backwards
 
         BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.UP })
                 .max(10)
                 .build();
 
@@ -70,28 +69,6 @@ public class NoPieceLoicBoardMovesTest {
                         1L << 0 // down
         );
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 53);
-    }
-
-    @Test
-    public void dontShowCaptureMoves() {
-        Board openingBoard = new Board();
-
-        openingBoard.removePieceFromBoard(48);
-        openingBoard.removePieceFromBoard(56);
-        openingBoard.removePieceFromBoard(0); // check for wrap around
-
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
-                .moving(new Direction[] { Direction.UP })
-                .max(10)
-                .includeCaptureMoves(false)
-                .build();
-
-        assertThat(bm.getNonCaptureMoves()).isEqualTo(
-                1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | 1L << 48 | 1L << 56 |
-                        1L << 17 | 1L << 26 | 1L << 35 | 1L << 44 | // up_right
-                        1L << 0 // down
-        );
-        assertThat(bm.getCaptureMoves()).isZero();
     }
 
     public void movingUpZero() {

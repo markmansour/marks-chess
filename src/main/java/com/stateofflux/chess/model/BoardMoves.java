@@ -9,11 +9,9 @@ public abstract class BoardMoves {
     abstract static class Builder<T extends Builder<T>> {
         protected Board board;
         protected int location = 0;
-        // protected PlayerColor color;
 
         // boards
         protected long occupiedBoard;
-        // private long emptyBoard;
         protected long opponentBoard;
 
         protected int max = 7; // max number of moves in any direction
@@ -21,34 +19,27 @@ public abstract class BoardMoves {
         protected Piece piece;
         protected long nonCaptureMoves = 0L;
         protected long captureMoves = 0L;
-        protected boolean includeTakingOpponent = false;
-        protected boolean takingOpponentSetByUser = false;
 
         protected Builder(Board board, int location) {
             this.board = board;
             this.location = location;
-
             this.piece = board.getPieceAtLocation(location);
-
             this.occupiedBoard = this.board.getOccupiedBoard();
-            // this.emptyBoard = ~occupiedBoard;
+        }
+
+        protected BoardMoves build() {
+            // set the defaults if not set by user
+            allowedDirections();
+            includeCaptureMoves();
+            findMovesInStraightLines();
+
+            return getInstance();
         }
 
         // Subclasses must override this method to return "this"
         protected abstract T self();
 
         protected abstract BoardMoves getInstance();
-
-        protected BoardMoves build() {
-            // set the defaults if not set by user
-            if (!takingOpponentSetByUser)
-                includeCaptureMoves(true);
-
-            allowedDirections();
-            findMovesInStraightLines();
-
-            return getInstance();
-        }
 
         /**
          * @implSpec override this method to set the directions allowed for the piece.
@@ -67,9 +58,10 @@ public abstract class BoardMoves {
             };
         }
 
-        protected Builder<T> moving(Direction[] directions) {
+//        abstract Builder<T> moving(Direction[] directions);
+
+        protected void setDirections(Direction[] directions) {
             this.directions = directions;
-            return self();
         }
 
         protected Builder<T> max(int max) {
@@ -77,28 +69,12 @@ public abstract class BoardMoves {
             return self();
         }
 
-        /*
-         * // make this the default
-         * public Builder<T> onlyIfEmpty() {
-         * return this;
-         * }
-         *
-         * public Builder<T> onlyIfOpponent() {
-         * return this;
-         * }
-         */
-
-        protected Builder<T> includeCaptureMoves(boolean flag) {
-            this.includeTakingOpponent = flag;
-            this.takingOpponentSetByUser = true;
-
-            if (includeTakingOpponent) {
-                this.opponentBoard = switch (this.piece.getColor()) {
-                    case WHITE -> this.board.getBlackBoard();
-                    case BLACK -> this.board.getWhiteBoard();
-                    default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
-                };
-            }
+        protected Builder<T> includeCaptureMoves() {
+            this.opponentBoard = switch (this.piece.getColor()) {
+                case WHITE -> this.board.getBlackBoard();
+                case BLACK -> this.board.getWhiteBoard();
+                default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
+            };
 
             return self();
         }
@@ -137,7 +113,7 @@ public abstract class BoardMoves {
                         break; // stop looking in the current direction
 
                     // if the next position is occupied, add it to the bitmap and stop
-                    if (this.includeTakingOpponent && (this.opponentBoard & nextPositionBit) != 0) {
+                    if ((this.opponentBoard & nextPositionBit) != 0) {
                         this.captureMoves |= nextPositionBit;
                         break; // no more searches in this direction.
                     }

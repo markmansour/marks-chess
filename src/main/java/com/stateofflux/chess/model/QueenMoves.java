@@ -9,12 +9,6 @@ public class QueenMoves extends BoardMoves {
         }
 
         @Override
-        protected Builder moving(Direction[] directions) {
-            // do nothing. Should this method exist?
-            return self();
-        }
-
-        @Override
         protected BoardMoves getInstance() {
             return new QueenMoves(this);
         }
