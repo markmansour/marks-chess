@@ -8,14 +8,25 @@ import org.slf4j.LoggerFactory;
 
 public class NoPieceLoicBoardMovesTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
+    private static Direction[] ALL_DIRECTIONS = new Direction[] {
+            Direction.UP_LEFT,
+            Direction.UP,
+            Direction.UP_RIGHT,
+            Direction.RIGHT,
+            Direction.DOWN_RIGHT,
+            Direction.DOWN,
+            Direction.DOWN_LEFT,
+            Direction.LEFT
+    };
 
     @Test
     public void movingUpIntoEmptySpace() {
         Board openingBoard = getOpeningBoard();
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
+        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
                 .max(2)
+                .moveAndCaptureDirections(ALL_DIRECTIONS)
                 .build();
 
         assertThat(bm.getNonCaptureMoves())
@@ -26,8 +37,9 @@ public class NoPieceLoicBoardMovesTest {
     @Test
     public void movingUpIntoOccupiedSpaceOfOpponent() {
         Board openingBoard = new Board();
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
+        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
                 .max(5)
+                .moveAndCaptureDirections(ALL_DIRECTIONS)
                 .build();
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
@@ -40,9 +52,10 @@ public class NoPieceLoicBoardMovesTest {
     public void movingUpIntoOccupiedSpaceOfSelf() {
         // occupied by my own piece
         Board openingBoard = new Board();
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
+        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
                 // .moving(new Direction[] { Direction.RIGHT })
                 .max(5)
+                .moveAndCaptureDirections(ALL_DIRECTIONS)
                 .build();
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
@@ -59,8 +72,9 @@ public class NoPieceLoicBoardMovesTest {
         openingBoard.removePieceFromBoard(56);
         openingBoard.removePieceFromBoard(0); // check for wrap around and going backwards
 
-        BoardMoves bm = new NoPieceLogicBoardMoves.Builder(openingBoard, 8)
+        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
                 .max(10)
+                .moveAndCaptureDirections(ALL_DIRECTIONS)
                 .build();
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
@@ -82,39 +96,39 @@ public class NoPieceLoicBoardMovesTest {
     // -------------------- maxStepsToBoundary --------------------
     @Test
     public void maxStepsToBoundary() {
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(0, Direction.UP)).isEqualTo(7);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.UP)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(56, Direction.UP)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.UP)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.UP)).isZero();
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(0, Direction.DOWN)).isZero();
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.DOWN)).isEqualTo(1);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(56, Direction.DOWN)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.DOWN)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.DOWN)).isEqualTo(1);
+        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.DOWN)).isEqualTo(7);
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.RIGHT)).isEqualTo(7);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(9, Direction.RIGHT)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(15, Direction.RIGHT)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.RIGHT)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.RIGHT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.RIGHT)).isZero();
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.LEFT)).isZero();
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(9, Direction.LEFT)).isEqualTo(1);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(15, Direction.LEFT)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.LEFT)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.LEFT)).isEqualTo(1);
+        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.LEFT)).isEqualTo(7);
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(0, Direction.UP_RIGHT)).isEqualTo(7);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.UP_RIGHT)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(9, Direction.UP_RIGHT)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(10, Direction.UP_RIGHT)).isEqualTo(5);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(56, Direction.UP_RIGHT)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP_RIGHT)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.UP_RIGHT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.UP_RIGHT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(10, Direction.UP_RIGHT)).isEqualTo(5);
+        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.UP_RIGHT)).isZero();
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(0, Direction.UP_LEFT)).isZero();
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(15, Direction.UP_LEFT)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(9, Direction.UP_LEFT)).isEqualTo(1);
+        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP_LEFT)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.UP_LEFT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.UP_LEFT)).isEqualTo(1);
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(8, Direction.DOWN_RIGHT)).isEqualTo(1);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(9, Direction.DOWN_RIGHT)).isEqualTo(1);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(48, Direction.DOWN_RIGHT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.DOWN_RIGHT)).isEqualTo(1);
+        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.DOWN_RIGHT)).isEqualTo(1);
+        assertThat(BoardMoves.maxStepsToBoundary(48, Direction.DOWN_RIGHT)).isEqualTo(6);
 
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(63, Direction.DOWN_LEFT)).isEqualTo(7);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(62, Direction.DOWN_LEFT)).isEqualTo(6);
-        assertThat(NoPieceLogicBoardMoves.maxStepsToBoundary(24, Direction.DOWN_LEFT)).isZero();
+        assertThat(BoardMoves.maxStepsToBoundary(63, Direction.DOWN_LEFT)).isEqualTo(7);
+        assertThat(BoardMoves.maxStepsToBoundary(62, Direction.DOWN_LEFT)).isEqualTo(6);
+        assertThat(BoardMoves.maxStepsToBoundary(24, Direction.DOWN_LEFT)).isZero();
 
     }
 

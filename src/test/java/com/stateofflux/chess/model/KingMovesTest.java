@@ -9,7 +9,7 @@ public class KingMovesTest {
         Board openingBoard = new Board();
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new KingMoves.Builder(openingBoard, 4).build();
+        BoardMoves bm = BoardMoves.from(openingBoard, 4);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -25,7 +25,7 @@ public class KingMovesTest {
         openingBoard.removePieceFromBoard(5);
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new KingMoves.Builder(openingBoard, 4).build();
+        BoardMoves bm = BoardMoves.from(openingBoard, 4);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1 << 3L | 1L << 11 | 1L << 12 | 1L << 13 | 1L << 5);
         assertThat(bm.getCaptureMoves()).isZero();

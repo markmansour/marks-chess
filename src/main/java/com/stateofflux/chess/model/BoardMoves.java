@@ -1,82 +1,80 @@
 package com.stateofflux.chess.model;
 
-public abstract class BoardMoves {
+public class BoardMoves {
     private final Board board;
-    // private long emptyBoard;
     private long nonCaptureMoves;
     private long captureMoves;
+    private Piece piece;
 
-    abstract static class Builder<T extends Builder<T>> {
-        protected Board board;
-        protected int location = 0;
+    // Factory for board moves.
+    protected static BoardMoves from(Board b, int location) {
+        Piece piece = b.getPieceAtLocation(location);
+
+        return switch (piece) {
+            case BLACK_KING, WHITE_KING -> KingMoves.from(b, location);
+            case BLACK_QUEEN, WHITE_QUEEN -> QueenMoves.from(b, location);
+            case BLACK_ROOK, WHITE_ROOK -> RookMoves.from(b, location);
+            case BLACK_BISHOP, WHITE_BISHOP -> BishopMoves.from(b, location);
+            case BLACK_KNIGHT, WHITE_KNIGHT -> KnightMoves.from(b, location);
+            case BLACK_PAWN, WHITE_PAWN -> PawnMoves.from(b, location);
+            default -> BoardMoves.from(b, location);
+        };
+    }
+
+    public static class Builder {
+        private Board board;
+        private int location = 0;
 
         // boards
-        protected long occupiedBoard;
-        protected long opponentBoard;
+        private long occupiedBoard;
+        private long opponentBoard;
 
-        protected int max = 7; // max number of moves in any direction
-        protected Direction[] directions;
-        protected Piece piece;
-        protected long nonCaptureMoves = 0L;
-        protected long captureMoves = 0L;
+        private int max = 7; // max number of moves in any direction
+        private Direction[] directions;
+        private Piece piece;
+        private long nonCaptureMoves = 0L;
+        private long captureMoves = 0L;
 
-        protected Builder(Board board, int location) {
+        public Builder(Board board, int location) {
             this.board = board;
             this.location = location;
             this.piece = board.getPieceAtLocation(location);
             this.occupiedBoard = this.board.getOccupiedBoard();
         }
 
-        protected BoardMoves build() {
+        public BoardMoves build() {
             // set the defaults if not set by user
-            allowedDirections();
+            if (this.directions == null)
+                throw new IllegalArgumentException("Directions must be set for the piece");
+
             includeCaptureMoves();
             findMovesInStraightLines();
 
-            return getInstance();
+            return new BoardMoves(this);
         }
-
-        // Subclasses must override this method to return "this"
-        protected abstract T self();
-
-        protected abstract BoardMoves getInstance();
 
         /**
          * @implSpec override this method to set the directions allowed for the piece.
          */
-        protected void allowedDirections() {
-            this.directions = new Direction[] {
-                    Direction.UP_LEFT,
-                    Direction.UP,
-                    Direction.UP_RIGHT,
-                    Direction.RIGHT,
-                    Direction.DOWN_RIGHT,
-                    Direction.DOWN,
-                    Direction.DOWN_LEFT,
-                    Direction.LEFT
+        public Builder moveAndCaptureDirections(Direction[] direction) {
+            this.directions = direction;
 
-            };
+            return this;
         }
 
-//        abstract Builder<T> moving(Direction[] directions);
-
-        protected void setDirections(Direction[] directions) {
-            this.directions = directions;
-        }
-
-        protected Builder<T> max(int max) {
+        protected Builder max(int max) {
             this.max = max;
-            return self();
+            return this;
         }
 
-        protected Builder<T> includeCaptureMoves() {
+        protected Builder includeCaptureMoves() {
             this.opponentBoard = switch (this.piece.getColor()) {
                 case WHITE -> this.board.getBlackBoard();
                 case BLACK -> this.board.getWhiteBoard();
                 default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
             };
 
-            return self();
+            return this;
         }
 
         protected long getCurrentPlayerBoard() {
@@ -153,11 +151,21 @@ public abstract class BoardMoves {
         // check to see we're not going off the board.
     }
 
-    protected BoardMoves(Builder<?> builder) {
+    protected BoardMoves(Builder builder) {
         // need to clone enums? See Item 50 in Effective Java
         this.board = builder.board;
+        this.piece = builder.piece;
+
         this.nonCaptureMoves = builder.nonCaptureMoves;
         this.captureMoves = builder.captureMoves;
+    }
+
+    public Board getBoard() {
+        return this.board;
+    }
+
+    public Piece getPiece() {
+        return this.piece;
     }
 
     public long getAllMoves() {

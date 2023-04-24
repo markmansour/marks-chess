@@ -1,24 +1,34 @@
 package com.stateofflux.chess.model;
 
-public class PawnMoves extends BoardMoves {
-    public static class Builder extends BoardMoves.Builder<Builder> {
+public class PawnMoves {
+    public static BoardMoves from(Board board, int location) {
+        Piece piece = board.getPieceAtLocation(location);
 
-        protected Builder(Board board, int location) {
-            super(board, location);
-            // TODO Auto-generated constructor stub
-        }
+        Direction d;
+        int max = 2;
 
-        @Override
-        protected BoardMoves getInstance() {
-            return new PawnMoves(this);
-        }
+        if (piece.isBlack()) {
+            d = Direction.DOWN;
+            if (location < 48) { // no longer on rank 7
+                max = 1;
+            }
+        } else if (piece.isWhite()) {
+            d = Direction.UP;
+            if (location >= 16) { // no longer on rank 2
+                max = 1;
+            }
+        } else
+            throw new IllegalArgumentException("Piece must be black or white");
 
-        @Override
-        protected Builder self() { return this; }
+        return new BoardMoves.Builder(board, location)
+                .moveAndCaptureDirections(new Direction[] { d })
+                .max(max)
+                .build();
     }
 
-    private PawnMoves(Builder builder) {
-        super(builder);
-        // TODO Auto-generated constructor stub
+    // hide the public constructor
+    private PawnMoves() {
+        super();
     }
+
 }

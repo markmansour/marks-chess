@@ -1,24 +1,24 @@
 package com.stateofflux.chess.model;
 
-public class NoPieceLogicBoardMoves extends BoardMoves {
-    public static class Builder extends BoardMoves.Builder<Builder> {
-
-        protected Builder(Board board, int location) {
-            super(board, location);
-            // TODO Auto-generated constructor stub
-        }
-
-        @Override
-        protected BoardMoves getInstance() {
-            return new NoPieceLogicBoardMoves(this);
-        }
-
-        @Override
-        protected Builder self() { return this; }
+public class NoPieceLogicBoardMoves {
+    public static BoardMoves from(Board board, int location) {
+        return new BoardMoves.Builder(board, location)
+                .moveAndCaptureDirections(new Direction[] {
+                        Direction.UP_LEFT,
+                        Direction.UP,
+                        Direction.UP_RIGHT,
+                        Direction.RIGHT,
+                        Direction.DOWN_RIGHT,
+                        Direction.DOWN,
+                        Direction.DOWN_LEFT,
+                        Direction.LEFT
+                })
+                .max(7)
+                .build();
     }
 
-    private NoPieceLogicBoardMoves(Builder builder) {
-        super(builder);
-        // TODO Auto-generated constructor stub
+    // hide the public constructor
+    private NoPieceLogicBoardMoves() {
+        super();
     }
 }

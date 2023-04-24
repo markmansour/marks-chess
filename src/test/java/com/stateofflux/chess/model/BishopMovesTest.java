@@ -24,7 +24,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
     public void attemptsToMoveWhenTrapped() {
         Board openingBoard = new Board(); // default board
 
-        BoardMoves bm = new BishopMoves.Builder(openingBoard, 2).build();
+        BoardMoves bm = BoardMoves.from(openingBoard, 2);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -35,8 +35,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
         Board openingBoard = new Board(); // default board
         openingBoard.move("b2", "b3"); // move pawn out of the way
 
-        BoardMoves bm = new BishopMoves.Builder(openingBoard, 2)
-                .build();
+        BoardMoves bm = BoardMoves.from(openingBoard, 2);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 9 | 1L << 16);
         assertThat(bm.getCaptureMoves()).isZero();
@@ -46,8 +45,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
     public void moveToEdgeOfBoard() {
         Board openingBoard = new Board("RN1QKBNR/PPPPPPPP/8/2B5/8/8/pppppppp/rnbqkbnr");
 
-        BoardMoves bm = new BishopMoves.Builder(openingBoard, 26)
-                .build();
+        BoardMoves bm = BoardMoves.from(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT

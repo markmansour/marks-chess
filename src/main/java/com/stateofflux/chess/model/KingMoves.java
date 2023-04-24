@@ -1,32 +1,25 @@
 package com.stateofflux.chess.model;
 
-public class KingMoves extends BoardMoves {
-    public static class Builder extends BoardMoves.Builder<Builder> {
-
-        protected Builder(Board board, int location) {
-            super(board, location);
-            this.max = 1;
-        }
-/*
-        @Override
-        protected Builder moving(Direction[] directions) {
-            // do nothing. Should this method exist?
-            return self();
-        }
- */
-        @Override
-        protected BoardMoves getInstance() {
-            return new KingMoves(this);
-        }
-
-        @Override
-        protected Builder self() {
-            return this;
-        }
+public class KingMoves {
+    public static BoardMoves from(Board board, int location) {
+        return new BoardMoves.Builder(board, location)
+                .moveAndCaptureDirections(new Direction[] {
+                    Direction.UP_LEFT,
+                    Direction.UP,
+                    Direction.UP_RIGHT,
+                    Direction.RIGHT,
+                    Direction.DOWN_RIGHT,
+                    Direction.DOWN,
+                    Direction.DOWN_LEFT,
+                    Direction.LEFT
+                })
+                .max(1)
+                .build();
     }
 
-    private KingMoves(Builder builder) {
-        super(builder);
+    // hide the public constructor
+    private KingMoves() {
+        super();
     }
 
 }

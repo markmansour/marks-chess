@@ -48,4 +48,25 @@ public enum Piece {
     public String toString() {
         return String.valueOf(pieceChar);
     }
+
+    public boolean isEmpty() {
+        return switch (this) {
+            case EMPTY -> true;
+            default -> false;
+        };
+    }
+
+    public boolean isBlack() {
+        return switch (this) {
+            case BLACK_KING, BLACK_QUEEN, BLACK_ROOK, BLACK_BISHOP, BLACK_KNIGHT, BLACK_PAWN -> true;
+            default -> false;
+        };
+    }
+
+    public boolean isWhite() {
+        return switch (this) {
+            case WHITE_KING, WHITE_QUEEN, WHITE_ROOK, WHITE_BISHOP, WHITE_KNIGHT, WHITE_PAWN -> true;
+            default -> false;
+        };
+    }
 }

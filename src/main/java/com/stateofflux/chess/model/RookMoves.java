@@ -1,23 +1,20 @@
 package com.stateofflux.chess.model;
 
-public class QueenMoves {
+public class RookMoves {
     public static BoardMoves from(Board board, int location) {
         return new BoardMoves.Builder(board, location)
                 .moveAndCaptureDirections(new Direction[] {
-                        Direction.UP_LEFT,
                         Direction.UP,
-                        Direction.UP_RIGHT,
                         Direction.RIGHT,
-                        Direction.DOWN_RIGHT,
                         Direction.DOWN,
-                        Direction.DOWN_LEFT,
                         Direction.LEFT
                 })
                 .max(7)
                 .build();
     }
 
-    private QueenMoves() {
+    // hide the public constructor
+    private RookMoves() {
         super();
     }
 }
