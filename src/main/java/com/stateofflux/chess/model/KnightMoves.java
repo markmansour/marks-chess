@@ -1,21 +1,22 @@
 package com.stateofflux.chess.model;
 
-public class KnightMoves {
+public class KnightMoves extends StraightLineMoves {
+        protected KnightMoves(Board board, int location) {
+                super(board, location);
+                // this is wrong
+                setupPaths();
+        }
 
-public static BoardMoves from(Board board, int location) {
-        return new BoardMoves.Builder(board, location)
-                .moveAndCaptureDirections(new Direction[] {
-                        Direction.UP,
-                        Direction.RIGHT,
-                        Direction.DOWN,
-                        Direction.LEFT
-                })
-                .max(7)
-                .build();
-    }
+        protected void setupPaths() {
+                this.directions = new Direction[] {
+                                Direction.UP_LEFT,
+                                Direction.UP_RIGHT,
+                                Direction.DOWN_LEFT,
+                                Direction.DOWN_RIGHT
+                };
+        }
 
-    // hide the public constructor
-    private KnightMoves() {
-        super();
-    }
+        @Override
+        public void findCaptureAndNonCaptureMovesInStraightLines() {
+        }
 }

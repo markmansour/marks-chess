@@ -18,11 +18,16 @@ public class BoardTest {
   }
 
   @Test
-  public void StandardBoardWithFenStringg() {
+  public void standardBoardWithFenString() {
     Board b = new Board("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
     assertThat(b.toFenString())
         .as("Initial board setup")
         .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+  }
+
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void IllegalFenBoardNotEnoughPiecesInRow() {
+    new Board("RNBQKBNR/PPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");  // only 7P on rank 2
   }
 
   @Test

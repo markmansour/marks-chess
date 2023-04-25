@@ -7,7 +7,7 @@ public class RookMovesTest {
     @Test
     public void attemptsToMoveWhenTrapped() {
         Board openingBoard = new Board(); // default board
-        BoardMoves bm = BoardMoves.from(openingBoard, 0);
+        BoardMoves bm = new RookMoves(openingBoard, 0);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -16,7 +16,7 @@ public class RookMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         Board openingBoard = new Board("1NBQKBNR/1PPPPPPP/8/R7/8/8/pppppppp/rnbqkbnr");
-        BoardMoves bm = BoardMoves.from(openingBoard, 24);
+        BoardMoves bm = new RookMoves(openingBoard, 24);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(

@@ -76,60 +76,6 @@ public class Board {
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
     }
 
-    // --------------------------- Static Methods ---------------------------
-    public static int convertPositionToLocation(String position) {
-        int rank = Integer.parseInt(position.substring(1, 2));
-        int file = position.charAt(0) - 'a';
-
-        return (rank - 1) * 8 + file;
-    }
-
-    // useful for debugging.
-    public static void printBoard(long board) {
-        StringBuilder rankString;
-        List<String> ranks = new ArrayList<>();
-
-        for (int rank = 8; rank > 0; rank--) {
-            rankString = new StringBuilder(8);
-            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
-                rankString.append((board & (1L << location)) == 0 ? '0' : '1');
-            }
-
-            ranks.add(rankString.toString());
-        }
-
-        int i = 0;
-        for (String r : ranks) {
-            LOGGER.info("{}: {}", Integer.valueOf(8 - i), r);
-            i++;
-        }
-
-        LOGGER.info("   abcdefgh");
-    }
-
-    public static String longToReversedBinaryString(long l) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < Long.numberOfLeadingZeros(l); i++) {
-            sb.append('0');
-        }
-
-        sb.append(Long.toBinaryString(l));
-
-        return sb.reverse().toString();
-    }
-
-    public static void printBoardv2(long board) {
-        String reversedLong = longToReversedBinaryString(board);
-
-        for (int rank = 7; rank >= 0; rank--) {
-            LOGGER.info("{}: {}",
-                    Integer.valueOf(rank),
-                    reversedLong.substring(rank * 8, (rank + 1) * 8));
-        }
-
-        LOGGER.info("   abcdefgh");
-    }
-
     // --------------------------- Constructors ---------------------------
     /*
      * Build a board using a fen string
@@ -140,6 +86,9 @@ public class Board {
 
         for (char element : fenCh) {
             if (element == '/') {
+                if (location % 8 != 0)
+                    throw new IllegalArgumentException("Invalid FEN: " + fen);
+
                 continue;
             }
 
@@ -319,6 +268,60 @@ public class Board {
         for (int i = 7; i >= 0; i--) {
             ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8);
             LOGGER.info("{}: {}", Integer.valueOf(i + 1), ranks[i]);
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    // --------------------------- Static Methods ---------------------------
+    public static int convertPositionToLocation(String position) {
+        int rank = Integer.parseInt(position.substring(1, 2));
+        int file = position.charAt(0) - 'a';
+
+        return (rank - 1) * 8 + file;
+    }
+
+    // useful for debugging.
+    public static void printBoard(long board) {
+        StringBuilder rankString;
+        List<String> ranks = new ArrayList<>();
+
+        for (int rank = 8; rank > 0; rank--) {
+            rankString = new StringBuilder(8);
+            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
+                rankString.append((board & (1L << location)) == 0 ? '0' : '1');
+            }
+
+            ranks.add(rankString.toString());
+        }
+
+        int i = 0;
+        for (String r : ranks) {
+            LOGGER.info("{}: {}", Integer.valueOf(8 - i), r);
+            i++;
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    public static String longToReversedBinaryString(long l) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Long.numberOfLeadingZeros(l); i++) {
+            sb.append('0');
+        }
+
+        sb.append(Long.toBinaryString(l));
+
+        return sb.reverse().toString();
+    }
+
+    public static void printBoardv2(long board) {
+        String reversedLong = longToReversedBinaryString(board);
+
+        for (int rank = 7; rank >= 0; rank--) {
+            LOGGER.info("{}: {}",
+                    Integer.valueOf(rank),
+                    reversedLong.substring(rank * 8, (rank + 1) * 8));
         }
 
         LOGGER.info("   abcdefgh");

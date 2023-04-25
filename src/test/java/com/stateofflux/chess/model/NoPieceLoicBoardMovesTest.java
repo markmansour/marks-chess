@@ -24,10 +24,8 @@ public class NoPieceLoicBoardMovesTest {
         Board openingBoard = getOpeningBoard();
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
-                .max(2)
-                .moveAndCaptureDirections(ALL_DIRECTIONS)
-                .build();
+        NoPieceLogicBoardMoves bm = new NoPieceLogicBoardMoves(openingBoard, 8);
+        bm.setMax(2);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 16 | 1L << 24 |
@@ -37,10 +35,8 @@ public class NoPieceLoicBoardMovesTest {
     @Test
     public void movingUpIntoOccupiedSpaceOfOpponent() {
         Board openingBoard = new Board();
-        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
-                .max(5)
-                .moveAndCaptureDirections(ALL_DIRECTIONS)
-                .build();
+        NoPieceLogicBoardMoves bm = new NoPieceLogicBoardMoves(openingBoard, 8);
+        bm.setMax(5);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
                 1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | // up
@@ -52,11 +48,8 @@ public class NoPieceLoicBoardMovesTest {
     public void movingUpIntoOccupiedSpaceOfSelf() {
         // occupied by my own piece
         Board openingBoard = new Board();
-        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
-                // .moving(new Direction[] { Direction.RIGHT })
-                .max(5)
-                .moveAndCaptureDirections(ALL_DIRECTIONS)
-                .build();
+        NoPieceLogicBoardMoves bm = new NoPieceLogicBoardMoves(openingBoard, 8);
+        bm.setMax(5);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
                 1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | // up
@@ -72,10 +65,8 @@ public class NoPieceLoicBoardMovesTest {
         openingBoard.removePieceFromBoard(56);
         openingBoard.removePieceFromBoard(0); // check for wrap around and going backwards
 
-        BoardMoves bm = new BoardMoves.Builder(openingBoard, 8)
-                .max(10)
-                .moveAndCaptureDirections(ALL_DIRECTIONS)
-                .build();
+        NoPieceLogicBoardMoves bm = new NoPieceLogicBoardMoves(openingBoard, 8);
+        bm.setMax(10);  // test an invalid max
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(
                 1L << 16 | 1L << 24 | 1L << 32 | 1L << 40 | 1L << 48 | 1L << 56 |
@@ -83,14 +74,6 @@ public class NoPieceLoicBoardMovesTest {
                         1L << 0 // down
         );
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 53);
-    }
-
-    public void movingUpZero() {
-        // invalid?
-    }
-
-    public void movingUpNegativePositions() {
-        // invalid?
     }
 
     // -------------------- maxStepsToBoundary --------------------

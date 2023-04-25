@@ -12,7 +12,7 @@ public class QueenMovesTest {
         @Test
         public void attemptsToMoveWhenTrapped() {
                 Board openingBoard = new Board(); // default board
-                BoardMoves bm = BoardMoves.from(openingBoard, 3);
+                BoardMoves bm = new QueenMoves(openingBoard, 3);
 
                 assertThat(bm.getNonCaptureMoves()).isZero();
                 assertThat(bm.getCaptureMoves()).isZero();
@@ -22,7 +22,7 @@ public class QueenMovesTest {
         public void moveToEdgeOfBoard() {
                 // Move white queen to 26 (c4)
                 Board openingBoard = new Board("RNB1KBNR/PPPPPPPP/8/2Q5/8/8/pppppppp/rnbqkbnr");
-                BoardMoves bm = BoardMoves.from(openingBoard, 26);
+                BoardMoves bm = new QueenMoves(openingBoard, 26);
 
                 assertThat(bm.getNonCaptureMoves())
                                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT
@@ -45,7 +45,7 @@ public class QueenMovesTest {
                 // d8 (59)
                 Board openingBoard = new Board("RN2KBNR/PPPPPPPP/8/2Q5/8/8/pppppppp/rnb1kbnr");
 
-                BoardMoves bm = BoardMoves.from(openingBoard, 26);
+                BoardMoves bm = new QueenMoves(openingBoard, 26);
 
                 assertThat(bm.getNonCaptureMoves())
                                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT

@@ -1,20 +1,18 @@
 package com.stateofflux.chess.model;
 
-public class BishopMoves {
-    public static BoardMoves from(Board board, int location) {
-        return new BoardMoves.Builder(board, location)
-                .moveAndCaptureDirections(new Direction[] {
-                        Direction.UP_LEFT,
-                        Direction.UP_RIGHT,
-                        Direction.DOWN_LEFT,
-                        Direction.DOWN_RIGHT
-                })
-                .max(7)
-                .build();
+public class BishopMoves extends StraightLineMoves {
+
+    protected BishopMoves(Board board, int location) {
+        super(board, location);
     }
 
-    // hide the public constructor
-    private BishopMoves() {
-        super();
+    protected void setupPaths() {
+        this.directions = new Direction[] {
+            Direction.UP_LEFT,
+            Direction.UP_RIGHT,
+            Direction.DOWN_LEFT,
+            Direction.DOWN_RIGHT
+        };
+        this.max = 7;
     }
 }
