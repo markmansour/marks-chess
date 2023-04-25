@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueenMovesTest {
-        private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
+public class QueenMovesTest    {
+        private static final    Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
 
         @Test
         public void attemptsToMoveWhenTrapped() {

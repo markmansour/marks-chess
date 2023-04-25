@@ -29,6 +29,7 @@ public abstract class BoardMoves {
     }
 
     abstract void setupPaths();
+
     abstract void findCaptureAndNonCaptureMoves();
 
     protected long getOpponentBoard() {
@@ -41,9 +42,9 @@ public abstract class BoardMoves {
 
     protected long getCurrentPlayerBoard() {
         return switch (this.piece.getColor()) {
-            case WHITE -> this.board.getWhiteBoard();
-            case BLACK -> this.board.getBlackBoard();
-            default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
+        case WHITE -> this.board.getWhiteBoard();
+        case BLACK -> this.board.getBlackBoard();
+        default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
         };
     }
 
@@ -70,31 +71,26 @@ public abstract class BoardMoves {
     // ---------------------------- static utilities ----------------------------
     public static int maxStepsToBoundary(int location, Direction direction) {
         return switch (direction) {
-            case RIGHT, LEFT, DOWN, UP ->
-                maxStepsToBoundaryHoriztonalOrVertical(location, direction);
-            case UP_LEFT ->
-                Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.UP),
-                        maxStepsToBoundaryHoriztonalOrVertical(location, Direction.LEFT));
-            case UP_RIGHT ->
-                Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.UP),
-                        maxStepsToBoundaryHoriztonalOrVertical(location, Direction.RIGHT));
-            case DOWN_LEFT ->
-                Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.DOWN),
-                        maxStepsToBoundaryHoriztonalOrVertical(location, Direction.LEFT));
-            case DOWN_RIGHT ->
-                Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.DOWN),
-                        maxStepsToBoundaryHoriztonalOrVertical(location, Direction.RIGHT));
-            default -> throw new IllegalArgumentException("Unexpected value: " + direction);
+        case RIGHT, LEFT, DOWN, UP -> maxStepsToBoundaryHoriztonalOrVertical(location, direction);
+        case UP_LEFT -> Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.UP),
+                maxStepsToBoundaryHoriztonalOrVertical(location, Direction.LEFT));
+        case UP_RIGHT -> Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.UP),
+                maxStepsToBoundaryHoriztonalOrVertical(location, Direction.RIGHT));
+        case DOWN_LEFT -> Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.DOWN),
+                maxStepsToBoundaryHoriztonalOrVertical(location, Direction.LEFT));
+        case DOWN_RIGHT -> Math.min(maxStepsToBoundaryHoriztonalOrVertical(location, Direction.DOWN),
+                maxStepsToBoundaryHoriztonalOrVertical(location, Direction.RIGHT));
+        default -> throw new IllegalArgumentException("Unexpected value: " + direction);
         };
     }
 
     public static int maxStepsToBoundaryHoriztonalOrVertical(int location, Direction direction) {
         return switch (direction) {
-            case RIGHT -> 7 - (location % 8);
-            case LEFT -> location % 8;
-            case DOWN -> location / 8;
-            case UP -> 7 - (location / 8);
-            default -> throw new IllegalArgumentException("Unexpected value: " + direction);
+        case RIGHT -> 7 - (location % 8);
+        case LEFT -> location % 8;
+        case DOWN -> location / 8;
+        case UP -> 7 - (location / 8);
+        default -> throw new IllegalArgumentException("Unexpected value: " + direction);
         };
         // check to see we're not going off the board.
     }
