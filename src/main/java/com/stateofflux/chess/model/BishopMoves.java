@@ -8,10 +8,10 @@ public class BishopMoves extends StraightLineMoves {
 
     protected void setupPaths() {
         this.directions = new Direction[] {
-            Direction.UP_LEFT,
-            Direction.UP_RIGHT,
-            Direction.DOWN_LEFT,
-            Direction.DOWN_RIGHT
+                Direction.UP_LEFT,
+                Direction.UP_RIGHT,
+                Direction.DOWN_LEFT,
+                Direction.DOWN_RIGHT
         };
         this.max = 7;
     }

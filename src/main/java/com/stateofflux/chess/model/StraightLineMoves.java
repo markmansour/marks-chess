@@ -41,7 +41,7 @@ public abstract class StraightLineMoves extends BoardMoves {
                 if ((currentPlayerBoard & nextPositionBit) != 0)
                     break; // stop looking in the current direction
 
-                if(!this.checkForCaptures())
+                if (!this.checkForCaptures())
                     continue;
 
                 // if the next position is occupied, add it to the bitmap and stop

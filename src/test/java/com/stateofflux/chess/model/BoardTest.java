@@ -27,7 +27,7 @@ public class BoardTest {
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void IllegalFenBoardNotEnoughPiecesInRow() {
-    new Board("RNBQKBNR/PPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");  // only 7P on rank 2
+    new Board("RNBQKBNR/PPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"); // only 7P on rank 2
   }
 
   @Test

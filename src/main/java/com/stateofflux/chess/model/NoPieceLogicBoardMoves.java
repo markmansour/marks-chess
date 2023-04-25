@@ -27,6 +27,7 @@ public class NoPieceLogicBoardMoves extends StraightLineMoves {
         this.captureMoves = 0L;
         this.nonCaptureMoves = 0L;
     }
+
     public void setMax(int max) {
         this.max = max;
         resetMoves();
