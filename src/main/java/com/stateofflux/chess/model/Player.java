@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stateofflux.chess.model.pieces.Piece;
+
 public class Player {
     protected Board board;
     protected PlayerColor color;

@@ -1,8 +1,11 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Direction;
 
 public class QueenMoves extends StraightLineMoves {
 
-    protected QueenMoves(Board board, int location) {
+    public QueenMoves(Board board, int location) {
         super(board, location);
     }
 

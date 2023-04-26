@@ -1,4 +1,6 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.PlayerColor;
 
 public enum Piece {
     WHITE_KING   (0,  PlayerColor.WHITE, 'K'),

@@ -1,4 +1,9 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Direction;
+import com.stateofflux.chess.model.pieces.Piece;
+import com.stateofflux.chess.model.PlayerColor;
 
 public abstract class BoardMoves {
     protected final Board board;

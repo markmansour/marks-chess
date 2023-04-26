@@ -1,8 +1,11 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Direction;
 
 public class BishopMoves extends StraightLineMoves {
 
-    protected BishopMoves(Board board, int location) {
+    public BishopMoves(Board board, int location) {
         super(board, location);
     }
 

@@ -1,9 +1,12 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Direction;
 
 public class PawnMoves extends StraightLineMoves {
     protected Direction[] captureDirections;
 
-    protected PawnMoves(Board board, int location) {
+    public PawnMoves(Board board, int location) {
         super(board, location);
     }
 

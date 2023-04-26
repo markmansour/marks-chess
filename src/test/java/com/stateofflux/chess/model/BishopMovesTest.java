@@ -1,6 +1,10 @@
 package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
+
+import com.stateofflux.chess.model.pieces.BishopMoves;
+import com.stateofflux.chess.model.pieces.BoardMoves;
+
 import static org.assertj.core.api.Assertions.*;
 
 import org.slf4j.Logger;

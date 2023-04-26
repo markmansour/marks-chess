@@ -1,4 +1,7 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
+
+import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Direction;
 
 public class KnightMoves extends StraightLineMoves {
     protected KnightMoves(Board board, int location) {

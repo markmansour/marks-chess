@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.stateofflux.chess.model.pieces.Piece;
+
 /*
  * Class uses Forsyth–Edwards Notation
  *
@@ -133,7 +135,7 @@ public class Board {
     /*
      * return the characture representing a piece
      */
-    protected Piece getPieceAtLocation(int location) {
+    public Piece getPieceAtLocation(int location) {
         long bitLocation = 1L << location;
 
         for (int i = 0; i < this.boards.length; i++) {

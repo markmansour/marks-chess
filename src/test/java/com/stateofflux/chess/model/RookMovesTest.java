@@ -1,6 +1,10 @@
 package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
+
+import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.RookMoves;
+
 import static org.assertj.core.api.Assertions.*;
 
 public class RookMovesTest {
