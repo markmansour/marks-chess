@@ -1,27 +1,48 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
-import com.stateofflux.chess.model.Direction;
 
 public class KnightMoves extends BoardMoves {
-    protected KnightMoves(Board board, int location) {
+    int[] paths;
+
+    public KnightMoves(Board board, int location) {
         super(board, location);
-        // this is wrong
-        setupPaths();
     }
 
     protected void setupPaths() {
-        this.directions = new Direction[] {
-                Direction.UP_LEFT,
-                Direction.UP_RIGHT,
-                Direction.DOWN_LEFT,
-                Direction.DOWN_RIGHT
-        };
+        // no-op
     }
 
     @Override
     void findCaptureAndNonCaptureMoves() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findCaptureAndNonCaptureMoves'");
+        int rank = this.location / 8 + 1;  // one offset
+        int file = this.location % 8;      // zero offset
+
+        if (rank <= 7 && file >= 2) { checkKnightMove(6); } // 10 oclock
+        if (rank <= 6 && file >= 1) { checkKnightMove(15); } // 11 oclock
+
+        if (rank <= 6 && file <= 6) { checkKnightMove(17); } // 1 oclock
+        if (rank <= 7 && file <= 5) { checkKnightMove(10); } // 2 oclock
+
+        if (rank >= 2 && file <= 5) { checkKnightMove(-6); } // 4 oclock
+        if (rank >= 3 && file <= 6) { checkKnightMove(-15); } // 5 oclock
+
+        if (rank >= 3 && file >= 1) { checkKnightMove(-17); } // 7 oclock
+        if (rank >= 2 && file >= 2) { checkKnightMove(-10); } // 8 oclock
+    }
+
+    private void checkKnightMove(int offset) {
+        int nextPosition;
+        long nextPositionBit;
+
+        nextPosition = this.location + offset;
+        nextPositionBit = 1L << nextPosition;
+
+        if ((this.occupiedBoard & nextPositionBit) == 0)
+            this.nonCaptureMoves |= nextPositionBit;
+
+        if ((this.opponentBoard & nextPositionBit) != 0) {
+            this.captureMoves |= nextPositionBit;
+        }
     }
 }
