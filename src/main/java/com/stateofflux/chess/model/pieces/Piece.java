@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model.pieces;
 
+import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.PlayerColor;
 
 public enum Piece {
@@ -49,6 +50,31 @@ public enum Piece {
     @Override
     public String toString() {
         return String.valueOf(pieceChar);
+    }
+
+    public BoardMoves generateMoves(Board b, int location) {
+        switch(this) {
+            case WHITE_KING:
+            case BLACK_KING:
+                return new KingMoves(b, location);
+            case WHITE_QUEEN:
+            case BLACK_QUEEN:
+                return new QueenMoves(b, location);
+            case WHITE_ROOK:
+            case BLACK_ROOK:
+                return new RookMoves(b, location);
+            case WHITE_BISHOP:
+            case BLACK_BISHOP:
+                return new BishopMoves(b, location);
+            case WHITE_KNIGHT:
+            case BLACK_KNIGHT:
+                return new KnightMoves(b, location);
+            case WHITE_PAWN:
+            case BLACK_PAWN:
+                return new PawnMoves(b, location);
+            default:
+                throw new IllegalArgumentException("Unexpected value: " + this);
+        }
     }
 
     public boolean isEmpty() {

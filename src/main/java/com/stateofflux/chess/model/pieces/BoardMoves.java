@@ -73,6 +73,15 @@ public abstract class BoardMoves {
         return this.nonCaptureMoves;
     }
 
+    public int getMovesCount() {
+        return Long.bitCount(this.nonCaptureMoves) + Long.bitCount(this.captureMoves);
+    }
+
+    public int[] getMoves() {
+        return new int[] {};
+    }
+
+
     // ---------------------------- static utilities ----------------------------
     public static int maxStepsToBoundary(int location, Direction direction) {
         return switch (direction) {

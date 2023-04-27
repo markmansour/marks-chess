@@ -7,7 +7,6 @@ public class KingMoves extends StraightLineMoves {
 
     public KingMoves(Board board, int location) {
         super(board, location);
-        setupPaths();
     }
 
     protected void setupPaths() {

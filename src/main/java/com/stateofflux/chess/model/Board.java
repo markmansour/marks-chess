@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.stateofflux.chess.model.pieces.BoardMoves;
 import com.stateofflux.chess.model.pieces.Piece;
 
 /*
@@ -222,6 +223,28 @@ public class Board {
                 this.boards[Piece.WHITE_ROOK.getIndex()] |
                 this.boards[Piece.WHITE_QUEEN.getIndex()] |
                 this.boards[Piece.WHITE_KING.getIndex()];
+    }
+
+    // iterate over all pieces on the board
+        // for each piece, generate the moves for that piece
+        // store the moves in a list
+        // return number of moves
+    public int generateMoves() {
+        int moveCount = 0;
+
+        for (int i = 0; i < 64; i++) {
+            Piece piece = this.getPieceAtLocation(i);
+
+            if (piece == Piece.EMPTY)
+                continue;
+
+            BoardMoves bm = piece.generateMoves(this, i);
+            LOGGER.info("Generated {} moves for {} at {}", bm.getMovesCount(), piece, i);
+
+            moveCount += bm.getMovesCount();
+        }
+
+        return moveCount;
     }
 
     // --------------------------- Visualization ---------------------------
