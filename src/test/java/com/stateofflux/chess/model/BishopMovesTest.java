@@ -3,7 +3,7 @@ package com.stateofflux.chess.model;
 import org.testng.annotations.Test;
 
 import com.stateofflux.chess.model.pieces.BishopMoves;
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -28,7 +28,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
     public void attemptsToMoveWhenTrapped() {
         Board openingBoard = new Board(); // default board
 
-        BoardMoves bm = new BishopMoves(openingBoard, 2);
+        PieceMoves bm = new BishopMoves(openingBoard, 2);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -39,7 +39,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
         Board openingBoard = new Board(); // default board
         openingBoard.move("b2", "b3"); // move pawn out of the way
 
-        BoardMoves bm = new BishopMoves(openingBoard, 2);
+        PieceMoves bm = new BishopMoves(openingBoard, 2);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 9 | 1L << 16);
         assertThat(bm.getCaptureMoves()).isZero();
@@ -49,7 +49,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
     public void moveToEdgeOfBoard() {
         Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR");
 
-        BoardMoves bm = new BishopMoves(openingBoard, 26);
+        PieceMoves bm = new BishopMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT

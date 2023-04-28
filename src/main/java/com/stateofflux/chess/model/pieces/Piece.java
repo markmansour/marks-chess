@@ -52,7 +52,7 @@ public enum Piece {
         return String.valueOf(pieceChar);
     }
 
-    public BoardMoves generateMoves(Board b, int location) {
+    public PieceMoves generateMoves(Board b, int location) {
         switch(this) {
             case WHITE_KING:
             case BLACK_KING:

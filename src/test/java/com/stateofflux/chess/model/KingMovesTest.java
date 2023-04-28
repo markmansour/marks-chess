@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import com.stateofflux.chess.model.pieces.KingMoves;
 
 import static org.assertj.core.api.Assertions.*;
@@ -13,7 +13,7 @@ public class KingMovesTest {
         Board openingBoard = new Board();
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new KingMoves(openingBoard, 4);
+        PieceMoves bm = new KingMoves(openingBoard, 4);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -29,7 +29,7 @@ public class KingMovesTest {
         openingBoard.removePieceFromBoard(5);
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        BoardMoves bm = new KingMoves(openingBoard, 4);
+        PieceMoves bm = new KingMoves(openingBoard, 4);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1 << 3L | 1L << 11 | 1L << 12 | 1L << 13 | 1L << 5);
         assertThat(bm.getCaptureMoves()).isZero();

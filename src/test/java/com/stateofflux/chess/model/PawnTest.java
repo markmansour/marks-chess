@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import com.stateofflux.chess.model.pieces.PawnMoves;
 
 import static org.assertj.core.api.Assertions.*;
@@ -16,7 +16,7 @@ public class PawnTest {
     @Test
     public void openingMovesForWhite() {
         Board openingBoard = new Board(); // default board
-        BoardMoves bm = new PawnMoves(openingBoard, 11);
+        PieceMoves bm = new PawnMoves(openingBoard, 11);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 19 | 1L << 27);
         assertThat(bm.getCaptureMoves()).isZero();
@@ -25,7 +25,7 @@ public class PawnTest {
     @Test
     public void openingMovesForBlack() {
         Board openingBoard = new Board(); // default board
-        BoardMoves bm = new PawnMoves(openingBoard, 52);
+        PieceMoves bm = new PawnMoves(openingBoard, 52);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 44 | 1L << 36);
         assertThat(bm.getCaptureMoves()).isZero();
@@ -37,7 +37,7 @@ public class PawnTest {
         openingBoard.move(52, 36); // move black pawn from E7 to E5
         openingBoard.move(11, 27); // move white pawn from D2 to D4
 
-        BoardMoves bm = new PawnMoves(openingBoard, 27);// white pawn at D4
+        PieceMoves bm = new PawnMoves(openingBoard, 27);// white pawn at D4
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 35); // move forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 36); // take the black pawn at D5
@@ -55,7 +55,7 @@ public class PawnTest {
         openingBoard.move(50, 34); // move black pawn from C7 to C5
         openingBoard.move(11, 27); // move white pawn from D2 to D4
 
-        BoardMoves bm = new PawnMoves(openingBoard, 27); // white pawn at D4
+        PieceMoves bm = new PawnMoves(openingBoard, 27); // white pawn at D4
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 35); // move forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 36 | 1L << 34); // take the black pawn at C5 or E5
@@ -66,7 +66,7 @@ public class PawnTest {
         Board b = new Board("rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR");
 
         // black pawn at A5 (32)
-        BoardMoves bm = new PawnMoves(b, 32);
+        PieceMoves bm = new PawnMoves(b, 32);
 
         assertThat(bm.getNonCaptureMoves()).isZero(); // no moves forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 25);
@@ -95,7 +95,7 @@ public class PawnTest {
         Board b = new Board("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR");
 
         // black pawn at A3 (16)
-        BoardMoves bm = new PawnMoves(b, 16);
+        PieceMoves bm = new PawnMoves(b, 16);
 
         assertThat(bm.getNonCaptureMoves()).isZero(); // no moves forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 9);

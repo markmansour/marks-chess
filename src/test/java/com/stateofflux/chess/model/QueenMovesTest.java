@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import com.stateofflux.chess.model.pieces.QueenMoves;
 
 import static org.assertj.core.api.Assertions.*;
@@ -16,7 +16,7 @@ public class QueenMovesTest {
     @Test
     public void attemptsToMoveWhenTrapped() {
         Board openingBoard = new Board(); // default board
-        BoardMoves bm = new QueenMoves(openingBoard, 3);
+        PieceMoves bm = new QueenMoves(openingBoard, 3);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -26,7 +26,7 @@ public class QueenMovesTest {
     public void moveToEdgeOfBoard() {
         // Move white queen to 26 (c4)
         Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR");
-        BoardMoves bm = new QueenMoves(openingBoard, 26);
+        PieceMoves bm = new QueenMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT
@@ -49,7 +49,7 @@ public class QueenMovesTest {
         // d8 (59)
         Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR");
 
-        BoardMoves bm = new QueenMoves(openingBoard, 26);
+        PieceMoves bm = new QueenMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 33 | 1L << 40 | // UP_LEFT

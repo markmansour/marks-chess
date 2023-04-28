@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import com.stateofflux.chess.model.pieces.NoPieceLogicBoardMoves;
 
 import static org.assertj.core.api.Assertions.*;
@@ -83,39 +83,39 @@ public class NoPieceLoicBoardMovesTest {
     // -------------------- maxStepsToBoundary --------------------
     @Test
     public void maxStepsToBoundary() {
-        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP)).isEqualTo(7);
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.UP)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.UP)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(0, Direction.UP)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.UP)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(56, Direction.UP)).isZero();
 
-        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.DOWN)).isZero();
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.DOWN)).isEqualTo(1);
-        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.DOWN)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(0, Direction.DOWN)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.DOWN)).isEqualTo(1);
+        assertThat(PieceMoves.maxStepsToBoundary(56, Direction.DOWN)).isEqualTo(7);
 
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.RIGHT)).isEqualTo(7);
-        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.RIGHT)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.RIGHT)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.RIGHT)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(9, Direction.RIGHT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(15, Direction.RIGHT)).isZero();
 
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.LEFT)).isZero();
-        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.LEFT)).isEqualTo(1);
-        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.LEFT)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.LEFT)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(9, Direction.LEFT)).isEqualTo(1);
+        assertThat(PieceMoves.maxStepsToBoundary(15, Direction.LEFT)).isEqualTo(7);
 
-        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP_RIGHT)).isEqualTo(7);
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.UP_RIGHT)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.UP_RIGHT)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(10, Direction.UP_RIGHT)).isEqualTo(5);
-        assertThat(BoardMoves.maxStepsToBoundary(56, Direction.UP_RIGHT)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(0, Direction.UP_RIGHT)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.UP_RIGHT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(9, Direction.UP_RIGHT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(10, Direction.UP_RIGHT)).isEqualTo(5);
+        assertThat(PieceMoves.maxStepsToBoundary(56, Direction.UP_RIGHT)).isZero();
 
-        assertThat(BoardMoves.maxStepsToBoundary(0, Direction.UP_LEFT)).isZero();
-        assertThat(BoardMoves.maxStepsToBoundary(15, Direction.UP_LEFT)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.UP_LEFT)).isEqualTo(1);
+        assertThat(PieceMoves.maxStepsToBoundary(0, Direction.UP_LEFT)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(15, Direction.UP_LEFT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(9, Direction.UP_LEFT)).isEqualTo(1);
 
-        assertThat(BoardMoves.maxStepsToBoundary(8, Direction.DOWN_RIGHT)).isEqualTo(1);
-        assertThat(BoardMoves.maxStepsToBoundary(9, Direction.DOWN_RIGHT)).isEqualTo(1);
-        assertThat(BoardMoves.maxStepsToBoundary(48, Direction.DOWN_RIGHT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(8, Direction.DOWN_RIGHT)).isEqualTo(1);
+        assertThat(PieceMoves.maxStepsToBoundary(9, Direction.DOWN_RIGHT)).isEqualTo(1);
+        assertThat(PieceMoves.maxStepsToBoundary(48, Direction.DOWN_RIGHT)).isEqualTo(6);
 
-        assertThat(BoardMoves.maxStepsToBoundary(63, Direction.DOWN_LEFT)).isEqualTo(7);
-        assertThat(BoardMoves.maxStepsToBoundary(62, Direction.DOWN_LEFT)).isEqualTo(6);
-        assertThat(BoardMoves.maxStepsToBoundary(24, Direction.DOWN_LEFT)).isZero();
+        assertThat(PieceMoves.maxStepsToBoundary(63, Direction.DOWN_LEFT)).isEqualTo(7);
+        assertThat(PieceMoves.maxStepsToBoundary(62, Direction.DOWN_LEFT)).isEqualTo(6);
+        assertThat(PieceMoves.maxStepsToBoundary(24, Direction.DOWN_LEFT)).isZero();
 
     }
 

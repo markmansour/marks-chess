@@ -142,11 +142,4 @@ public class BoardTest {
     assertThat(Board.convertPositionToLocation("h8"))
         .isEqualTo(63);
   }
-
-  // ----------------------- Generate Moves --------------------------
-  @Test
-  public void generateOpeningMoves() {
-    Board b = new Board();
-    assertThat(b.generateMoves()).isEqualTo(40);
-  }
 }

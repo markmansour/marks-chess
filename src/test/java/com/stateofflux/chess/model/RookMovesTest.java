@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.BoardMoves;
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import com.stateofflux.chess.model.pieces.RookMoves;
 
 import static org.assertj.core.api.Assertions.*;
@@ -11,7 +11,7 @@ public class RookMovesTest {
     @Test
     public void attemptsToMoveWhenTrapped() {
         Board openingBoard = new Board(); // default board
-        BoardMoves bm = new RookMoves(openingBoard, 0);
+        PieceMoves bm = new RookMoves(openingBoard, 0);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();
@@ -20,7 +20,7 @@ public class RookMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR");
-        BoardMoves bm = new RookMoves(openingBoard, 24);
+        PieceMoves bm = new RookMoves(openingBoard, 24);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(

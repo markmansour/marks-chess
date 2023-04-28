@@ -33,6 +33,13 @@ public class FenString {
         }
     }
 
+    public static String locationToAlgebraString(int location) {
+        int rank = location / 8;
+        int file = location % 8;
+
+        return String.format("%c%d", 'a' + file, 8 - rank);
+    }
+
     /*
      * <Piece Placement> ::=
      * <rank8>'/'<rank7>'/'<rank6>'/'<rank5>'/'<rank4>'/'<rank3>'/'<rank2>'/'<rank1>

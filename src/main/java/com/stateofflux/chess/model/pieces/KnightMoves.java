@@ -2,7 +2,7 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 
-public class KnightMoves extends BoardMoves {
+public class KnightMoves extends PieceMoves {
     int[] paths;
 
     public KnightMoves(Board board, int location) {

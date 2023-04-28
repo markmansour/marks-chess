@@ -2,10 +2,8 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
-import com.stateofflux.chess.model.pieces.Piece;
-import com.stateofflux.chess.model.PlayerColor;
 
-public abstract class BoardMoves {
+public abstract class PieceMoves {
     protected final Board board;
     protected int location;
     protected Piece piece;
@@ -19,7 +17,7 @@ public abstract class BoardMoves {
     // protected static BoardMoves from(Board b, int location) {
     // }
 
-    protected BoardMoves(Board board, int location) {
+    protected PieceMoves(Board board, int location) {
         this.board = board;
         this.location = location;
         this.piece = board.getPieceAtLocation(location);
@@ -61,10 +59,6 @@ public abstract class BoardMoves {
         return this.piece;
     }
 
-    public long getAllMoves() {
-        return 0;
-    }
-
     public long getCaptureMoves() {
         return this.captureMoves;
     }
@@ -76,11 +70,6 @@ public abstract class BoardMoves {
     public int getMovesCount() {
         return Long.bitCount(this.nonCaptureMoves) + Long.bitCount(this.captureMoves);
     }
-
-    public int[] getMoves() {
-        return new int[] {};
-    }
-
 
     // ---------------------------- static utilities ----------------------------
     public static int maxStepsToBoundary(int location, Direction direction) {

@@ -3,7 +3,7 @@ package com.stateofflux.chess.model.pieces;
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
 
-public abstract class StraightLineMoves extends BoardMoves {
+public abstract class StraightLineMoves extends PieceMoves {
 
     protected int max = 7; // max number of moves in any direction
     protected Direction[] directions;
@@ -29,7 +29,7 @@ public abstract class StraightLineMoves extends BoardMoves {
         // calculate the max moves
         for (Direction d : this.directions) {
             // check to see we're not going off the board.
-            boardMax = Math.min(BoardMoves.maxStepsToBoundary(this.location, d), this.max);
+            boardMax = Math.min(PieceMoves.maxStepsToBoundary(this.location, d), this.max);
 
             for (int i = 1; i <= boardMax; i++) {
                 // calculate the next position
