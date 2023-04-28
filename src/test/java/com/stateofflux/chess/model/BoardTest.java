@@ -12,7 +12,7 @@ public class BoardTest {
   @Test
   public void initialBoardAsFenString() {
     Board b = new Board();
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
@@ -20,7 +20,7 @@ public class BoardTest {
   @Test
   public void standardBoardWithFenString() {
     Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
@@ -33,7 +33,7 @@ public class BoardTest {
   @Test
   public void emptyBoard() {
     Board b = new Board("");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Blank board")
         .isEqualTo("8/8/8/8/8/8/8/8");
   }
@@ -41,7 +41,7 @@ public class BoardTest {
   @Test
   public void boardWithEmptyA1() {
     Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Empty A1")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
   }
@@ -49,7 +49,7 @@ public class BoardTest {
   @Test
   public void boardWithEmptyH8() {
     Board b = new Board("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Empty H8")
         .isEqualTo("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
@@ -57,7 +57,7 @@ public class BoardTest {
   @Test
   public void boardWithHalfRowEmptyStart() {
     Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Empty start of row")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
   }
@@ -65,7 +65,7 @@ public class BoardTest {
   @Test
   public void boardWithHalfRowEmptyEnd() {
     Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Empty end of row")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
   }
@@ -76,7 +76,7 @@ public class BoardTest {
     Board b = new Board();
     b.move("e2", "e4");
     b.move("e1", "e2");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Move King")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPPKPPP/RNBQ1BNR");
   }
@@ -86,7 +86,7 @@ public class BoardTest {
     Board b = new Board();
     b.move("d2", "d3"); // move pawn up
     b.move("d1", "a4"); // move queen NW 4 places
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/Q7/3P4/PPP1PPPP/RNB1KBNR");
   }
@@ -96,7 +96,7 @@ public class BoardTest {
     Board b = new Board();
     b.move("a2", "a4");
     b.move("a1", "a3");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/R7/1PPPPPPP/1NBQKBNR");
   }
@@ -106,7 +106,7 @@ public class BoardTest {
     Board b = new Board();
     b.move("b2", "b3"); // move pawn up
     b.move("c1", "a3");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/BP6/P1PPPPPP/RN1QKBNR");
     b.printBoard();
@@ -116,7 +116,7 @@ public class BoardTest {
   public void moveKnight() {
     Board b = new Board();
     b.move("b1", "a3");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR");
   }
@@ -125,7 +125,7 @@ public class BoardTest {
   public void movePawn() {
     Board b = new Board();
     b.move("a2", "a4");
-    assertThat(b.toFenString())
+    assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR");
   }

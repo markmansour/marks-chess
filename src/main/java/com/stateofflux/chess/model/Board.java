@@ -84,28 +84,7 @@ public class Board {
      * Build a board using a fen string
      */
     public Board(String fen) {
-        char[] fenCh = fen.toCharArray();
-        int rank = 7;
-        int location = 56;
-
-        for (char element : fenCh) {
-            if (element == '/') {
-                if (location % 8 != 0)
-                    throw new IllegalArgumentException("Invalid FEN: " + fen);
-
-                location = --rank * 8;
-
-                continue;
-            }
-
-            // break if the fenCH[i] is a digit
-            if (Character.isDigit(element)) {
-                location += Character.digit(element, 10);
-                continue;
-            }
-
-            location = setPieceOnBoard(element, location);
-        }
+        FenString.populateBoard(this, fen);
     }
 
     // --------------------------- Instance Methods ---------------------------
@@ -252,7 +231,7 @@ public class Board {
 
     // --------------------------- Visualization ---------------------------
     // implement a Forsyth-Edwards toString() method
-    public String toFenString() {
+    public String toFenPiecePlacementString() {
         StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
 
         int rank = 7;
@@ -282,38 +261,6 @@ public class Board {
                 rank--;
                 location = rank * 8;
             }
-        }
-
-        return f.toString();
-    }
-
-    public String toOldFenString() {
-        StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
-
-        int i = 0;
-        int n = 0;
-        int max = 0;
-        Piece currentPiece;
-
-        while (i < 64) {
-            currentPiece = getPieceAtLocation(i);
-
-            // if the next space is empty, look to the end of the line to see how many
-            // emptpy chars exists and concat the number of empty spaces as an int.
-            // otherwise, add the next piece to the string.
-            if (currentPiece == Piece.EMPTY) {
-                max = 8 - (i % 8);
-                n = this.nextPiece(i, max);
-                f.append(n - i); // use a number to show how many spaces are left
-            } else {
-                f.append(currentPiece);
-                n = i + 1;
-            }
-
-            i = n;
-
-            if (i % 8 == 0 && i != 64)
-                f.append('/');
         }
 
         return f.toString();

@@ -1,9 +1,16 @@
 package com.stateofflux.chess.model.pieces;
 
+import java.util.List;
+
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
 
 public class PawnMoves extends StraightLineMoves {
+    public static final List<String> VALID_EN_PASSANT_POSITIONS = List.of(
+            "-",
+            "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+            "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6");
+
     protected Direction[] captureDirections;
 
     public PawnMoves(Board board, int location) {
