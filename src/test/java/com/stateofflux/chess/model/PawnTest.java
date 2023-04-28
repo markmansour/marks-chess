@@ -63,7 +63,7 @@ public class PawnTest {
 
     @Test
     public void doesNotWrapAroundDuringCapture() {
-        Board b = new Board("RNBQKBNR/2PPPP2/8/PP4PP/p6p/8/1pppppp1/rnbqkbnr");
+        Board b = new Board("rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR");
 
         // black pawn at A5 (32)
         BoardMoves bm = new PawnMoves(b, 32);
@@ -92,7 +92,7 @@ public class PawnTest {
 
     @Test
     public void captureFromOriginalPosition() {
-        Board b = new Board("RNBQKBNR/PPPPPPPP/p7/8/8/8/1ppppppp/rnbqkbnr");
+        Board b = new Board("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR");
 
         // black pawn at A3 (16)
         BoardMoves bm = new PawnMoves(b, 16);

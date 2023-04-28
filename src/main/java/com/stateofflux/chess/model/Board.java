@@ -85,12 +85,15 @@ public class Board {
      */
     public Board(String fen) {
         char[] fenCh = fen.toCharArray();
-        int location = 0;
+        int rank = 7;
+        int location = 56;
 
         for (char element : fenCh) {
             if (element == '/') {
                 if (location % 8 != 0)
                     throw new IllegalArgumentException("Invalid FEN: " + fen);
+
+                location = --rank * 8;
 
                 continue;
             }
@@ -226,9 +229,9 @@ public class Board {
     }
 
     // iterate over all pieces on the board
-        // for each piece, generate the moves for that piece
-        // store the moves in a list
-        // return number of moves
+    // for each piece, generate the moves for that piece
+    // store the moves in a list
+    // return number of moves
     public int generateMoves() {
         int moveCount = 0;
 
@@ -250,6 +253,41 @@ public class Board {
     // --------------------------- Visualization ---------------------------
     // implement a Forsyth-Edwards toString() method
     public String toFenString() {
+        StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
+
+        int rank = 7;
+        int location = 56;
+        int max = 0;
+        int n = 0;
+        Piece p;
+
+        while (rank >= 0) {
+            p = getPieceAtLocation(location);
+
+            if (p == Piece.EMPTY) {
+                max = 8 - (location % 8);
+                n = this.nextPiece(location, max);
+                f.append(n - location); // use a number to show how many spaces are left
+            } else {
+                f.append(p);
+                n = location + 1;
+            }
+
+            location = n;
+
+            if (location % 8 == 0) {
+                if (rank > 0) {
+                    f.append('/');
+                }
+                rank--;
+                location = rank * 8;
+            }
+        }
+
+        return f.toString();
+    }
+
+    public String toOldFenString() {
         StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
 
         int i = 0;

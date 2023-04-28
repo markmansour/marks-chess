@@ -25,7 +25,7 @@ public class QueenMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         // Move white queen to 26 (c4)
-        Board openingBoard = new Board("RNB1KBNR/PPPPPPPP/8/2Q5/8/8/pppppppp/rnbqkbnr");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR");
         BoardMoves bm = new QueenMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
@@ -47,7 +47,7 @@ public class QueenMovesTest {
     public void doesNotMoveThroughPieces() {
         // Empty slots are a3 (2), a4 (3)
         // d8 (59)
-        Board openingBoard = new Board("RN2KBNR/PPPPPPPP/8/2Q5/8/8/pppppppp/rnb1kbnr");
+        Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR");
 
         BoardMoves bm = new QueenMoves(openingBoard, 26);
 

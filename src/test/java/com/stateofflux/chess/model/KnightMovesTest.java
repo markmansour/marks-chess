@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 public class KnightMovesTest {
     @Test
     public void testAllPotentialMovesAreFound() {
-        Board openingBoard = new Board("8/8/8/3N4/8/8/8/8"); // D4 - Position 27
+        Board openingBoard = new Board("8/8/8/8/3N4/8/8/8"); // D4 - Position 27
         BoardMoves bm = new KnightMoves(openingBoard, 27);
 
         assertThat(bm.getNonCaptureMoves())
@@ -23,7 +23,7 @@ public class KnightMovesTest {
 
     @Test
     void testAllCaptureAndNonCaptureMovesAreFound() {
-        Board openingBoard = new Board("R1BQKBNR/PPPPPPPP/8/8/3N4/8/pppppppp/rnbqkbnr"); // white knight at D5 (35)
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/3N4/8/8/PPPPPPPP/R1BQKBNR"); // white knight at D5 (35)
         BoardMoves bm = new KnightMoves(openingBoard, 35);
 
         // 35: 7, 15, 17, 10, -6, -15, -18, -10
@@ -37,7 +37,7 @@ public class KnightMovesTest {
 
     @Test
     public void testThatMovesOffTheTopAndLeftOfBoardAreNotReturned() {
-        Board openingBoard = new Board("8/8/8/8/8/8/8/N7"); // 56 - A8
+        Board openingBoard = new Board("N7/8/8/8/8/8/8/8"); // 56 - A8
         BoardMoves bm = new KnightMoves(openingBoard, 56);
 
         assertThat(bm.getNonCaptureMoves())
@@ -48,7 +48,7 @@ public class KnightMovesTest {
 
     @Test
     public void testThatMovesOffTheBottomAndRightOfBoardAreNotReturned() {
-        Board openingBoard = new Board("7N/8/8/8/8/8/8/8"); // 7 - H1
+        Board openingBoard = new Board("8/8/8/8/8/8/8/7N"); // 7 - H1
         BoardMoves bm = new KnightMoves(openingBoard, 7);
 
         assertThat(bm.getNonCaptureMoves())
@@ -59,7 +59,7 @@ public class KnightMovesTest {
 
     @Test
     public void testThatMovesOffTheTopAndRightOfBoardAreNotReturned() {
-        Board openingBoard = new Board("8/8/8/8/8/8/8/7N"); // 63 - H8
+        Board openingBoard = new Board("7N/8/8/8/8/8/8/8"); // 63 - H8
         BoardMoves bm = new KnightMoves(openingBoard, 63);
 
         assertThat(bm.getNonCaptureMoves())
@@ -70,7 +70,7 @@ public class KnightMovesTest {
 
     @Test
     public void testThatMovesOffTheBottomAndLeftOfBoardAreNotReturned() {
-        Board openingBoard = new Board("N7/8/8/8/8/8/8/8"); // 0 - A1
+        Board openingBoard = new Board("8/8/8/8/8/8/8/N7"); // 0 - A1
         BoardMoves bm = new KnightMoves(openingBoard, 0);
 
         assertThat(bm.getNonCaptureMoves())

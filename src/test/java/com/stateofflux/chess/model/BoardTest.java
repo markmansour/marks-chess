@@ -14,20 +14,20 @@ public class BoardTest {
     Board b = new Board();
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
 
   @Test
   public void standardBoardWithFenString() {
-    Board b = new Board("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void IllegalFenBoardNotEnoughPiecesInRow() {
-    new Board("RNBQKBNR/PPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"); // only 7P on rank 2
+    new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR"); // only 7P on rank 2
   }
 
   @Test
@@ -40,34 +40,34 @@ public class BoardTest {
 
   @Test
   public void boardWithEmptyA1() {
-    Board b = new Board("1NBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
     assertThat(b.toFenString())
         .as("Empty A1")
-        .isEqualTo("1NBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
   }
 
   @Test
   public void boardWithEmptyH8() {
-    Board b = new Board("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbn1");
+    Board b = new Board("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     assertThat(b.toFenString())
         .as("Empty H8")
-        .isEqualTo("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbn1");
+        .isEqualTo("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
 
   @Test
   public void boardWithHalfRowEmptyStart() {
-    Board b = new Board("RNBQKBNR/4PPPP/8/8/8/8/pppppppp/rnbqkbnr");
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
     assertThat(b.toFenString())
         .as("Empty start of row")
-        .isEqualTo("RNBQKBNR/4PPPP/8/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
   }
 
   @Test
   public void boardWithHalfRowEmptyEnd() {
-    Board b = new Board("RNBQKBNR/PPPP4/8/8/8/8/pppppppp/rnbqkbnr");
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
     assertThat(b.toFenString())
         .as("Empty end of row")
-        .isEqualTo("RNBQKBNR/PPPP4/8/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
   }
 
   // ---------------------- Moving -------------------------------------
@@ -78,7 +78,7 @@ public class BoardTest {
     b.move("e1", "e2");
     assertThat(b.toFenString())
         .as("Move King")
-        .isEqualTo("RNBQ1BNR/PPPPKPPP/8/4P3/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPPKPPP/RNBQ1BNR");
   }
 
   @Test
@@ -88,7 +88,7 @@ public class BoardTest {
     b.move("d1", "a4"); // move queen NW 4 places
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("RNB1KBNR/PPP1PPPP/3P4/Q7/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/Q7/3P4/PPP1PPPP/RNB1KBNR");
   }
 
   @Test
@@ -98,7 +98,7 @@ public class BoardTest {
     b.move("a1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("1NBQKBNR/1PPPPPPP/R7/P7/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/R7/1PPPPPPP/1NBQKBNR");
   }
 
   @Test
@@ -108,7 +108,7 @@ public class BoardTest {
     b.move("c1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("RN1QKBNR/P1PPPPPP/BP6/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/BP6/P1PPPPPP/RN1QKBNR");
     b.printBoard();
   }
 
@@ -118,7 +118,7 @@ public class BoardTest {
     b.move("b1", "a3");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("R1BQKBNR/PPPPPPPP/N7/8/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR");
   }
 
   @Test
@@ -127,7 +127,7 @@ public class BoardTest {
     b.move("a2", "a4");
     assertThat(b.toFenString())
         .as("Initial board setup")
-        .isEqualTo("RNBQKBNR/1PPPPPPP/8/P7/8/8/pppppppp/rnbqkbnr");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR");
   }
 
   // ---------------------- Utility functions --------------------------

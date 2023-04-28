@@ -19,7 +19,7 @@ public class RookMovesTest {
 
     @Test
     public void moveToEdgeOfBoard() {
-        Board openingBoard = new Board("1NBQKBNR/1PPPPPPP/8/R7/8/8/pppppppp/rnbqkbnr");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR");
         BoardMoves bm = new RookMoves(openingBoard, 24);
 
         assertThat(bm.getNonCaptureMoves())

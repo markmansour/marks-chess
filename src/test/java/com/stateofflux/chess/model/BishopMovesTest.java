@@ -47,7 +47,7 @@ public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
 
     @Test
     public void moveToEdgeOfBoard() {
-        Board openingBoard = new Board("RN1QKBNR/PPPPPPPP/8/2B5/8/8/pppppppp/rnbqkbnr");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR");
 
         BoardMoves bm = new BishopMoves(openingBoard, 26);
 
