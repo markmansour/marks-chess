@@ -41,8 +41,7 @@ public class Board {
      * 4 | 24 25 26 27 28 29 30 31
      * 3 | 16 17 18 19 20 21 22 23
      * 2 | 8 9 10 11 12 13 14 15
-     * 1 | (LSB, 0 1 2 3 4 5 6 7
-     * right)
+     * 1 | (LSB, 0 1 2 3 4 5 6 7 right)
      * -------------------------------------------
      * FILES: a b c d e f g h
      *
@@ -155,8 +154,8 @@ public class Board {
      * Move a piece on the board, but do not perform validation.
      */
     public boolean move(String from, String to) {
-        int fromIndex = Board.convertPositionToLocation(from);
-        int toIndex = Board.convertPositionToLocation(to);
+        int fromIndex = FenString.squareToLocation(from);
+        int toIndex = FenString.squareToLocation(to);
         return move(fromIndex, toIndex);
     }
 
@@ -167,6 +166,7 @@ public class Board {
 
         int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
 
+        this.clearLocation(toIndex);  // take the destination piece off the board if it exists
         this.boards[boardIndex] ^= (1L << fromIndex); // clear
         this.boards[boardIndex] |= (1L << toIndex); // set
 
@@ -261,13 +261,6 @@ public class Board {
     }
 
     // --------------------------- Static Methods ---------------------------
-    public static int convertPositionToLocation(String position) {
-        int rank = Integer.parseInt(position.substring(1, 2));
-        int file = position.charAt(0) - 'a';
-
-        return (rank - 1) * 8 + file;
-    }
-
     // useful for debugging.
     public static void printBoard(long board) {
         StringBuilder rankString;
@@ -312,5 +305,47 @@ public class Board {
         }
 
         LOGGER.info("   abcdefgh");
+    }
+
+    public int[] getPawnLocations(PlayerColor pc) {
+        Piece p;
+        if (pc == PlayerColor.WHITE)
+            p = Piece.WHITE_PAWN;
+        else if (pc == PlayerColor.BLACK)
+            p = Piece.BLACK_PAWN;
+        else
+            throw new IllegalArgumentException("Not a valid PlayerColor");
+
+        return Board.bitboardToArray(this.boards[p.getIndex()]);
+    }
+
+    protected void clearLocation(int location) {
+        for(int i = 0; i < this.boards.length; i++) {
+            // clear the bit at the location on all boards
+            this.boards[i] &= ~(1L << location);
+        }
+    }
+
+    public static int countSetBits(long n) {
+        // base case
+        if (n == 0)
+            return 0;
+        else
+            return 1 + countSetBits(n & (n - 1L));
+    }
+
+    public static int[] bitboardToArray(long l) {
+        int bitsSet = countSetBits(l);
+        int[] result = new int[bitsSet];
+        int counter = 0;
+
+        // todo - short circuit the loop if the
+        for (int i = 0; i < 64 && counter < bitsSet; i++) {
+            if ((l & (1L << i)) != 0) {
+                result[counter++] = i;
+            }
+        }
+
+        return result;
     }
 }

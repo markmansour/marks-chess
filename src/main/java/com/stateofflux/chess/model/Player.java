@@ -1,8 +1,6 @@
 package com.stateofflux.chess.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.stateofflux.chess.model.pieces.Piece;
@@ -23,11 +21,8 @@ public class Player {
      */
     public Map<Integer, Long> validMoves(String position) {
         Map<Integer, Long> results = new HashMap<>();
-        long destination;
-
         // 1. get the piece at the poisition
-        int location = Board.convertPositionToLocation(position);
-        // int sign = (color == PlayerColor.WHITE) ? 1 : -1;
+        int location = FenString.squareToLocation(position);
         Piece piece = this.board.getPieceAtLocation(location);
 
         // check if player is trying to move a valid piece

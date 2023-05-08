@@ -130,16 +130,24 @@ public class BoardTest {
         .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR");
   }
 
+  @Test
+  public void testBitboardToArray() {
+    assertThat(Board.bitboardToArray(255L << 8)).hasSize(8);
+    assertThat(Board.bitboardToArray(255L << 48)).hasSize(8);
+    assertThat(Board.bitboardToArray(1L << 57 | 1L << 62)).hasSize(2);
+//    assertThat(Board.bitboardToArray(Long.MAX_VALUE)).hasSize(64); // debug this later as I'll never have 64 pieces on the board
+  }
+
   // ---------------------- Utility functions --------------------------
   @Test
   public void convertA1toIndex() {
-    assertThat(Board.convertPositionToLocation("a1"))
+    assertThat(FenString.squareToLocation("a1"))
         .isZero();
   }
 
   @Test
   public void convertH8toIndex() {
-    assertThat(Board.convertPositionToLocation("h8"))
+    assertThat(FenString.squareToLocation("h8"))
         .isEqualTo(63);
   }
 }

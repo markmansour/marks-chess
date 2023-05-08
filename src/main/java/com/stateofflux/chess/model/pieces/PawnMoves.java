@@ -11,6 +11,8 @@ public class PawnMoves extends StraightLineMoves {
             "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
             "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6");
 
+    public static final String NO_EN_PASSANT = "-";
+
     protected Direction[] captureDirections;
 
     public PawnMoves(Board board, int location) {

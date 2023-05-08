@@ -4,6 +4,7 @@ import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.PlayerColor;
 
 public enum Piece {
+    // White pieces are designated using upper-case letters (“PNBRQK”) while black pieces use lowercase (“pnbrqk”).
     WHITE_KING   (0,  PlayerColor.WHITE, 'K'),
     WHITE_QUEEN  (1,  PlayerColor.WHITE, 'Q'),
     WHITE_ROOK   (2,  PlayerColor.WHITE, 'R'),

@@ -100,4 +100,20 @@ public class PawnTest {
         assertThat(bm.getNonCaptureMoves()).isZero(); // no moves forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 9);
     }
+
+    @Test
+    public void legalEnpassentBuildUpState() {
+        Board b = new Board();
+
+        assertThat(false);
+    }
+
+    @Test
+    public void enemyPawnDidNotAdvanceTwoSquaresOnPreviousTurn() {
+
+    }
+
+    @Test
+    public void legalEnpassentFromFenString() {
+    }
 }

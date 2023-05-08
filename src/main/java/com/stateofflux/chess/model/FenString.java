@@ -2,7 +2,13 @@ package com.stateofflux.chess.model;
 
 import java.util.Scanner;
 
+import com.stateofflux.chess.model.pieces.PawnMoves;
+
 /**
+ * This class parses FEN Strings and ensures the values
+ * are valid. The Game class ensures checks if the moves
+ * are valid within the context of the game.
+ *
  * https://www.chessprogramming.org/Forsyth-Edwards_Notation
  * <FEN> ::= <Piece Placement>
  * ' ' <Side to move>
@@ -14,8 +20,8 @@ import java.util.Scanner;
 public class FenString {
     private String piecePlacement;
     private PlayerColor playerTurn;
-    private char[] castlingRights;
-    private char[] enPassantTarget;
+    private String castlingRights;
+    private String enPassantTarget;
     private int halfmoveClock = 0;
     private int fullmoveCounter = 1;
 
@@ -26,18 +32,56 @@ public class FenString {
             setCastlingRights(s.next());
             setEnPassantTarget(s.next());
 
-            if(s.hasNextInt()) {
+            if (s.hasNextInt()) {
                 setHalfmoveClock(s.next());
                 setFullmoveCounter(s.next());
             }
         }
     }
 
-    public static String locationToAlgebraString(int location) {
+    public static String locationToSquare(int location) {
+        if (location < 0 || location > 63) // can be done with boolean math
+            throw new IllegalArgumentException("Invalid location");
+
         int rank = location / 8;
         int file = location % 8;
 
-        return String.format("%c%d", 'a' + file, 8 - rank);
+        return String.format("%c%d", 'a' + file, rank + 1);
+    }
+
+    // https://www.chess.com/terms/chess-notation
+    public static int squareToLocation(String target) {
+        // if the size is 2, then it is a pawn move
+        int file = -1;
+        int rank = 0;
+
+        if (target.length() == 2) {
+            return simpleSquareToLocation(target);
+        } else if (target.length() == 4 && target.charAt(1) == 'x') {
+            return simpleSquareToLocation(target.substring(2, 4));
+        }
+
+        return rank * 8 + file;
+    }
+
+    // must be 2 characters
+    private static int simpleSquareToLocation(String target) {
+        int file = -1;
+        int rank = 0;
+
+        char fileChar;
+        char rankChar;
+
+        fileChar = target.charAt(0);
+        rankChar = target.charAt(1);
+
+        if (fileChar < 'a' || fileChar > 'h' || rankChar < '1' || rankChar > '8')
+            throw new IllegalArgumentException("Invalid target");
+
+        file = fileChar - 'a';
+        rank = (rankChar - '1');
+
+        return rank * 8 + file;
     }
 
     /*
@@ -74,10 +118,19 @@ public class FenString {
      * <Castling ability> ::= '-' | ['K'] ['Q'] ['k'] ['q'] (1..4)
      */
     private void setCastlingRights(String castlingRightsString) {
-        this.castlingRights = castlingRightsString.toCharArray();
+        for (char c : castlingRightsString.toCharArray()) {
+            switch (c) {
+                case 'K', 'Q', 'k', 'q':
+                    continue;
+                default:
+                    throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);
+            }
+        }
+
+        this.castlingRights = castlingRightsString;
     }
 
-    public char[] getCastlingRights() {
+    public String getCastlingRights() {
         return this.castlingRights;
     }
 
@@ -88,10 +141,28 @@ public class FenString {
      * <eprank> ::= '3' | '6'
      */
     private void setEnPassantTarget(String enPassantTargetString) {
-        // TODO add validation
-        this.enPassantTarget = enPassantTargetString.toCharArray();
+        if (enPassantTargetString.equals(PawnMoves.NO_EN_PASSANT)) {
+            this.enPassantTarget = enPassantTargetString;
+            return;
+        }
+
+        char fileChar;
+        char rankChar;
+
+        if (enPassantTargetString.length() == 2) {
+            fileChar = enPassantTargetString.charAt(0);
+            rankChar = enPassantTargetString.charAt(1);
+
+            if (!((fileChar >= 'a' && fileChar <= 'h') &&
+                    (rankChar == '3' || rankChar == '6'))) {
+                throw new IllegalArgumentException("Invalid target");
+            }
+        }
+
+        this.enPassantTarget = enPassantTargetString;
     }
-    public char[] getEnPassantTarget() {
+
+    public String getEnPassantTarget() {
         return this.enPassantTarget;
     }
 
@@ -144,4 +215,5 @@ public class FenString {
             location = b.setPieceOnBoard(element, location);
         }
     }
+
 }

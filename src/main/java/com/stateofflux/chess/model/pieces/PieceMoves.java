@@ -13,10 +13,6 @@ public abstract class PieceMoves {
     protected long opponentBoard;
     protected long currentPlayerBoard;
 
-    // Factory for board moves.
-    // protected static BoardMoves from(Board b, int location) {
-    // }
-
     protected PieceMoves(Board board, int location) {
         this.board = board;
         this.location = location;
