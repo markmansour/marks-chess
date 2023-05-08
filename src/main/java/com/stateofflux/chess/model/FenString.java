@@ -57,6 +57,8 @@ public class FenString {
 
         if (target.length() == 2) {
             return simpleSquareToLocation(target);
+        } else if (target.length() == 3) {
+            return simpleSquareToLocation(target.substring(1, 3));
         } else if (target.length() == 4 && target.charAt(1) == 'x') {
             return simpleSquareToLocation(target.substring(2, 4));
         }

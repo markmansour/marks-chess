@@ -172,7 +172,23 @@ public class Game {
             }
             case 'R' -> {
                 // rook move
-                // TODO validate rook move
+                int destination = FenString.squareToLocation(action);
+                locations = this.board.getRookLocations(this.getActivePlayerColor());
+
+                for (int i : locations) {
+                    Piece piece = this.board.getPieceAtLocation(i);
+                    PieceMoves bm = piece.generateMoves(this.board, i);
+
+                    // playing non-capture move
+                    if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
+                        this.board.move(i, destination);
+                        removeCastlingRightsFor(i);
+                    } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
+                        // normal capture
+                        this.board.move(i, destination);
+                        removeCastlingRightsFor(i);
+                    }
+                }
             }
             case 'Q' -> {
                 // queen move
@@ -213,5 +229,25 @@ public class Game {
         } else {
             this.activePlayerColor = PlayerColor.WHITE;
         }
+    }
+
+    private void removeCastlingRightsFor(int i) {
+        this.castlingRights = switch (i) {
+            case 0 -> {
+                yield this.castlingRights.replace("Q", "");
+            }
+            case 7 -> {
+                yield this.castlingRights.replace("K", "");
+            }
+            case 56 -> {
+                yield this.castlingRights.replace("q", "");
+            }
+            case 63 -> {
+                yield this.castlingRights.replace("k", "");
+            }
+            default -> {
+                yield this.castlingRights;
+            }
+        };
     }
 }

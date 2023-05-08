@@ -88,8 +88,8 @@ public class GameTest {
     public void validPawnMoveWithTwoTakeOptions() {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         // black can move from d5 to c4 or e4
-        game.move("dxc4");  // from d5 to c4
-// from loctation 35 to 26
+        game.move("dxc4");  // from d5 to c4 - loctation 35 to 26
+
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isZero();
@@ -103,8 +103,33 @@ public class GameTest {
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2P1p3/8/PP1P1PPP/RNBQKBNR");
     }
 
-    public void validRookMove() {}
-    public void validRookTake() {}
+    @Test
+    public void validRookMove() {
+        Game game = new Game("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq -");
+        game.move("Ra3");  // from a1 to a3
+
+        assertThat(game.getCastlingRights()).isEqualTo("Kkq");
+        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getFullmoveCounter()).isOne();
+        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
+        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR");
+    }
+
+    @Test
+    public void validRookTake() {
+        Game game = new Game("r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR w KQkq -");
+        game.move("Rxa6");  // from a1 to a6
+
+        assertThat(game.getCastlingRights()).isEqualTo("Kkq");
+        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getFullmoveCounter()).isOne();
+        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
+        assertThat(game.getPiecePlacement()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR");
+
+    }
+
     public void validKnightMove() {}
     public void validKnightTake() {}
     public void validBishopMove() {}

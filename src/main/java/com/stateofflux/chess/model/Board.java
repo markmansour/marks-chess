@@ -307,12 +307,24 @@ public class Board {
         LOGGER.info("   abcdefgh");
     }
 
-    public int[] getPawnLocations(PlayerColor pc) {
+    public int[] getPawnLocations(PlayerColor activePlayerColor) {
         Piece p;
-        if (pc == PlayerColor.WHITE)
+        if (activePlayerColor == PlayerColor.WHITE)
             p = Piece.WHITE_PAWN;
-        else if (pc == PlayerColor.BLACK)
+        else if (activePlayerColor == PlayerColor.BLACK)
             p = Piece.BLACK_PAWN;
+        else
+            throw new IllegalArgumentException("Not a valid PlayerColor");
+
+        return Board.bitboardToArray(this.boards[p.getIndex()]);
+    }
+
+    public int[] getRookLocations(PlayerColor activePlayerColor) {
+        Piece p;
+        if (activePlayerColor == PlayerColor.WHITE)
+            p = Piece.WHITE_ROOK;
+        else if (activePlayerColor == PlayerColor.BLACK)
+            p = Piece.BLACK_ROOK;
         else
             throw new IllegalArgumentException("Not a valid PlayerColor");
 
