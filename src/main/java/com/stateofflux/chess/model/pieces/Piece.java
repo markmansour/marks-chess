@@ -22,6 +22,8 @@ public enum Piece {
     private final int index;
     private final PlayerColor color;
     private final char pieceChar;
+    private int enPassantTarget;
+    private String castlingRights;
 
     public static final int SIZE;
 
@@ -33,8 +35,13 @@ public enum Piece {
         this.index = index;
         this.color = color;
         this.pieceChar = pieceChar;
+        this.enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
     }
 
+    public int getEnPassantTarget() { return this.enPassantTarget; }
+    protected void setEnPassantTarget(int enPassantTarget) { this.enPassantTarget = enPassantTarget; }
+    public String getCastlingRights() { return this.castlingRights; }
+    protected void setCastlingRights(String castlingRights) { this.castlingRights = castlingRights; }
     public int getIndex() { return this.index; }
     public PlayerColor getColor() { return this.color; }
     public char getPieceChar() { return this.pieceChar; }
@@ -53,7 +60,7 @@ public enum Piece {
         return String.valueOf(pieceChar);
     }
 
-    public PieceMoves generateMoves(Board b, int location) {
+    public PieceMoves generateMoves(Board b, int location, String castlingRights, int enPassantTarget) {
         switch(this) {
             case WHITE_KING:
             case BLACK_KING:
@@ -72,7 +79,7 @@ public enum Piece {
                 return new KnightMoves(b, location);
             case WHITE_PAWN:
             case BLACK_PAWN:
-                return new PawnMoves(b, location);
+                return new PawnMoves(b, location, enPassantTarget);
             default:
                 throw new IllegalArgumentException("Unexpected value: " + this);
         }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
+import com.stateofflux.chess.model.FenString;
 
 public class PawnMoves extends StraightLineMoves {
     public static final List<String> VALID_EN_PASSANT_POSITIONS = List.of(
@@ -12,11 +13,17 @@ public class PawnMoves extends StraightLineMoves {
             "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6");
 
     public static final String NO_EN_PASSANT = "-";
+    public static final int NO_EN_PASSANT_VALUE = -1;
 
     protected Direction[] captureDirections;
 
-    public PawnMoves(Board board, int location) {
+    private int enPassantTarget;
+
+    public PawnMoves(Board board, int location, int enPassant) {
         super(board, location);
+        this.enPassantTarget = enPassant;
+        findEnPassantCaptures();
+
     }
 
     protected void setupPaths() {
@@ -69,10 +76,10 @@ public class PawnMoves extends StraightLineMoves {
     @Override
     public void findCaptureAndNonCaptureMoves() {
         findCaptureAndNonCaptureMovesInStraightLines();
-        findPawnCaptures();
+        findStandardPawnCaptures();
     }
 
-    private void findPawnCaptures() {
+    private void findStandardPawnCaptures() {
         int nextPosition;
         long nextPositionBit;
 
@@ -84,5 +91,16 @@ public class PawnMoves extends StraightLineMoves {
                 this.captureMoves |= nextPositionBit;
             }
         }
+    }
+
+    // assumes the passed in en passant target is a valid move. validation should
+    // happen elsewhere.
+    private void findEnPassantCaptures() {
+        // if there is n en passant target, then exit
+        if (this.enPassantTarget == -1) {
+            return;
+        }
+
+        this.captureMoves |= (1L << this.enPassantTarget);
     }
 }

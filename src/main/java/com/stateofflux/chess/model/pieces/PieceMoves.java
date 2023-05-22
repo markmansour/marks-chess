@@ -31,6 +31,7 @@ public abstract class PieceMoves {
 
     abstract void findCaptureAndNonCaptureMoves();
 
+    // TODO: can this be set at instantiation?
     protected long getOpponentBoard() {
         return switch (this.piece.getColor()) {
             case WHITE -> this.board.getBlackBoard();
@@ -39,6 +40,7 @@ public abstract class PieceMoves {
         };
     }
 
+    // TODO: can this be set at instantiation?
     protected long getCurrentPlayerBoard() {
         return switch (this.piece.getColor()) {
             case WHITE -> this.board.getWhiteBoard();

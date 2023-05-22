@@ -45,6 +45,9 @@ public class FenStringTest {
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kQK -");
         assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'K', 'Q', 'k'});
 
+        fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -");
+        assertThat(fs.getCastlingRights()).isEqualTo("-");
+
         assertThatThrownBy(() -> { new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KPkq -"); }).isInstanceOf(IllegalArgumentException.class);
     }
 

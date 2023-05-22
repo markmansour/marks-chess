@@ -5,6 +5,8 @@ import java.util.Scanner;
 import com.stateofflux.chess.model.pieces.PawnMoves;
 
 /**
+ * See https://www.chessprogramming.org/Algebraic_Chess_Notation#Enpassant
+ *
  * This class parses FEN Strings and ensures the values
  * are valid. The Game class ensures checks if the moves
  * are valid within the context of the game.
@@ -55,12 +57,16 @@ public class FenString {
         int file = -1;
         int rank = 0;
 
+        // Nfxd2: Knight column f takes d2
+
         if (target.length() == 2) {
             return simpleSquareToLocation(target);
         } else if (target.length() == 3) {
             return simpleSquareToLocation(target.substring(1, 3));
         } else if (target.length() == 4 && target.charAt(1) == 'x') {
             return simpleSquareToLocation(target.substring(2, 4));
+        } else if (target.length() == 5 && target.charAt(2) == 'x') {
+            return simpleSquareToLocation(target.substring(3, 5));
         }
 
         return rank * 8 + file;
@@ -122,7 +128,7 @@ public class FenString {
     private void setCastlingRights(String castlingRightsString) {
         for (char c : castlingRightsString.toCharArray()) {
             switch (c) {
-                case 'K', 'Q', 'k', 'q':
+                case 'K', 'Q', 'k', 'q', '-':
                     continue;
                 default:
                     throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);

@@ -206,6 +206,14 @@ public class Board {
                 this.boards[Piece.WHITE_KING.getIndex()];
     }
 
+    public long getWhitePawnBoard() {
+        return this.boards[Piece.WHITE_PAWN.getIndex()];
+    }
+
+    public long getBlackPawnBoard() {
+        return this.boards[Piece.BLACK_PAWN.getIndex()];
+    }
+
     // --------------------------- Visualization ---------------------------
     // implement a Forsyth-Edwards toString() method
     public String toFenPiecePlacementString() {
@@ -300,7 +308,7 @@ public class Board {
 
         for (int rank = 7; rank >= 0; rank--) {
             LOGGER.info("{}: {}",
-                    Integer.valueOf(rank),
+                    Integer.valueOf(rank + 1),
                     reversedLong.substring(rank * 8, (rank + 1) * 8));
         }
 
@@ -331,6 +339,19 @@ public class Board {
         return Board.bitboardToArray(this.boards[p.getIndex()]);
     }
 
+
+	public int[] getKnightLocations(PlayerColor activePlayerColor) {
+        Piece p;
+        if (activePlayerColor == PlayerColor.WHITE)
+            p = Piece.WHITE_KNIGHT;
+        else if (activePlayerColor == PlayerColor.BLACK)
+            p = Piece.BLACK_KNIGHT;
+        else
+            throw new IllegalArgumentException("Not a valid PlayerColor");
+
+        return Board.bitboardToArray(this.boards[p.getIndex()]);
+	}
+
     protected void clearLocation(int location) {
         for(int i = 0; i < this.boards.length; i++) {
             // clear the bit at the location on all boards
@@ -360,4 +381,5 @@ public class Board {
 
         return result;
     }
+
 }
