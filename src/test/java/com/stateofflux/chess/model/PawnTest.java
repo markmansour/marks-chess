@@ -130,4 +130,13 @@ public class PawnTest {
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1ppp2/6p1/1PpP4/8/2P4P/P3PP1P/RNBQKBNR");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
     }
+
+    // history commands
+    // is the game in a state of check?
+    // is the game in a state of check mate?
+    // is the game a draw?
+    // is the game over?
+    // is the game a stalemate?
+    // is the game a threefold repetition?
+
 }

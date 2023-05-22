@@ -183,36 +183,26 @@ public class Game {
             case 'B' -> {
                 // bishop move
                 // TODO validate bishop move
+                findSourceAndDestination(action);
+                this.board.move(this.sourceLocation, this.destinationLocation);
             }
             case 'R' -> {
                 // rook move
-                int destination = FenString.squareToLocation(action);
-                locations = this.board.getRookLocations(this.getActivePlayerColor());
-
-                for (int i : locations) {
-                    Piece piece = this.board.getPieceAtLocation(i);
-                    PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
-
-                    // playing non-capture move
-                    if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
-                        this.board.move(i, destination);
-                        removeCastlingRightsFor(i);
-                    } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
-                        // normal capture
-                        this.board.move(i, destination);
-                        removeCastlingRightsFor(i);
-                    }
-                }
+                findSourceAndDestination(action);
+                this.board.move(this.sourceLocation, this.destinationLocation);
             }
             case 'Q' -> {
                 // queen move
-                // TODO validate queen move
+                findSourceAndDestination(action);
+                this.board.move(this.sourceLocation, this.destinationLocation);
             }
             case 'K' -> {
                 // king move
-                // TODO validate king move
+                findSourceAndDestination(action);
+                this.board.move(this.sourceLocation, this.destinationLocation);
             }
             default -> {
+                // can this be moved into the findSourceAndDestination method?
                 // pawn move
                 int destination = FenString.squareToLocation(action);
                 locations = this.board.getPawnLocations(this.getActivePlayerColor());
@@ -271,6 +261,8 @@ public class Game {
                 }
             }
         }
+
+        removeCastlingRightsFor(this.sourceLocation);
 
         // TODO update board
         // TODO update game state
@@ -382,11 +374,17 @@ public class Game {
             case 0 -> {
                 yield this.castlingRights.replace("Q", "");
             }
+            case 4 -> {
+                yield this.castlingRights.replace("K", "").replace("Q", "");
+            }
             case 7 -> {
                 yield this.castlingRights.replace("K", "");
             }
             case 56 -> {
                 yield this.castlingRights.replace("q", "");
+            }
+            case 60 -> {
+                yield this.castlingRights.replace("k", "").replace("q", "");
             }
             case 63 -> {
                 yield this.castlingRights.replace("k", "");
