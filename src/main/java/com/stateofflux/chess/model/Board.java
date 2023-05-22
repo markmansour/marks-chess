@@ -316,36 +316,35 @@ public class Board {
     }
 
     public int[] getPawnLocations(PlayerColor activePlayerColor) {
-        Piece p;
-        if (activePlayerColor == PlayerColor.WHITE)
-            p = Piece.WHITE_PAWN;
-        else if (activePlayerColor == PlayerColor.BLACK)
-            p = Piece.BLACK_PAWN;
-        else
-            throw new IllegalArgumentException("Not a valid PlayerColor");
-
-        return Board.bitboardToArray(this.boards[p.getIndex()]);
+        return getPieceLocations(Piece.WHITE_PAWN, Piece.BLACK_PAWN, activePlayerColor);
     }
 
     public int[] getRookLocations(PlayerColor activePlayerColor) {
-        Piece p;
-        if (activePlayerColor == PlayerColor.WHITE)
-            p = Piece.WHITE_ROOK;
-        else if (activePlayerColor == PlayerColor.BLACK)
-            p = Piece.BLACK_ROOK;
-        else
-            throw new IllegalArgumentException("Not a valid PlayerColor");
-
-        return Board.bitboardToArray(this.boards[p.getIndex()]);
+        return getPieceLocations(Piece.WHITE_ROOK, Piece.BLACK_ROOK, activePlayerColor);
     }
 
-
 	public int[] getKnightLocations(PlayerColor activePlayerColor) {
+        return getPieceLocations(Piece.WHITE_KNIGHT, Piece.BLACK_KNIGHT, activePlayerColor);
+	}
+
+	public int[] getBishopLocations(PlayerColor activePlayerColor) {
+        return getPieceLocations(Piece.WHITE_BISHOP, Piece.BLACK_BISHOP, activePlayerColor);
+	}
+
+	public int[] getQueenLocations(PlayerColor activePlayerColor) {
+        return getPieceLocations(Piece.WHITE_QUEEN, Piece.BLACK_QUEEN, activePlayerColor);
+	}
+
+	public int[] getKingLocations(PlayerColor activePlayerColor) {
+        return getPieceLocations(Piece.WHITE_KING, Piece.BLACK_KING, activePlayerColor);
+	}
+
+    public int[] getPieceLocations(Piece one, Piece two, PlayerColor activePlayerColor) {
         Piece p;
         if (activePlayerColor == PlayerColor.WHITE)
-            p = Piece.WHITE_KNIGHT;
+            p = one;
         else if (activePlayerColor == PlayerColor.BLACK)
-            p = Piece.BLACK_KNIGHT;
+            p = two;
         else
             throw new IllegalArgumentException("Not a valid PlayerColor");
 

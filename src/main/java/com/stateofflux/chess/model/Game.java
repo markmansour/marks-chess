@@ -320,8 +320,19 @@ public class Game {
             case 'N' -> {
                 possibleSourceLocations = this.board.getKnightLocations(this.getActivePlayerColor());
             }
+            case 'B' -> {
+                possibleSourceLocations = this.board.getBishopLocations(this.getActivePlayerColor());
+            }
+            case 'R' -> {
+                possibleSourceLocations = this.board.getRookLocations(this.getActivePlayerColor());
+            }
+            case 'Q' -> {
+                possibleSourceLocations = this.board.getQueenLocations(this.getActivePlayerColor());
+            }
+            case 'K' -> {
+                possibleSourceLocations = this.board.getKingLocations(this.getActivePlayerColor());
+            }
             default -> {
-                // no op
                 possibleSourceLocations = new int[0];
             }
         }
