@@ -230,9 +230,13 @@ public class GameTest {
     }
 
     // https://www.chessprogramming.org/Castling
+    @Test
     public void castling() {
+        fail("todo");
     }
 
+    @Test
     public void promotion() {
+        fail("todo");
     }
 }
