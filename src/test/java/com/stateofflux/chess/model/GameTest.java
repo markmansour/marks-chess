@@ -230,13 +230,71 @@ public class GameTest {
     }
 
     // https://www.chessprogramming.org/Castling
-    @Test
-    public void castling() {
-        fail("todo");
+    public class Castling {
+        /*
+         * TODO: finish writing the castling validation code.
+         *
+         * Current State:
+         * I've implemented the castling move, but I haven't implemented validation.
+         *
+         * Next steps:
+         * Implement the checks for the three prerequisites listed below in the generateMoves
+         * method.
+         */
+
+        /*
+        The prequisites for doing it are as follows:
+        - the king and the relevant rook must not be moved, considered as castling rights inside a chess position
+        - the king must not be in check
+        - no square between king's start and final square may be controlled by the enemy
+        */
+
+        // basic castling
+        @Test
+        public void queenSideWhiteCastling() {
+            Game game = new Game("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq -");
+            game.move("O-O-O");
+
+            assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/2KR1BNR");
+            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
+            assertThat(game.getCastlingRights()).isEqualTo("kq");
+        }
+
+        @Test
+        public void kingSideWhiteCastling() {
+            Game game = new Game("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQK2R w KQkq -");
+            game.move("O-O");
+
+            assertThat(game.getPiecePlacement()).isEqualTo("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQ1RK1");
+            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
+            assertThat(game.getCastlingRights()).isEqualTo("kq");
+        }
+
+        @Test
+        public void queenSideBlackCastling() {
+            Game game = new Game("r3kbnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR b KQkq -");
+            game.move("O-O-O");
+
+            assertThat(game.getPiecePlacement()).isEqualTo("2kr1bnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR");
+            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
+            assertThat(game.getCastlingRights()).isEqualTo("KQ");
+        }
+
+        @Test
+        public void kingSideBlackCastling() {
+            Game game = new Game("rnbqk2r/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R b KQkq -");
+            game.move("O-O");
+
+            assertThat(game.getPiecePlacement()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R");
+            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
+            assertThat(game.getCastlingRights()).isEqualTo("KQ");
+        }
     }
 
-    @Test
-    public void promotion() {
-        fail("todo");
+    public class Promotion {
+        @Test
+        public void promotion() {
+            fail("todo");
+        }
     }
 }

@@ -33,6 +33,8 @@ public class Game {
     protected int nextMovesCount;
     protected int sourceLocation = -1;
     protected int destinationLocation = -1;
+    private int secondarySourceLocation = -1;
+    private int secondaryDestinationLocation = -1;
 
     // If neither side has the ability to castle, this field uses the character "-".
     // Otherwise, this field contains one or more letters: "K" if White can castle
@@ -81,7 +83,7 @@ public class Game {
     }
 
     public String getPiecePlacement() {
-        return this.board.toFenPiecePlacementString();
+        return this.getBoard().toFenPiecePlacementString();
     }
 
     private void setFullmoveCounter(int fullmoveCounter) {
@@ -147,7 +149,7 @@ public class Game {
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
-            Piece piece = this.board.getPieceAtLocation(i);
+            Piece piece = this.getBoard().getPieceAtLocation(i);
 
             if (piece == Piece.EMPTY || piece.getColor() != this.activePlayerColor)
                 continue;
@@ -176,36 +178,20 @@ public class Game {
 
         // test if the action is valid
         switch (action.charAt(0)) {
-            case 'N' -> {
+            case 'N', 'K', 'Q', 'B', 'R' -> {
                 findSourceAndDestination(action);
-                this.board.move(this.sourceLocation, this.destinationLocation);
+                this.getBoard().move(this.sourceLocation, this.destinationLocation);
             }
-            case 'B' -> {
-                // bishop move
-                // TODO validate bishop move
+            case 'O' -> {
                 findSourceAndDestination(action);
-                this.board.move(this.sourceLocation, this.destinationLocation);
-            }
-            case 'R' -> {
-                // rook move
-                findSourceAndDestination(action);
-                this.board.move(this.sourceLocation, this.destinationLocation);
-            }
-            case 'Q' -> {
-                // queen move
-                findSourceAndDestination(action);
-                this.board.move(this.sourceLocation, this.destinationLocation);
-            }
-            case 'K' -> {
-                // king move
-                findSourceAndDestination(action);
-                this.board.move(this.sourceLocation, this.destinationLocation);
+                this.getBoard().move(this.sourceLocation, this.destinationLocation);
+                this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
             }
             default -> {
                 // can this be moved into the findSourceAndDestination method?
                 // pawn move
                 int destination = FenString.squareToLocation(action);
-                locations = this.board.getPawnLocations(this.getActivePlayerColor());
+                locations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
                 boolean moved = false;
 
                 // TODO: this can be done smarter. if we know the destination (from the action),
@@ -214,15 +200,15 @@ public class Game {
                 // the pawnlocatin that
                 // is in the same file as the destination.
                 for (int i : locations) {
-                    Piece piece = this.board.getPieceAtLocation(i);
+                    Piece piece = this.getBoard().getPieceAtLocation(i);
                     PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
 
                     if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
-                        this.board.move(i, destination);
+                        this.getBoard().move(i, destination);
                         moved = true;
                     } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
                         // normal capture
-                        this.board.move(i, destination);
+                        this.getBoard().move(i, destination);
                         moved = true;
                     } else {
                         moved = false;
@@ -234,22 +220,22 @@ public class Game {
                         if (i >= 8 && i <= 15 && destination - i == 16) { // two moves away
 
                             if (destination < 31 &&
-                                    (((1L << (destination + 1)) & this.board.getBlackPawnBoard()) != 0))
+                                    (((1L << (destination + 1)) & this.getBoard().getBlackPawnBoard()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i + 8));
 
                             if (destination > 24 &&
-                                    (((1L << (destination - 1)) & this.board.getBlackPawnBoard()) != 0))
+                                    (((1L << (destination - 1)) & this.getBoard().getBlackPawnBoard()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i + 8));
 
                         } else if (i >= 48 && i <= 55 && destination - i == -16) {
 
                             // set the en passant target
                             if (destination < 39 &&
-                                    (((1L << (destination + 1)) & this.board.getWhitePawnBoard()) != 0))
+                                    (((1L << (destination + 1)) & this.getBoard().getWhitePawnBoard()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i - 8));
 
                             if (destination > 32 &&
-                                    (((1L << (destination - 1)) & this.board.getWhitePawnBoard()) != 0))
+                                    (((1L << (destination - 1)) & this.getBoard().getWhitePawnBoard()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i - 8));
 
                         } else {
@@ -274,59 +260,76 @@ public class Game {
         }
     }
 
-    // Examples:
-    // d2 - pawns may have no char to represent them
-    // Nd4 - non pawns will have thier type as the first character
-    // Nxb8 - captures will have an x
-    // cxb5 - pawn captures will start with the file
-    // Nxc8+ - check
-    // Nxc8* - checkmate
-    // O-O - king side castle
-    // O-O-O - queen side castle
-    // e8=Q - pawn promotion
-    //
-    // need to work backward from the destination to the source.
-    // 1. the piece type can be derived from the action (first char)
-    // 2. source has to be derived from the destination
-    //
+    /*
+     Examples:
+     d2    - pawns may have no char to represent them
+     Nd4   - non pawns will have their type as the first character
+     Nxb8  - captures will have an x
+     cxb5  - pawn captures will start with the file
+     Nxc8+ - check
+     Nxc8* - checkmate
+     O-O   - king side castle
+     O-O-O - queen side castle
+     e8=Q  - pawn promotion
+    
+     need to work backward from the destination to the source.
+     1. the piece type can be derived from the action (first char)
+     2. source has to be derived from the destination
+    */
     private void findSourceAndDestination(String action) {
-        // when there is ambiguity
-        // [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
-        // the following rules in order:
-        // 1. file of departure if different
-        // 2. rank of departure if the files are the same but the ranks differ
-        // 3. the complete origin square coordinate otherwise
+        /*
+         when there is ambiguity
+         [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
+         the following rules in order:
+         1. file of departure if different
+         2. rank of departure if the files are the same but the ranks differ
+         3. the complete origin square coordinate otherwise
+        */
         char[] actionChars = action.toCharArray();
+
+        // source and destination for castling represents the kings movement
+        if (action.equals("O-O-O")) {
+            if (this.getActivePlayerColor() == PlayerColor.BLACK) {
+                this.sourceLocation = 60;
+                this.destinationLocation = 58;
+                this.secondarySourceLocation = 56;
+                this.secondaryDestinationLocation = 59;
+                return;
+            } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
+                this.sourceLocation = 4;
+                this.destinationLocation = 2;
+                this.secondarySourceLocation = 0;
+                this.secondaryDestinationLocation = 3;
+                return;
+            }
+        } else if (action.equals("O-O")) {
+            // king side castle
+            if (this.getActivePlayerColor() == PlayerColor.BLACK) {
+                this.sourceLocation = 60;
+                this.destinationLocation = 62;
+                this.secondarySourceLocation = 63;
+                this.secondaryDestinationLocation = 61;
+                return;
+            } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
+                this.sourceLocation = 4;
+                this.destinationLocation = 6;
+                this.secondarySourceLocation = 7;
+                this.secondaryDestinationLocation = 5;
+                return;
+            }
+        }
+
         int destination = FenString.squareToLocation(action);
         int source = -1;
         int possibleSourceLocations[];
-        boolean capture = false;
-
-        // if king side castle
-        // if queenside castle
-        // if pawn promotion
-        // if non-pawn
-        // if pawn
 
         switch (actionChars[0]) {
-            case 'N' -> {
-                possibleSourceLocations = this.board.getKnightLocations(this.getActivePlayerColor());
-            }
-            case 'B' -> {
-                possibleSourceLocations = this.board.getBishopLocations(this.getActivePlayerColor());
-            }
-            case 'R' -> {
-                possibleSourceLocations = this.board.getRookLocations(this.getActivePlayerColor());
-            }
-            case 'Q' -> {
-                possibleSourceLocations = this.board.getQueenLocations(this.getActivePlayerColor());
-            }
-            case 'K' -> {
-                possibleSourceLocations = this.board.getKingLocations(this.getActivePlayerColor());
-            }
-            default -> {
-                possibleSourceLocations = new int[0];
-            }
+            case 'N' -> possibleSourceLocations = this.getBoard().getKnightLocations(this.getActivePlayerColor());
+            case 'B' -> possibleSourceLocations = this.getBoard().getBishopLocations(this.getActivePlayerColor());
+            case 'R' -> possibleSourceLocations = this.getBoard().getRookLocations(this.getActivePlayerColor());
+            case 'Q' -> possibleSourceLocations = this.getBoard().getQueenLocations(this.getActivePlayerColor());
+            case 'K' -> possibleSourceLocations = this.getBoard().getKingLocations(this.getActivePlayerColor());
+            default -> possibleSourceLocations = new int[0];
         }
 
         char rankSpecified = 0;
@@ -340,9 +343,11 @@ public class Game {
         }
 
         int tempLocation;
+        boolean capture = false;
+
         for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
             tempLocation = possibleSourceLocations[i];
-            Piece piece = this.board.getPieceAtLocation(tempLocation);
+            Piece piece = this.getBoard().getPieceAtLocation(tempLocation);
             PieceMoves bm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
                     getEnPassantTargetAsInt());
 
@@ -429,5 +434,9 @@ public class Game {
         sb.append(' ');
         sb.append(this.getEnPassantTarget());
         return sb.toString();
+    }
+    
+    public Board getBoard() {
+        return this.board;
     }
 }

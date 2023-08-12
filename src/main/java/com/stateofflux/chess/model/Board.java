@@ -129,7 +129,7 @@ public class Board {
 
     protected int getBitSetIndexAtLocation(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
-            if ((this.boards[boardCount] & (1L << location)) > 0)
+            if ((this.boards[boardCount] & (1L << location)) != 0)
                 return boardCount;
         }
 
