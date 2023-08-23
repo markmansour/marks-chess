@@ -2,6 +2,9 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
+import com.stateofflux.chess.model.FenString;
+
+import java.util.ArrayList;
 
 public abstract class PieceMoves {
     protected final Board board;
@@ -19,9 +22,9 @@ public abstract class PieceMoves {
         this.piece = board.getPieceAtLocation(location);
 
         // are these always needed? Can we late bind them?
-        this.occupiedBoard = this.board.getOccupiedBoard();
         this.opponentBoard = getOpponentBoard(); // calculation
         this.currentPlayerBoard = getCurrentPlayerBoard();
+        this.occupiedBoard = this.board.getOccupiedBoard();  // the union of current and occupied boards
 
         setupPaths();
         findCaptureAndNonCaptureMoves();
@@ -95,5 +98,4 @@ public abstract class PieceMoves {
         };
         // check to see we're not going off the board.
     }
-
 }

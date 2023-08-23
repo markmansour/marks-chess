@@ -20,6 +20,12 @@ import com.stateofflux.chess.model.pieces.PawnMoves;
  * ' ' <Fullmove counter>
  */
 public class FenString {
+    public static final char WHITE_KING_SIDE_CASTLE = 'K';
+    public static final char WHITE_QUEEN_SIDE_CASTLE = 'Q';
+    public static final char BLACK_KING_SIDE_CASTLE = 'k';
+    public static final char BLACK_QUEEN_SIDE_CASTLE = 'q';
+    public static final char NO_CASTLING = '-';
+
     private String piecePlacement;
     private PlayerColor playerTurn;
     private String castlingRights;
@@ -54,8 +60,6 @@ public class FenString {
     // https://www.chess.com/terms/chess-notation
     public static int squareToLocation(String target) {
         // if the size is 2, then it is a pawn move
-        int file = -1;
-        int rank = 0;
         boolean check = false;
         boolean checkmate = false;
         String square;
@@ -80,7 +84,7 @@ public class FenString {
             return simpleSquareToLocation(square.substring(3, 5));
         }
 
-        return rank * 8 + file;
+        throw new IllegalArgumentException("target " + target +  " cannot be parsed");
     }
 
     // must be 2 characters
@@ -139,7 +143,11 @@ public class FenString {
     private void setCastlingRights(String castlingRightsString) {
         for (char c : castlingRightsString.toCharArray()) {
             switch (c) {
-                case 'K', 'Q', 'k', 'q', '-':
+                case WHITE_KING_SIDE_CASTLE,
+                    WHITE_QUEEN_SIDE_CASTLE,
+                    BLACK_KING_SIDE_CASTLE,
+                    BLACK_QUEEN_SIDE_CASTLE,
+                    NO_CASTLING:
                     continue;
                 default:
                     throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);

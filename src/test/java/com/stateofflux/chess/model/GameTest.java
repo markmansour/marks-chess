@@ -1,10 +1,16 @@
 package com.stateofflux.chess.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class GameTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
+
     @BeforeClass
     public void setUp() {
         // code that will be invoked when this test is instantiated
@@ -40,6 +46,9 @@ public class GameTest {
         int gameMovesCount = game.generateMoves();
         assertThat(game.getNextMoves()).hasSize(10);
         assertThat(gameMovesCount).isEqualTo(20);
+        assertThat(game.getGeneratedMovesAsSimpleSquares()).containsExactlyInAnyOrder("a2a3", "b2b3", "c2c3", "d2d3", "e2e3", "f2f3", "g2g3", "h2h3",
+            "a2a4", "b2b4", "c2c4", "d2d4", "e2e4", "f2f4", "g2g4", "h2h4",
+            "b1a3", "b1c3", "g1f3", "g1h3");
     }
 
     @Test
@@ -87,6 +96,8 @@ public class GameTest {
     public void validPawnMoveWithTwoTakeOptions() {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         // black can move from d5 to c4 or e4
+        int potentialMoves = game.generateMoves();
+        assertThat(potentialMoves).isEqualTo(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
@@ -158,7 +169,6 @@ public class GameTest {
         game = new Game("r2qkb1r/2p2p2/1p6/1N2p1p1/7P/2n2P1P/PPPPP3/RNBQKB1R w KQ -");
         game.move("N5xc3"); // from b5 to c3
         assertThat(game.asFenNoCounters()).isEqualTo("r2qkb1r/2p2p2/1p6/4p1p1/7P/2N2P1P/PPPPP3/RNBQKB1R b KQ -");
-
     }
 
     @Test
@@ -253,41 +263,68 @@ public class GameTest {
         @Test
         public void queenSideWhiteCastling() {
             Game game = new Game("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq -");
-            game.move("O-O-O");
 
-            assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/2KR1BNR");
-            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-            assertThat(game.getCastlingRights()).isEqualTo("kq");
+            // are we generating the castling move as an option?
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).contains("e1c1");
+
+            // can we make the castling move?
+            game.move("O-O-O");
+            assertThat(game.asFenNoCounters()).isEqualTo("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/2KR1BNR b kq -");
         }
 
         @Test
         public void kingSideWhiteCastling() {
             Game game = new Game("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQK2R w KQkq -");
-            game.move("O-O");
 
-            assertThat(game.getPiecePlacement()).isEqualTo("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQ1RK1");
-            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-            assertThat(game.getCastlingRights()).isEqualTo("kq");
+            // are we generating the castling move as an option?
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).contains("e1g1");
+
+            // can we make the castling move?
+            game.move("O-O");
+            assertThat(game.asFenNoCounters()).isEqualTo("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQ1RK1 b kq -");
         }
 
         @Test
         public void queenSideBlackCastling() {
             Game game = new Game("r3kbnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR b KQkq -");
-            game.move("O-O-O");
 
-            assertThat(game.getPiecePlacement()).isEqualTo("2kr1bnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR");
-            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-            assertThat(game.getCastlingRights()).isEqualTo("KQ");
+            // are we generating the castling move as an option?
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).contains("e8c8");
+
+            // can we make the castling move?
+            game.move("O-O-O");
+            assertThat(game.asFenNoCounters()).isEqualTo("2kr1bnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR w KQ -");
         }
 
         @Test
         public void kingSideBlackCastling() {
             Game game = new Game("rnbqk2r/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R b KQkq -");
-            game.move("O-O");
 
-            assertThat(game.getPiecePlacement()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R");
-            assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-            assertThat(game.getCastlingRights()).isEqualTo("KQ");
+            // are we generating the castling move as an option?
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).contains("e8g8");
+
+            // can we make the castling move?
+            game.move("O-O");
+            assertThat(game.asFenNoCounters()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R w KQ -");
+        }
+
+        @Test
+        public void queenSideWhiteCastlingWhileInCheck() {
+            Game game = new Game("r1b1kbnr/pp1p1pp1/8/qNp1p2p/Q1Pn1B2/8/PP2PPPP/R3KBNR w KQkq -");    // this is illegal as the king is in check
+            game.generateMoves();
+            // moves 1. d4 Nc6 2. Bf4 Nxd4 3. c4 h5 4. Na3 e5 5. Qa4 c5 6. Nb5 Qa5+
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            LOGGER.info(generatedMoves.toString());
+            assertThat(generatedMoves).doesNotContain("e1c1");
+            assertThat(game.getCastlingRights()).isEqualTo("kq");  // TODO: what to do about this???
         }
     }
 

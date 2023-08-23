@@ -1,14 +1,10 @@
 package com.stateofflux.chess.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import com.stateofflux.chess.model.pieces.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.stateofflux.chess.model.pieces.PawnMoves;
-import com.stateofflux.chess.model.pieces.Piece;
-import com.stateofflux.chess.model.pieces.PieceMoves;
 
 /*
  * Only legal moves can happen through the Game object.  It acts as the
@@ -30,6 +26,7 @@ public class Game {
     protected Board board;
     protected PlayerColor activePlayerColor;
     protected Map<String, PieceMoves> nextMoves;
+    protected PieceMoves rawMoves;
     protected int nextMovesCount;
     protected int sourceLocation = -1;
     protected int destinationLocation = -1;
@@ -59,11 +56,13 @@ public class Game {
         this.white = white;
         this.black = black;
         this.board = new Board();
+        this.board.setGame(this);
     }
 
     // game with no players - used for analysis
     public Game() {
         this.board = new Board();
+        this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
         this.setCastlingRights("KQkq");
         this.setEnPassantTarget("-");
@@ -75,6 +74,7 @@ public class Game {
     public Game(String fenString) {
         FenString fen = new FenString(fenString);
         this.board = new Board(fen.getPiecePlacement());
+        this.board.setGame(this);
         this.setActivePlayerColor(fen.getActivePlayerColor());
         this.setCastlingRights(fen.getCastlingRights());
         this.setEnPassantTarget(fen.getEnPassantTarget());
@@ -138,11 +138,19 @@ public class Game {
         return this.activePlayerColor;
     }
 
-    // iterate over all pieces on the board
-    // for each piece, generate the moves for that piece
-    // store the moves in a list
-    // return number of moves
-    // 1 ply
+    /*
+     * iterate over all pieces on the board
+     * for each piece, generate the moves for that piece
+     * store the moves in a list
+     * return number of moves
+     * 1 ply
+     *
+     * generateMoves() can be thought of as a method for the client to use.  The client is the thing that understands
+     * valid moves.  The server enforces that the move is technically correct (i.e. a pawn can move 2 paces from the
+     * start position) but not fancy rules like en passant and castling.  Is this right???
+     *
+     * This method should not be called as part of the "move" method as it would be too expensive.
+     */
     public int generateMoves() {
         this.nextMoves = new HashMap<>();
         this.nextMovesCount = 0;
@@ -154,15 +162,35 @@ public class Game {
             if (piece == Piece.EMPTY || piece.getColor() != this.activePlayerColor)
                 continue;
 
-            PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
-            if (bm.getMovesCount() > 0) {
-                this.nextMoves.put(FenString.locationToSquare(i), bm);
-                LOGGER.info("Generated {} moves for {} at {}", bm.getMovesCount(), piece, i);
-                this.nextMovesCount += bm.getMovesCount();
+            PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+
+            this.nextMovesCount += rawMoves.getMovesCount();
+            if (rawMoves.getMovesCount() > 0) {
+                this.nextMoves.put(FenString.locationToSquare(i), rawMoves);
+                LOGGER.debug("Generated {} moves for {} at {}", rawMoves.getMovesCount(), piece, i);
             }
         }
 
+        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
+
         return this.nextMovesCount;
+    }
+
+    // Must call generateMoves() immediately prior to usage. I'm not making the call in the code as
+    // it regenerates the answer and this could be extra overhead.
+    // Consider: generating it anyway as this method is unlikely to be called twice in succession.  Alternativly,
+    // create lifecycle methods on each turn, and clear the value of nextMoves so I can then check it for null.
+    public Set<String> getGeneratedMovesAsSimpleSquares() {
+        Set<String> results = new HashSet<>();
+
+        this.nextMoves.forEach((source, rawMoves) -> {
+            int[] moves = Board.bitboardToArray(rawMoves.getNonCaptureMoves() | rawMoves.getCaptureMoves());
+            for (int move : moves) {
+                results.add(source + FenString.locationToSquare(move));
+            }
+        });
+
+        return results;
     }
 
     public Map<String, PieceMoves> getNextMoves() {
@@ -170,6 +198,7 @@ public class Game {
     }
 
     // using chess algebraic notation
+    // this method executes most moves sent to it.  It isn't checking for correctness.
     public void move(String action) {
         int[] locations;
         // TODO validate action
@@ -178,11 +207,12 @@ public class Game {
 
         // test if the action is valid
         switch (action.charAt(0)) {
-            case 'N', 'K', 'Q', 'B', 'R' -> {
+            case 'R', 'N', 'B', 'Q', 'K' -> {
                 findSourceAndDestination(action);
                 this.getBoard().move(this.sourceLocation, this.destinationLocation);
             }
             case 'O' -> {
+                // TODO: How do I use the knowledge in KingMoves when castling?
                 findSourceAndDestination(action);
                 this.getBoard().move(this.sourceLocation, this.destinationLocation);
                 this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
@@ -261,21 +291,24 @@ public class Game {
     }
 
     /*
-     Examples:
-     d2    - pawns may have no char to represent them
-     Nd4   - non pawns will have their type as the first character
-     Nxb8  - captures will have an x
-     cxb5  - pawn captures will start with the file
-     Nxc8+ - check
-     Nxc8* - checkmate
-     O-O   - king side castle
-     O-O-O - queen side castle
-     e8=Q  - pawn promotion
-    
-     need to work backward from the destination to the source.
-     1. the piece type can be derived from the action (first char)
-     2. source has to be derived from the destination
-    */
+     * This method simply finds the source and target positions.  It doesn't check if the
+     * for any conditions such as whether the king is in check.
+     *
+     * Examples:
+     * d2    - pawns may have no char to represent them
+     * Nd4   - non pawns will have their type as the first character
+     * Nxb8  - captures will have an x
+     * cxb5  - pawn captures will start with the file
+     * Nxc8+ - check
+     * Nxc8* - checkmate
+     * O-O   - king side castle
+     * O-O-O - queen side castle
+     * e8=Q  - pawn promotion
+     *
+     * need to work backward from the destination to the source.
+     * 1. the piece type can be derived from the action (first char)
+     * 2. source has to be derived from the destination
+     */
     private void findSourceAndDestination(String action) {
         /*
          when there is ambiguity
@@ -290,31 +323,35 @@ public class Game {
         // source and destination for castling represents the kings movement
         if (action.equals("O-O-O")) {
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
-                this.sourceLocation = 60;
-                this.destinationLocation = 58;
-                this.secondarySourceLocation = 56;
-                this.secondaryDestinationLocation = 59;
+                this.sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
+                this.destinationLocation = CastlingLocations.BLACK_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                this.secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
+                this.secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+
                 return;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
-                this.sourceLocation = 4;
-                this.destinationLocation = 2;
-                this.secondarySourceLocation = 0;
-                this.secondaryDestinationLocation = 3;
+                this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
+                this.destinationLocation = CastlingLocations.WHITE_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                this.secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
+                this.secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+
                 return;
             }
         } else if (action.equals("O-O")) {
             // king side castle
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
-                this.sourceLocation = 60;
-                this.destinationLocation = 62;
-                this.secondarySourceLocation = 63;
-                this.secondaryDestinationLocation = 61;
+                this.sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
+                this.destinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location();
+                this.secondarySourceLocation = CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location();
+                this.secondaryDestinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location();
+
                 return;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
-                this.sourceLocation = 4;
-                this.destinationLocation = 6;
-                this.secondarySourceLocation = 7;
-                this.secondaryDestinationLocation = 5;
+                this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
+                this.destinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location();
+                this.secondarySourceLocation = CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location();
+                this.secondaryDestinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location();
+
                 return;
             }
         }
@@ -335,6 +372,7 @@ public class Game {
         char rankSpecified = 0;
         char fileSpecified = 0;
 
+        // If this is a capture move (the 'x') then work out whether we should prioritize the file or rank.
         if (action.length() == 5 && action.charAt(2) == 'x') {
             if (action.charAt(1) >= 'a' && action.charAt(1) <= 'h')
                 fileSpecified = action.charAt(1);
@@ -348,13 +386,13 @@ public class Game {
         for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
             tempLocation = possibleSourceLocations[i];
             Piece piece = this.getBoard().getPieceAtLocation(tempLocation);
-            PieceMoves bm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
+            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
                     getEnPassantTargetAsInt());
 
             // playing non-capture move
-            if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
+            if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
                 source = tempLocation;
-            } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
+            } else if ((pm.getCaptureMoves() & (1L << destination)) != 0) {
                 if (rankSpecified == 0 && fileSpecified == 0) {
                     source = tempLocation;
                     capture = true;
@@ -374,6 +412,9 @@ public class Game {
         this.destinationLocation = destination;
     }
 
+    /*
+     * If the King or their respective rooks move, then remove the castling option
+     */
     private void removeCastlingRightsFor(int i) {
         this.castlingRights = switch (i) {
             case 0 -> {

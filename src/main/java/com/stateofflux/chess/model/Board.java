@@ -31,6 +31,7 @@ public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
     protected long[] boards = new long[Piece.SIZE];
+    private Game game;
 
     /**
      * RANKS:
@@ -379,6 +380,14 @@ public class Board {
         }
 
         return result;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public Game getGame() {
+        return this.game;
     }
 
 }
