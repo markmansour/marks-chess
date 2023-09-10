@@ -47,7 +47,6 @@ public class Board {
      * FILES: a b c d e f g h
      *
      *
-     *
      * 8 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
      * 7 ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎
      * 6
@@ -316,41 +315,37 @@ public class Board {
         LOGGER.info("   abcdefgh");
     }
 
-    public int[] getPawnLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_PAWN, Piece.BLACK_PAWN, activePlayerColor);
+    public int[] getPawnLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_PAWN, Piece.BLACK_PAWN, playerColor);
     }
 
-    public int[] getRookLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_ROOK, Piece.BLACK_ROOK, activePlayerColor);
+    public int[] getRookLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_ROOK, Piece.BLACK_ROOK, playerColor);
     }
 
-	public int[] getKnightLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_KNIGHT, Piece.BLACK_KNIGHT, activePlayerColor);
+	public int[] getKnightLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_KNIGHT, Piece.BLACK_KNIGHT, playerColor);
 	}
 
-	public int[] getBishopLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_BISHOP, Piece.BLACK_BISHOP, activePlayerColor);
+	public int[] getBishopLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_BISHOP, Piece.BLACK_BISHOP, playerColor);
 	}
 
-	public int[] getQueenLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_QUEEN, Piece.BLACK_QUEEN, activePlayerColor);
+	public int[] getQueenLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_QUEEN, Piece.BLACK_QUEEN, playerColor);
 	}
 
-	public int[] getKingLocations(PlayerColor activePlayerColor) {
-        return getPieceLocations(Piece.WHITE_KING, Piece.BLACK_KING, activePlayerColor);
+	public int[] getKingLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_KING, Piece.BLACK_KING, playerColor);
 	}
 
-    public int[] getPieceLocations(Piece one, Piece two, PlayerColor activePlayerColor) {
-        Piece p;
-        if (activePlayerColor == PlayerColor.WHITE)
-            p = one;
-        else if (activePlayerColor == PlayerColor.BLACK)
-            p = two;
-        else
-            throw new IllegalArgumentException("Not a valid PlayerColor");
-
-        return Board.bitboardToArray(this.boards[p.getIndex()]);
+    public int[] getPieceLocationsAsArray(Piece one, Piece two, PlayerColor activePlayerColor) {
+        return Board.bitboardToArray(getPieceLocations(activePlayerColor == PlayerColor.WHITE ? one : two ));
 	}
+
+    public long getPieceLocations(Piece p) {
+        return this.boards[p.getIndex()];
+    }
 
     protected void clearLocation(int location) {
         for(int i = 0; i < this.boards.length; i++) {
