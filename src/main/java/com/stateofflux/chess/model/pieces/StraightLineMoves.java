@@ -24,7 +24,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         // validation here - throw IllegalArgumentException with details when invalid
         int nextPosition;
         long nextPositionBit;
-        long boardMax;
+        int boardMax;
 
         // calculate the max moves
         for (Direction d : this.directions) {

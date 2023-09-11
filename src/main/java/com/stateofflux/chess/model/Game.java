@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
  * validation layer of the Board object.
  */
 public class Game {
+    // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
     /*

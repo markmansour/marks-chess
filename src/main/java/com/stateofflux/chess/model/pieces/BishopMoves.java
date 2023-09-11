@@ -5,6 +5,8 @@ import com.stateofflux.chess.model.Direction;
 
 public class BishopMoves extends StraightLineMoves {
 
+    public static final int BISHOP_DIRECTIONS_MAX = 7;
+
     public BishopMoves(Board board, int location) {
         super(board, location);
     }
@@ -16,6 +18,6 @@ public class BishopMoves extends StraightLineMoves {
                 Direction.DOWN_LEFT,
                 Direction.DOWN_RIGHT
         };
-        this.max = 7;
+        this.max = BISHOP_DIRECTIONS_MAX;
     }
 }

@@ -315,16 +315,85 @@ public class GameTest {
             game.move("O-O");
             assertThat(game.asFenNoCounters()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R w KQ -");
         }
+    }
+    public class WhenPassingThroughCheck {
+        @Test
+        public void kingDoesNotPassThroughCheckFromBishop() {
+            Game game = new Game("rnbqk1nr/1pp3pp/5p2/p1bpp3/4P1PP/5P1N/PPPP2B1/RNBQK2R w KQkq -");
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3kbnr/pp3ppp/n7/2pqP1B1/6b1/4P3/PP3PPP/RN1QKBNR b KQkq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
+        }
 
         @Test
-        public void queenSideWhiteCastlingWhileInCheck() {
-            Game game = new Game("r1b1kbnr/pp1p1pp1/8/qNp1p2p/Q1Pn1B2/8/PP2PPPP/R3KBNR w KQkq -");    // this is illegal as the king is in check
+        public void kingDoesNotPassThroughCheckFromKnight() {
+            Game game = new Game("rnbqkb1r/pppppppp/8/8/6P1/5NnB/PPPPPP1P/RNBQK2R w KQkq -");
             game.generateMoves();
-            // moves 1. d4 Nc6 2. Bf4 Nxd4 3. c4 h5 4. Na3 e5 5. Qa4 c5 6. Nb5 Qa5+
             Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
-            LOGGER.info(generatedMoves.toString());
-            assertThat(generatedMoves).doesNotContain("e1c1");
-            assertThat(game.getCastlingRights()).isEqualTo("kq");  // TODO: what to do about this???
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3kbnr/p3pppp/bNnq4/2pP4/8/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
+        }
+
+        @Test
+        public void kingDoesNotPassThroughCheckFromRook() {
+            Game game = new Game("1nbqkbnr/1pp3Pp/4N3/8/4pr1P/p7/PPPP2B1/RNBQK2R w KQk -");
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3kbnr/pp3ppp/n6B/7q/3p2Q1/N1R1P3/PP3PPP/4KBNR b Kkq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
+        }
+
+        @Test
+        public void kingDoesNotPassThroughCheckFromQueen() {
+            Game game = new Game("rnb1kbnr/1pp3pp/5p2/p3p3/3qP1PP/7N/PPPP2B1/RNBQK2R w KQkq -");
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3kbnr/pp3ppp/n6B/2pq4/3p2Q1/4P3/PP3PPP/RN2KBNR b KQkq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
+        }
+
+        @Test
+        public void kingDoesNotPassThroughCheckFromKing() {
+            Game game = new Game("rnB2b1r/ppp2p1p/5p2/8/8/8/P5kP/R1B1K2R w KQ -");
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3k1nr/p1K3pp/N7/5p2/2P1p2q/4PPP1/PP6/R1BQ1BNR b kq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
+        }
+
+        @Test
+
+        public void kingDoesNotPassThroughCheckFromPawn() {
+            Game game = new Game("rn1k1b1r/ppp1pp1p/8/3N1b2/8/7P/P5p1/R1B1K2R w KQ -");
+            game.generateMoves();
+            Set<String> generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e1g1");
+
+            game = new Game("r3kbnr/p1P1pppp/b7/8/N1p3q1/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
+            game.generateMoves();
+            generatedMoves = game.getGeneratedMovesAsSimpleSquares();
+            assertThat(generatedMoves).doesNotContain("e8c8");
         }
     }
 

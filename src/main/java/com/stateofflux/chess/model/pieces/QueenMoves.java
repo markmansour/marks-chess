@@ -5,6 +5,8 @@ import com.stateofflux.chess.model.Direction;
 
 public class QueenMoves extends StraightLineMoves {
 
+    public static final int QUEEN_DIRECTIONS_MAX = 7;
+
     public QueenMoves(Board board, int location) {
         super(board, location);
     }
@@ -20,6 +22,6 @@ public class QueenMoves extends StraightLineMoves {
                 Direction.DOWN_LEFT,
                 Direction.LEFT
         };
-        this.max = 8;
+        this.max = QUEEN_DIRECTIONS_MAX;
     }
 }

@@ -28,10 +28,8 @@ public class KingMovesTest {
         assertThat(pieceMoves.getCaptureMoves()).isZero();
     }
 
+/*
     public class Castling {
-        @Test
-        public void adsadf() {
-            Game game = new Game("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq -");
-        }
     }
+*/
 }
