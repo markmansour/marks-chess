@@ -81,7 +81,32 @@ public class Board {
      * Build a board using a fen string
      */
     public Board(String fen) {
-        FenString.populateBoard(this, fen);
+        this.populate(fen);
+    }
+
+    public void populate(String fen) {
+        char[] fenCh = fen.toCharArray();
+        int rank = 7;
+        int location = 56;
+
+        for (char element : fenCh) {
+            if (element == '/') {
+                if (location % 8 != 0)
+                    throw new IllegalArgumentException("Invalid FEN: " + fen);
+
+                location = --rank * 8;
+
+                continue;
+            }
+
+            // break if the fenCH[i] is a digit
+            if (Character.isDigit(element)) {
+                location += Character.digit(element, 10);
+                continue;
+            }
+
+            location = setPieceOnBoard(element, location);
+        }
     }
 
     // --------------------------- Instance Methods ---------------------------
@@ -113,7 +138,7 @@ public class Board {
     }
 
     /*
-     * return the characture representing a piece
+     * return the character representing a piece
      */
     public Piece getPieceAtLocation(int location) {
         long bitLocation = 1L << location;
@@ -250,7 +275,7 @@ public class Board {
         return f.toString();
     }
 
-    public void printBoard() {
+    public void printOccupiedBoard() {
         StringBuilder prettyBoard = new StringBuilder(64);
 
         for (int i = 0; i < 64; i++) {
@@ -269,7 +294,7 @@ public class Board {
 
     // --------------------------- Static Methods ---------------------------
     // useful for debugging.
-    public static void printBoard(long board) {
+    public static void printOccupiedBoard(long board) {
         StringBuilder rankString;
         List<String> ranks = new ArrayList<>();
 
@@ -284,8 +309,20 @@ public class Board {
 
         int i = 0;
         for (String r : ranks) {
-            LOGGER.info("{}: {}", Integer.valueOf(8 - i), r);
+            LOGGER.info("{}: {}", 8 - i, r);
             i++;
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    public static void printBoard(long board) {
+        String reversedLong = longToReversedBinaryString(board);
+
+        for (int rank = 7; rank >= 0; rank--) {
+            LOGGER.info("{}: {}",
+                    rank + 1,
+                    reversedLong.substring(rank * 8, (rank + 1) * 8));
         }
 
         LOGGER.info("   abcdefgh");
@@ -293,25 +330,10 @@ public class Board {
 
     public static String longToReversedBinaryString(long l) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < Long.numberOfLeadingZeros(l); i++) {
-            sb.append('0');
-        }
-
+        sb.append("0".repeat(Long.numberOfLeadingZeros(l)));
         sb.append(Long.toBinaryString(l));
 
         return sb.reverse().toString();
-    }
-
-    public static void printBoardv2(long board) {
-        String reversedLong = longToReversedBinaryString(board);
-
-        for (int rank = 7; rank >= 0; rank--) {
-            LOGGER.info("{}: {}",
-                    Integer.valueOf(rank + 1),
-                    reversedLong.substring(rank * 8, (rank + 1) * 8));
-        }
-
-        LOGGER.info("   abcdefgh");
     }
 
     public int[] getPawnLocations(PlayerColor playerColor) {

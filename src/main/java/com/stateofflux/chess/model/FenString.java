@@ -218,29 +218,4 @@ public class FenString {
         return this.fullmoveCounter;
     }
 
-    public static void populateBoard(Board b, String fen) {
-        char[] fenCh = fen.toCharArray();
-        int rank = 7;
-        int location = 56;
-
-        for (char element : fenCh) {
-            if (element == '/') {
-                if (location % 8 != 0)
-                    throw new IllegalArgumentException("Invalid FEN: " + fen);
-
-                location = --rank * 8;
-
-                continue;
-            }
-
-            // break if the fenCH[i] is a digit
-            if (Character.isDigit(element)) {
-                location += Character.digit(element, 10);
-                continue;
-            }
-
-            location = b.setPieceOnBoard(element, location);
-        }
-    }
-
 }

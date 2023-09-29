@@ -18,7 +18,6 @@ public class GameTest {
 
     @Test
     public void scanInitialFenString() {
-
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
         Game g = new Game(fen);
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
@@ -402,5 +401,11 @@ public class GameTest {
         public void promotion() {
             fail("todo");
         }
+    }
+
+    @Test
+    public void playGameWithValidMoves() {
+        Game game = new Game();
+
     }
 }

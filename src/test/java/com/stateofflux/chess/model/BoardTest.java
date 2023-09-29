@@ -109,7 +109,7 @@ public class BoardTest {
     assertThat(b.toFenPiecePlacementString())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/BP6/P1PPPPPP/RN1QKBNR");
-    b.printBoard();
+    b.printOccupiedBoard();
   }
 
   @Test
