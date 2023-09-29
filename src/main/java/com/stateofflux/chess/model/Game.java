@@ -84,7 +84,7 @@ public class Game {
     }
 
     public String getPiecePlacement() {
-        return this.getBoard().toFenPiecePlacementString();
+        return this.getBoard().toFen();
     }
 
     private void setFullmoveCounter(int fullmoveCounter) {
@@ -158,7 +158,7 @@ public class Game {
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
-            Piece piece = this.getBoard().getPieceAtLocation(i);
+            Piece piece = this.getBoard().get(i);
 
             if (piece == Piece.EMPTY || piece.getColor() != this.activePlayerColor)
                 continue;
@@ -231,7 +231,7 @@ public class Game {
                 // the pawnlocatin that
                 // is in the same file as the destination.
                 for (int i : locations) {
-                    Piece piece = this.getBoard().getPieceAtLocation(i);
+                    Piece piece = this.getBoard().get(i);
                     PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
 
                     if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
@@ -251,22 +251,22 @@ public class Game {
                         if (i >= 8 && i <= 15 && destination - i == 16) { // two moves away
 
                             if (destination < 31 &&
-                                    (((1L << (destination + 1)) & this.getBoard().getBlackPawnBoard()) != 0))
+                                    (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i + 8));
 
                             if (destination > 24 &&
-                                    (((1L << (destination - 1)) & this.getBoard().getBlackPawnBoard()) != 0))
+                                    (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i + 8));
 
                         } else if (i >= 48 && i <= 55 && destination - i == -16) {
 
                             // set the en passant target
                             if (destination < 39 &&
-                                    (((1L << (destination + 1)) & this.getBoard().getWhitePawnBoard()) != 0))
+                                    (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i - 8));
 
                             if (destination > 32 &&
-                                    (((1L << (destination - 1)) & this.getBoard().getWhitePawnBoard()) != 0))
+                                    (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
                                 this.setEnPassantTarget(FenString.locationToSquare(i - 8));
 
                         } else {
@@ -386,7 +386,7 @@ public class Game {
 
         for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
             tempLocation = possibleSourceLocations[i];
-            Piece piece = this.getBoard().getPieceAtLocation(tempLocation);
+            Piece piece = this.getBoard().get(tempLocation);
             PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
                     getEnPassantTargetAsInt());
 

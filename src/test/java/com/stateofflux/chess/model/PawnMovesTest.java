@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PawnTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PawnTest.class);
+public class PawnMovesTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PawnMovesTest.class);
 
     @Test
     public void openingMovesForWhite() {

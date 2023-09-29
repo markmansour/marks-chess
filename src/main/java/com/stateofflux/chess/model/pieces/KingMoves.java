@@ -99,11 +99,11 @@ public class KingMoves extends StraightLineMoves {
 
     protected boolean noPiecesBetweenKingAndRook(Castling side) {
         if (side == Castling.KING_SIDE) {
-            return (kingSideCastlingEmptyCheckBitboard & this.getBoard().getOccupiedBoard()) == 0;
+            return (kingSideCastlingEmptyCheckBitboard & this.getBoard().getOccupied()) == 0;
         }
 
         // much be queen side.
-        return (queenSideCastlingEmptyCheckBitboard & this.getBoard().getOccupiedBoard()) == 0;
+        return (queenSideCastlingEmptyCheckBitboard & this.getBoard().getOccupied()) == 0;
 //            // create a mask over the occupied board and only keep the empty check bitboard positions.
 //            (~queenSideCastlingEmptyCheckBitboard ^ this.getBoard().getOccupiedBoard()
 //                // check to see if the empty check bitboard positions are free
@@ -148,7 +148,7 @@ public class KingMoves extends StraightLineMoves {
 
             // rook
             if(whiteRookIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.BLACK_ROOK),
                     tempLocation))
                 return true;
@@ -163,20 +163,20 @@ public class KingMoves extends StraightLineMoves {
 
             // bishop
             if(whiteBishopIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.BLACK_BISHOP),
                 tempLocation))
                 return true;
 
             // queen
             if(whiteQueenIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.BLACK_QUEEN),
                 tempLocation))
                 return true;
             // king
             if(whiteKingIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.BLACK_KING),
                 tempLocation))
                 return true;
@@ -191,7 +191,7 @@ public class KingMoves extends StraightLineMoves {
 
             // rook
             if(blackRookIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.WHITE_ROOK),
                 tempLocation))
                 return true;
@@ -205,21 +205,21 @@ public class KingMoves extends StraightLineMoves {
 
             // bishop
             if(blackBishopIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.WHITE_BISHOP),
                 tempLocation))
                 return true;
 
             // queen
             if(blackQueenIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.WHITE_QUEEN),
                 tempLocation))
                 return true;
 
             // king
             if(blackKingIsInStraightLineAndNotBlocked(
-                this.getBoard().getOccupiedBoard(),
+                this.getBoard().getOccupied(),
                 this.getBoard().getPieceLocations(Piece.WHITE_KING),
                 tempLocation))
                 return true;

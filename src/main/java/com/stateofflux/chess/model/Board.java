@@ -105,15 +105,15 @@ public class Board {
                 continue;
             }
 
-            location = setPieceOnBoard(element, location);
+            location = set(element, location);
         }
     }
 
     // --------------------------- Instance Methods ---------------------------
-    public int setPieceOnBoard(char element, int location) {
+    public int set(char element, int location) {
         for (Piece piece : Piece.values()) {
             if (element == piece.getPieceChar()) {
-                setPieceOnBoard(piece, location);
+                set(piece, location);
                 location++;
                 break;
             }
@@ -121,14 +121,14 @@ public class Board {
         return location;
     }
 
-    public long setPieceOnBoard(Piece piece, int location) {
+    public long set(Piece piece, int location) {
         if (piece == Piece.EMPTY)
             throw new IllegalArgumentException("Cannot place empty piece");
 
         return this.boards[piece.getIndex()] |= 1L << location;
     }
 
-    public void removePieceFromBoard(int location) {
+    public void remove(int location) {
         long bitLocation = 1L << location;
 
         for (int i = 0; i < this.boards.length; i++) {
@@ -140,7 +140,7 @@ public class Board {
     /*
      * return the character representing a piece
      */
-    public Piece getPieceAtLocation(int location) {
+    public Piece get(int location) {
         long bitLocation = 1L << location;
 
         for (int i = 0; i < this.boards.length; i++) {
@@ -151,7 +151,7 @@ public class Board {
         return Piece.EMPTY;
     }
 
-    protected int getBitSetIndexAtLocation(int location) {
+    protected int getBitSetIndex(int location) {
         for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
             if ((this.boards[boardCount] & (1L << location)) != 0)
                 return boardCount;
@@ -168,7 +168,7 @@ public class Board {
 
         while (location + i < 64 &&
                 i < max &&
-                this.getPieceAtLocation(location + i) == Piece.EMPTY)
+                this.get(location + i) == Piece.EMPTY)
             i++;
 
         return i + location;
@@ -188,7 +188,7 @@ public class Board {
         if (fromIndex == -1)
             throw new AssertionError("Source location not found: " + this);
 
-        int boardIndex = this.getBitSetIndexAtLocation(fromIndex);
+        int boardIndex = this.getBitSetIndex(fromIndex);
 
         this.clearLocation(toIndex);  // take the destination piece off the board if it exists
         this.boards[boardIndex] ^= (1L << fromIndex); // clear
@@ -198,11 +198,11 @@ public class Board {
     }
 
     public boolean isEmpty(int location) {
-        return (~this.getOccupiedBoard() & (1L << location)) != 0;
+        return (~this.getOccupied() & (1L << location)) != 0;
     }
 
     // this can be optimized.
-    public long getOccupiedBoard() {
+    public long getOccupied() {
         long usedBoard = 0L;
 
         for (long board : boards) {
@@ -212,7 +212,7 @@ public class Board {
         return usedBoard;
     }
 
-    public long getBlackBoard() {
+    public long getBlack() {
         return this.boards[Piece.BLACK_PAWN.getIndex()] |
                 this.boards[Piece.BLACK_KNIGHT.getIndex()] |
                 this.boards[Piece.BLACK_BISHOP.getIndex()] |
@@ -221,7 +221,7 @@ public class Board {
                 this.boards[Piece.BLACK_KING.getIndex()];
     }
 
-    public long getWhiteBoard() {
+    public long getWhite() {
         return this.boards[Piece.WHITE_PAWN.getIndex()] |
                 this.boards[Piece.WHITE_KNIGHT.getIndex()] |
                 this.boards[Piece.WHITE_BISHOP.getIndex()] |
@@ -230,17 +230,17 @@ public class Board {
                 this.boards[Piece.WHITE_KING.getIndex()];
     }
 
-    public long getWhitePawnBoard() {
+    public long getWhitePawns() {
         return this.boards[Piece.WHITE_PAWN.getIndex()];
     }
 
-    public long getBlackPawnBoard() {
+    public long getBlackPawns() {
         return this.boards[Piece.BLACK_PAWN.getIndex()];
     }
 
     // --------------------------- Visualization ---------------------------
     // implement a Forsyth-Edwards toString() method
-    public String toFenPiecePlacementString() {
+    public String toFen() {
         StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
 
         int rank = 7;
@@ -250,7 +250,7 @@ public class Board {
         Piece p;
 
         while (rank >= 0) {
-            p = getPieceAtLocation(location);
+            p = get(location);
 
             if (p == Piece.EMPTY) {
                 max = 8 - (location % 8);
@@ -275,11 +275,11 @@ public class Board {
         return f.toString();
     }
 
-    public void printOccupiedBoard() {
+    public void printOccupied() {
         StringBuilder prettyBoard = new StringBuilder(64);
 
         for (int i = 0; i < 64; i++) {
-            prettyBoard.insert(i, getPieceAtLocation(i));
+            prettyBoard.insert(i, get(i));
         }
 
         CharSequence[] ranks = new CharSequence[8];
@@ -294,7 +294,7 @@ public class Board {
 
     // --------------------------- Static Methods ---------------------------
     // useful for debugging.
-    public static void printOccupiedBoard(long board) {
+    public static void printOccupied(long board) {
         StringBuilder rankString;
         List<String> ranks = new ArrayList<>();
 

@@ -23,7 +23,7 @@ public class Player {
         Map<Integer, Long> results = new HashMap<>();
         // 1. get the piece at the poisition
         int location = FenString.squareToLocation(position);
-        Piece piece = this.board.getPieceAtLocation(location);
+        Piece piece = this.board.get(location);
 
         // check if player is trying to move a valid piece
         if (this.color != piece.getColor())

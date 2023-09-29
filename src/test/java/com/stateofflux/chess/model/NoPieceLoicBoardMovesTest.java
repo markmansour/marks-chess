@@ -65,9 +65,9 @@ public class NoPieceLoicBoardMovesTest {
     public void movingUpStoppingAtEndOfBoard() {
         Board openingBoard = new Board();
 
-        openingBoard.removePieceFromBoard(48);
-        openingBoard.removePieceFromBoard(56);
-        openingBoard.removePieceFromBoard(0); // check for wrap around and going backwards
+        openingBoard.remove(48);
+        openingBoard.remove(56);
+        openingBoard.remove(0); // check for wrap around and going backwards
 
         NoPieceLogicBoardMoves bm = new NoPieceLogicBoardMoves(openingBoard, 8);
         bm.setMax(10);  // test an invalid max

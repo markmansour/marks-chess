@@ -2,9 +2,6 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
-import com.stateofflux.chess.model.FenString;
-
-import java.util.ArrayList;
 
 public abstract class PieceMoves {
     protected final Board board;
@@ -19,12 +16,12 @@ public abstract class PieceMoves {
     protected PieceMoves(Board board, int location) {
         this.board = board;
         this.location = location;
-        this.piece = board.getPieceAtLocation(location);
+        this.piece = board.get(location);
 
         // are these always needed? Can we late bind them?
         this.opponentBoard = getOpponentBoard(); // calculation
         this.currentPlayerBoard = getCurrentPlayerBoard();
-        this.occupiedBoard = this.board.getOccupiedBoard();  // the union of current and occupied boards
+        this.occupiedBoard = this.board.getOccupied();  // the union of current and occupied boards
 
         setupPaths();
         findCaptureAndNonCaptureMoves();
@@ -37,8 +34,8 @@ public abstract class PieceMoves {
     // TODO: can this be set at instantiation?
     protected long getOpponentBoard() {
         return switch (this.piece.getColor()) {
-            case WHITE -> this.board.getBlackBoard();
-            case BLACK -> this.board.getWhiteBoard();
+            case WHITE -> this.board.getBlack();
+            case BLACK -> this.board.getWhite();
             default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
         };
     }
@@ -46,8 +43,8 @@ public abstract class PieceMoves {
     // TODO: can this be set at instantiation?
     protected long getCurrentPlayerBoard() {
         return switch (this.piece.getColor()) {
-            case WHITE -> this.board.getWhiteBoard();
-            case BLACK -> this.board.getBlackBoard();
+            case WHITE -> this.board.getWhite();
+            case BLACK -> this.board.getBlack();
             default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
         };
     }
