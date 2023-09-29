@@ -152,7 +152,7 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    public int generateMoves() {
+    public int moves() {
         this.nextMoves = new HashMap<>();
         this.nextMovesCount = 0;
 
