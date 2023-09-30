@@ -26,9 +26,7 @@ public class Game {
     protected Player black;
     protected Board board;
     protected PlayerColor activePlayerColor;
-    protected Map<String, PieceMoves> nextMoves;
-    protected PieceMoves rawMoves;
-    protected int nextMovesCount;
+    protected MoveList<Move> nextMoves;
     protected int sourceLocation = -1;
     protected int destinationLocation = -1;
     private int secondarySourceLocation = -1;
@@ -152,9 +150,8 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    public int moves() {
-        this.nextMoves = new HashMap<>();
-        this.nextMovesCount = 0;
+    public MoveList<Move> moves() {
+        this.nextMoves = new MoveList<Move>(new ArrayList<Move>());
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
@@ -165,36 +162,22 @@ public class Game {
 
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
 
-            this.nextMovesCount += rawMoves.getMovesCount();
-            if (rawMoves.getMovesCount() > 0) {
-                this.nextMoves.put(FenString.locationToSquare(i), rawMoves);
-                LOGGER.debug("Generated {} moves for {} at {}", rawMoves.getMovesCount(), piece, i);
+            for(int dest: Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+                nextMoves.add(new Move(piece, i, dest, MoveFlag.NONCAPTURE));
+            }
+
+            for(int dest: Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                nextMoves.add(new Move(piece, i, dest, MoveFlag.CAPTURE));
             }
         }
 
-        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
+//        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
 
-        return this.nextMovesCount;
+//        return this.nextMovesCount;
+        return this.nextMoves;
     }
 
-    // Must call generateMoves() immediately prior to usage. I'm not making the call in the code as
-    // it regenerates the answer and this could be extra overhead.
-    // Consider: generating it anyway as this method is unlikely to be called twice in succession.  Alternativly,
-    // create lifecycle methods on each turn, and clear the value of nextMoves so I can then check it for null.
-    public Set<String> getGeneratedMovesAsSimpleSquares() {
-        Set<String> results = new HashSet<>();
-
-        this.nextMoves.forEach((source, rawMoves) -> {
-            int[] moves = Board.bitboardToArray(rawMoves.getNonCaptureMoves() | rawMoves.getCaptureMoves());
-            for (int move : moves) {
-                results.add(source + FenString.locationToSquare(move));
-            }
-        });
-
-        return results;
-    }
-
-    public Map<String, PieceMoves> getNextMoves() {
+    public List<Move> getNextMoves() {
         return this.nextMoves;
     }
 

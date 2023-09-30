@@ -383,6 +383,7 @@ public class Board {
             return 1 + countSetBits(n & (n - 1L));
     }
 
+    /** returns locations from 0-63 **/
     public static int[] bitboardToArray(long l) {
         int bitsSet = countSetBits(l);
         int[] result = new int[bitsSet];
