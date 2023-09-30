@@ -388,6 +388,57 @@ public class GameTest {
     @Test
     public void playGameWithValidMoves() {
         Game game = new Game();
+        // 1. d4 Nf6 2. c4 e5 3. Nf3 c5 4. Nc3 cxd4 5. Nxd4 Bb4
+        game.move("d4");
+        game.move("Nf6");
+        game.move("c4");
+        game.move("e5");
+        game.move("Nf3");
+        game.move("c5");
+        game.move("Nc3");
+        game.move("cxd4");
+        game.move("Nxd4");
+        game.move("Bb4");
 
+        assertThat(game.asFenNoCounters()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq -");
+    }
+
+    // Insufficient Materials
+    @Test public void kingVsKing() {
+        Game game = new Game("8/1K6/8/8/8/8/8/5k2 w - - 0 1"); // two kings
+        assertThat(game.hasInsufficientMaterials()).isTrue();
+    }
+
+    @Test public void kingAndMinorPiecesVsKing() {
+        Game game = new Game("8/8/8/8/8/8/1K3k1B/8 w - - 0 1");  // king & bishop vs king
+        assertThat(game.hasInsufficientMaterials()).isTrue();
+
+        game = new Game("3K4/8/8/8/8/8/1k2N3/8 w - - 0 1"); // king & knight vs king
+        assertThat(game.isOver()).isTrue();
+        assertThat(game.hasInsufficientMaterials()).isTrue();
+    }
+
+    @Test public void onlyKingVsAllOpponentPieces() {
+        Game game = new Game("8/P2kP1BR/5Q2/6P1/NP2P3/P7/2PKPR2/1B2N3 w - - 0 1");  // black king vs all white
+        assertThat(game.hasInsufficientMaterials()).isFalse();
+        game.timeIsOver();
+        assertThat(game.hasInsufficientMaterials()).isTrue();
+    }
+
+    @Test public void kingAndTwoKnightsVsKing() {
+        Game game = new Game("4N3/3K4/k7/8/8/8/8/5N2 w - - 0 1");  // black king vs white king and two white knights
+        assertThat(game.hasInsufficientMaterials()).isTrue();
+    }
+
+    @Test public void kingAndMinorVsKingAndMinor() {
+        String[] fens = new String[] {
+            "1N6/8/8/3K2n1/8/8/3k4/8 w - - 0 1",  // black king & black knight vs white king & white knight
+            "5k2/b7/8/8/8/4N3/6K1/8 w - - 0 1",   // black king & black bishop vs white king & white knight
+            "8/8/4k3/8/8/8/4B2K/b7 w - - 0 1"     // black king & black bishop vs white king & white bishop
+        };
+        for (String fen : fens) {
+            Game game = new Game(fen);
+            assertThat(game.hasInsufficientMaterials()).isTrue();
+        }
     }
 }

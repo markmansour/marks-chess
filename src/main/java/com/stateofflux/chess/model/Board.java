@@ -197,6 +197,16 @@ public class Board {
         return true;
     }
 
+    public boolean move(Move m) {
+        int boardIndex = this.getBitSetIndex(m.getFrom());
+
+        this.clearLocation(m.getTo());  // take the destination piece off the board if it exists
+        this.boards[boardIndex] ^= (1L << m.getFrom()); // clear
+        this.boards[boardIndex] |= (1L << m.getTo()); // set
+
+        return true;
+    }
+
     public boolean isEmpty(int location) {
         return (~this.getOccupied() & (1L << location)) != 0;
     }
@@ -221,13 +231,97 @@ public class Board {
                 this.boards[Piece.BLACK_KING.getIndex()];
     }
 
+    public long getBlackWithoutKing() {
+        return this.boards[Piece.BLACK_PAWN.getIndex()] |
+            this.boards[Piece.BLACK_KNIGHT.getIndex()] |
+            this.boards[Piece.BLACK_BISHOP.getIndex()] |
+            this.boards[Piece.BLACK_ROOK.getIndex()] |
+            this.boards[Piece.BLACK_QUEEN.getIndex()];
+    }
+
+    public boolean hasBlackKingOnly() {
+        return getBlackWithoutKing() == 0;
+    }
+
+    public boolean blackHasOnlyOneMinorPiece() {
+        int knights = getKnightLocations(PlayerColor.BLACK).length;
+        int bishops = getBishopLocations(PlayerColor.BLACK).length;
+
+        return
+            (this.boards[Piece.BLACK_PAWN.getIndex()] == 0) &&
+                (this.boards[Piece.BLACK_ROOK.getIndex()] == 0) &&
+                (this.boards[Piece.BLACK_QUEEN.getIndex()] == 0) &&
+                (knights + bishops == 1);
+    }
+
+    public boolean blackHasOnlyTwoKnights() {
+        int knights = getKnightLocations(PlayerColor.BLACK).length;
+
+        return
+            (this.boards[Piece.BLACK_PAWN.getIndex()] == 0) &&
+            (this.boards[Piece.BLACK_BISHOP.getIndex()] == 0) &&
+                (this.boards[Piece.BLACK_ROOK.getIndex()] == 0) &&
+                (this.boards[Piece.BLACK_QUEEN.getIndex()] == 0) &&
+                (knights == 2);
+    }
+
+    public boolean blackHasAllOriginalPieces() {
+        return getPawnLocations(PlayerColor.BLACK).length == 8 &&
+            getRookLocations(PlayerColor.BLACK).length == 2 &&
+            getKnightLocations(PlayerColor.BLACK).length == 2 &&
+            getBishopLocations(PlayerColor.BLACK).length == 2 &&
+            getQueenLocations(PlayerColor.BLACK).length == 1;
+    }
+
     public long getWhite() {
         return this.boards[Piece.WHITE_PAWN.getIndex()] |
-                this.boards[Piece.WHITE_KNIGHT.getIndex()] |
-                this.boards[Piece.WHITE_BISHOP.getIndex()] |
-                this.boards[Piece.WHITE_ROOK.getIndex()] |
-                this.boards[Piece.WHITE_QUEEN.getIndex()] |
-                this.boards[Piece.WHITE_KING.getIndex()];
+            this.boards[Piece.WHITE_KNIGHT.getIndex()] |
+            this.boards[Piece.WHITE_BISHOP.getIndex()] |
+            this.boards[Piece.WHITE_ROOK.getIndex()] |
+            this.boards[Piece.WHITE_QUEEN.getIndex()] |
+            this.boards[Piece.WHITE_KING.getIndex()];
+    }
+
+    public long getWhiteWithoutKing() {
+        return this.boards[Piece.WHITE_PAWN.getIndex()] |
+            this.boards[Piece.WHITE_KNIGHT.getIndex()] |
+            this.boards[Piece.WHITE_BISHOP.getIndex()] |
+            this.boards[Piece.WHITE_ROOK.getIndex()] |
+            this.boards[Piece.WHITE_QUEEN.getIndex()];
+    }
+
+    public boolean hasWhiteKingOnly() {
+        return getWhiteWithoutKing() == 0;
+    }
+
+    public boolean whiteHasOnlyOneMinorPiece() {
+        int knights = getKnightLocations(PlayerColor.WHITE).length;
+        int bishops = getBishopLocations(PlayerColor.WHITE).length;
+
+        return
+            (this.boards[Piece.WHITE_PAWN.getIndex()] == 0) &&
+            (this.boards[Piece.WHITE_ROOK.getIndex()] == 0) &&
+            (this.boards[Piece.WHITE_QUEEN.getIndex()] == 0) &&
+            (knights + bishops == 1);
+    }
+
+    public boolean whiteHasAllOriginalPieces() {
+        return getPawnLocations(PlayerColor.WHITE).length == 8 &&
+            getRookLocations(PlayerColor.WHITE).length == 2 &&
+            getKnightLocations(PlayerColor.WHITE).length == 2 &&
+            getBishopLocations(PlayerColor.WHITE).length == 2 &&
+            getQueenLocations(PlayerColor.WHITE).length == 1;
+    }
+
+    public boolean whiteHasOnlyTwoKnights() {
+        int knights = getKnightLocations(PlayerColor.WHITE).length;
+
+        return
+            (this.boards[Piece.WHITE_PAWN.getIndex()] == 0) &&
+                (this.boards[Piece.WHITE_BISHOP.getIndex()] == 0) &&
+                (this.boards[Piece.WHITE_ROOK.getIndex()] == 0) &&
+                (this.boards[Piece.WHITE_QUEEN.getIndex()] == 0) &&
+                (knights == 2);
     }
 
     public long getWhitePawns() {

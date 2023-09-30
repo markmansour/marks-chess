@@ -88,3 +88,7 @@ Fen: rnbqkbnr/pppppppp/8/8/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 1
 Key: 8E79D756F2C9E586
 Checkers:
 ```
+
+## Test Data
+* [Chess Move Generator](https://github.com/schnitzi/chessmovegen/tree/master)
+* [Random FEN Generator](http://bernd.bplaced.net/fengenerator/fengenerator.html)

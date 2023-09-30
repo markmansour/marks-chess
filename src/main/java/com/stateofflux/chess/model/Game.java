@@ -49,6 +49,7 @@ public class Game {
     // The number of the full moves. It starts at 1 and is incremented after Black's
     // move
     protected int fullmoveCounter;
+    private boolean outOfTime = false;
 
     // game with players - intended for play
     public Game(Player white, Player black) {
@@ -359,7 +360,7 @@ public class Game {
 
         int destination = FenString.squareToLocation(action);
         int source = -1;
-        int possibleSourceLocations[];
+        int[] possibleSourceLocations;
 
         switch (actionChars[0]) {
             case 'N' -> possibleSourceLocations = this.getBoard().getKnightLocations(this.getActivePlayerColor());
@@ -480,5 +481,70 @@ public class Game {
     
     public Board getBoard() {
         return this.board;
+    }
+
+    public boolean isOver() {
+        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || past50moves() || hasRepeated() || agreeGameIsOver();
+    }
+
+    public boolean agreeGameIsOver() {
+        return false;
+    }
+
+    public boolean hasRepeated() {
+        return false;
+    }
+
+    public boolean past50moves() {
+        return false;
+    }
+
+    public boolean hasInsufficientMaterials() {
+        // logic assumes there is always one black and white king.
+        // King vs king
+        if(getBoard().hasBlackKingOnly() && getBoard().hasWhiteKingOnly())
+            return true;
+
+        // King + minor piece (knight of bishop) vs king
+        if((getBoard().hasWhiteKingOnly() && getBoard().blackHasOnlyOneMinorPiece()) ||
+            (getBoard().hasBlackKingOnly() && getBoard().whiteHasOnlyOneMinorPiece()))
+            return true;
+
+        // King + minor piece vs king + minor piece
+        if(getBoard().blackHasOnlyOneMinorPiece() && getBoard().whiteHasOnlyOneMinorPiece())
+            return true;
+
+        // King + two knights vs king
+        if((getBoard().hasBlackKingOnly() && getBoard().whiteHasOnlyTwoKnights()) ||
+            (getBoard().hasWhiteKingOnly() && getBoard().blackHasOnlyTwoKnights()))
+            return true;
+
+        // Lone king vs all the pieces & time runs out
+        if(isOutOfTime() &&
+            ((getBoard().hasBlackKingOnly() && getBoard().whiteHasAllOriginalPieces()) ||
+            (getBoard().hasWhiteKingOnly() && getBoard().blackHasAllOriginalPieces())))
+            return true;
+
+        return false;
+    }
+
+    public void timeIsOver() {
+        outOfTime = true;
+    }
+
+    public boolean isOutOfTime() {
+        return outOfTime;
+    }
+
+    public boolean isStalemate() {
+        return false;
+    }
+
+    private boolean hasResigned() {
+        return false;
+    }
+
+    public boolean isCheckmate() {
+        return false;
     }
 }
