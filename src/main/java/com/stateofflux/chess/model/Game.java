@@ -217,46 +217,10 @@ public class Game {
                     Piece piece = this.getBoard().get(i);
                     PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
 
-                    if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
-                        this.getBoard().move(i, destination);
-                        moved = true;
-                    } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
-                        // normal capture
-                        this.getBoard().move(i, destination);
-                        moved = true;
-                    } else {
-                        moved = false;
-                    }
+                    moved = movePawn(i, bm, destination);
 
                     // update the en passant value
-                    if (moved) {
-                        // if the pawn is on their home position && if the destination is two moves away
-                        if (i >= 8 && i <= 15 && destination - i == 16) { // two moves away
-
-                            if (destination < 31 &&
-                                    (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
-                                this.setEnPassantTarget(FenString.locationToSquare(i + 8));
-
-                            if (destination > 24 &&
-                                    (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
-                                this.setEnPassantTarget(FenString.locationToSquare(i + 8));
-
-                        } else if (i >= 48 && i <= 55 && destination - i == -16) {
-
-                            // set the en passant target
-                            if (destination < 39 &&
-                                    (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
-                                this.setEnPassantTarget(FenString.locationToSquare(i - 8));
-
-                            if (destination > 32 &&
-                                    (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
-                                this.setEnPassantTarget(FenString.locationToSquare(i - 8));
-
-                        } else {
-                            // reset the en passant target
-                            this.setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
-                        }
-                    }
+                    updateForEnPassant(i, moved, destination);
                     // update the castling rights
                 }
             }
@@ -267,6 +231,10 @@ public class Game {
         // TODO update board
         // TODO update game state
         // TODO update next moves
+        switchActivePlayer();
+    }
+
+    private void switchActivePlayer() {
         if (this.activePlayerColor == PlayerColor.WHITE) {
             this.activePlayerColor = PlayerColor.BLACK;
         } else {
@@ -274,6 +242,55 @@ public class Game {
         }
     }
 
+    private boolean movePawn(int i, PieceMoves bm, int destination) {
+        boolean moved;
+        if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
+            this.getBoard().move(i, destination);
+            moved = true;
+        } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
+            // normal capture
+            this.getBoard().move(i, destination);
+            moved = true;
+        } else {
+            moved = false;
+        }
+        return moved;
+    }
+
+    private void updateForEnPassant(int location, boolean moved, int destination) {
+        if (moved) {
+            // if the pawn is on their home position && if the destination is two moves away
+            if (location >= 8 && location <= 15 && destination - location == 16) { // two moves away
+
+                if (destination < 31 &&
+                        (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
+                    this.setEnPassantTarget(FenString.locationToSquare(location + 8));
+
+                if (destination > 24 &&
+                        (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
+                    this.setEnPassantTarget(FenString.locationToSquare(location + 8));
+
+            } else if (location >= 48 && location <= 55 && destination - location == -16) {
+
+                // set the en passant target
+                if (destination < 39 &&
+                        (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
+                    this.setEnPassantTarget(FenString.locationToSquare(location - 8));
+
+                if (destination > 32 &&
+                        (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
+                    this.setEnPassantTarget(FenString.locationToSquare(location - 8));
+
+            } else {
+                // reset the en passant target
+                this.setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
+            }
+        }
+    }
+
+    public void move(Move move) {
+
+    }
     /*
      * This method simply finds the source and target positions.  It doesn't check if the
      * for any conditions such as whether the king is in check.
