@@ -43,4 +43,8 @@ public class Move {
         return FenString.locationToSquare(from) +
             FenString.locationToSquare(to);
     }
+
+    public String toString() {
+        return toLongSan();
+    }
 }

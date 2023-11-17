@@ -462,6 +462,9 @@ public class Game {
                 yield this.castlingRights;
             }
         };
+
+        if(this.castlingRights.isEmpty())
+            this.castlingRights = "-";
     }
 
     /*

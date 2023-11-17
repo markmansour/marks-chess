@@ -444,6 +444,16 @@ public class GameTest {
         }
     }
 
+    @Test public void castlingRightsSetAfterMove() {
+        Game game = new Game("r1b1nbnr/3k3p/Pp1pp1p1/2p5/P4q2/R1P5/1BNPPPBP/Q3K2R w K - 0 25");
+        LOGGER.info(game.asFen());
+        LOGGER.info("--------------------------");
+        game.move("Kf1");  // move King from e1 to f1
+        LOGGER.info(game.asFen());
+        assertThat(game.getCastlingRights()).isEqualTo("-");
+    }
+
+
     @Test public void canPlayAFullGame() {
         Game game = new Game();
         int counter = 0;
@@ -452,6 +462,7 @@ public class GameTest {
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             game.move(move);
             game.getBoard().printOccupied();
+            LOGGER.info("move: " + move);
             LOGGER.info(game.asFen());
             LOGGER.info("--------------------------");
         }
