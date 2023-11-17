@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BishopMovesTest extends NoPieceLoicBoardMovesTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
+public class BishopMovesTest extends NoPieceLogicBoardMovesTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLogicBoardMovesTest.class);
 
     /*
      * @Test(expectedExceptions = IllegalArgumentException.class)

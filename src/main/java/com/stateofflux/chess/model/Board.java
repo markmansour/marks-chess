@@ -458,6 +458,14 @@ public class Board {
         return Board.bitboardToArray(getPieceLocations(activePlayerColor == PlayerColor.WHITE ? one : two ));
 	}
 
+    public int getWhiteKingLocation() {
+        return bitboardToArray(this.boards[Piece.WHITE_KING.getIndex()])[0];
+    }
+
+    public int getBlackKingLocation() {
+        return bitboardToArray(this.boards[Piece.BLACK_KING.getIndex()])[0];
+    }
+
     public long getPieceLocations(Piece p) {
         return this.boards[p.getIndex()];
     }

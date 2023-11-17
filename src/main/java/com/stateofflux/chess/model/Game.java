@@ -232,7 +232,31 @@ public class Game {
         // TODO update board
         // TODO update game state
         // TODO update next moves
+        incrementClock();
         switchActivePlayer();
+    }
+
+    public void move(Move move) {
+        this.sourceLocation = move.getFrom();
+        this.destinationLocation = move.getTo();
+        this.getBoard().move(this.sourceLocation, this.destinationLocation);
+
+        removeCastlingRightsFor(this.sourceLocation);
+
+        // TODO update board
+        // TODO update game state
+        // TODO update next moves
+        incrementClock();
+        switchActivePlayer();
+    }
+
+    private void incrementClock() {
+        if(halfmoveClock == 0)
+            halfmoveClock = 1;
+        else {
+            halfmoveClock = 0;
+            fullmoveCounter++;
+        }
     }
 
     private void switchActivePlayer() {
@@ -289,9 +313,6 @@ public class Game {
         }
     }
 
-    public void move(Move move) {
-
-    }
     /*
      * This method simply finds the source and target positions.  It doesn't check if the
      * for any conditions such as whether the king is in check.
@@ -484,11 +505,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || past50moves() || hasRepeated() || agreeGameIsOver();
-    }
-
-    public boolean agreeGameIsOver() {
-        return false;
+        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || past50moves() || hasRepeated();
     }
 
     public boolean hasRepeated() {
@@ -496,7 +513,7 @@ public class Game {
     }
 
     public boolean past50moves() {
-        return false;
+        return fullmoveCounter > 50;
     }
 
     public boolean hasInsufficientMaterials() {
@@ -545,6 +562,21 @@ public class Game {
     }
 
     public boolean isCheckmate() {
+        return false;
+/*
+
+        int location = (activePlayerColor == PlayerColor.BLACK) ?
+            getBoard().getBlackKingLocation() :
+            getBoard().getWhiteKingLocation();
+        Piece king = Piece.getPieceByIndex(location);
+
+        // very expensive because it doesn't exit when a single move is found.
+        PieceMoves pv = king.generateMoves(getBoard(), location, getCastlingRights(), getEnPassantTargetAsInt());
+        return pv.getMovesCount() == 0;
+*/
+    }
+
+    public boolean isCheck(PlayerColor color) {
         return false;
     }
 }

@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NoPieceLoicBoardMovesTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
-    private static Direction[] ALL_DIRECTIONS = new Direction[] {
+public class NoPieceLogicBoardMovesTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLogicBoardMovesTest.class);
+    private static final Direction[] ALL_DIRECTIONS = new Direction[] {
             Direction.UP_LEFT,
             Direction.UP,
             Direction.UP_RIGHT,

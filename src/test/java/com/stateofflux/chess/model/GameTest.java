@@ -4,10 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import static org.assertj.core.api.Assertions.*;
 
 public class GameTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLoicBoardMovesTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 
     @BeforeClass
     public void setUp() {
@@ -55,7 +57,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR");
@@ -69,7 +71,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR");
@@ -82,7 +84,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/3P4/8/8/PP1PPPPP/RNBQKBNR");
@@ -98,7 +100,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2p1P3/8/PP1P1PPP/RNBQKBNR");
@@ -116,7 +118,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("Kkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR");
@@ -129,7 +131,7 @@ public class GameTest {
 
         assertThat(game.getCastlingRights()).isEqualTo("Kkq");
         assertThat(game.getEnPassantTarget()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isZero();
+        assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         assertThat(game.getPiecePlacement()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR");
@@ -440,5 +442,19 @@ public class GameTest {
             Game game = new Game(fen);
             assertThat(game.hasInsufficientMaterials()).isTrue();
         }
+    }
+
+    @Test public void canPlayAFullGame() {
+        Game game = new Game();
+        int counter = 0;
+        while(!game.isOver() && counter++ < 55) {
+            var moves = game.moves();
+            var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
+            game.move(move);
+            game.getBoard().printOccupied();
+            LOGGER.info(game.asFen());
+            LOGGER.info("--------------------------");
+        }
+        assertThat(game.isOver()).isTrue();
     }
 }
