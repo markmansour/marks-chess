@@ -31,6 +31,7 @@ public class Game {
     protected int destinationLocation = -1;
     private int secondarySourceLocation = -1;
     private int secondaryDestinationLocation = -1;
+    private boolean limitMovesTo50 = true;
 
     // If neither side has the ability to castle, this field uses the character "-".
     // Otherwise, this field contains one or more letters: "K" if White can castle
@@ -138,6 +139,14 @@ public class Game {
         return this.activePlayerColor;
     }
 
+    public PlayerColor getWaitingPlayer() {
+        return this.activePlayerColor.otherColor();
+    }
+
+    public MoveList<Move> moves() {
+        return moves(true);
+    }
+
     /*
      * iterate over all pieces on the board
      * for each piece, generate the moves for that piece
@@ -151,14 +160,14 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    public MoveList<Move> moves() {
+    public MoveList<Move> moves(boolean onlyForActivePlayer) {
         this.nextMoves = new MoveList<Move>(new ArrayList<Move>());
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
             Piece piece = this.getBoard().get(i);
 
-            if (piece == Piece.EMPTY || piece.getColor() != this.activePlayerColor)
+            if (piece == Piece.EMPTY || (onlyForActivePlayer && piece.getColor() != this.activePlayerColor))
                 continue;
 
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
@@ -177,6 +186,8 @@ public class Game {
 //        return this.nextMovesCount;
         return this.nextMoves;
     }
+
+
 
     public List<Move> getNextMoves() {
         return this.nextMoves;
@@ -508,7 +519,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || past50moves() || hasRepeated();
+        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || (limitMovesTo50 && past50moves()) || hasRepeated();
     }
 
     public boolean hasRepeated() {
@@ -520,35 +531,10 @@ public class Game {
     }
 
     public boolean hasInsufficientMaterials() {
-        // logic assumes there is always one black and white king.
-        // King vs king
-        if(getBoard().hasBlackKingOnly() && getBoard().hasWhiteKingOnly())
-            return true;
-
-        // King + minor piece (knight of bishop) vs king
-        if((getBoard().hasWhiteKingOnly() && getBoard().blackHasOnlyOneMinorPiece()) ||
-            (getBoard().hasBlackKingOnly() && getBoard().whiteHasOnlyOneMinorPiece()))
-            return true;
-
-        // King + minor piece vs king + minor piece
-        if(getBoard().blackHasOnlyOneMinorPiece() && getBoard().whiteHasOnlyOneMinorPiece())
-            return true;
-
-        // King + two knights vs king
-        if((getBoard().hasBlackKingOnly() && getBoard().whiteHasOnlyTwoKnights()) ||
-            (getBoard().hasWhiteKingOnly() && getBoard().blackHasOnlyTwoKnights()))
-            return true;
-
-        // Lone king vs all the pieces & time runs out
-        if(isOutOfTime() &&
-            ((getBoard().hasBlackKingOnly() && getBoard().whiteHasAllOriginalPieces()) ||
-            (getBoard().hasWhiteKingOnly() && getBoard().blackHasAllOriginalPieces())))
-            return true;
-
-        return false;
+        return getBoard().hasInsufficientMaterials(isOutOfTime());
     }
 
-    public void timeIsOver() {
+    public void markTimeComplete() {
         outOfTime = true;
     }
 
@@ -580,6 +566,25 @@ public class Game {
     }
 
     public boolean isCheck(PlayerColor color) {
+        var moves = this.moves(false);
+
+        int kingLocation = getBoard().getKingLocation(color);
+        for(Move move : moves) {
+            // skip this move if it isn't trying to capture the king.
+            if(move.getFlags() == MoveFlag.NONCAPTURE || move.getTo() != kingLocation)
+                continue;
+
+            return true;
+        }
+
         return false;
+    }
+
+    public void enable50MovesRule() {
+        this.limitMovesTo50 = true;
+    }
+
+    public void disable50MovesRule() {
+        this.limitMovesTo50 = false;
     }
 }

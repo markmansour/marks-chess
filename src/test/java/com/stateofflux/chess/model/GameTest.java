@@ -423,7 +423,7 @@ public class GameTest {
     @Test public void onlyKingVsAllOpponentPieces() {
         Game game = new Game("8/P2kP1BR/5Q2/6P1/NP2P3/P7/2PKPR2/1B2N3 w - - 0 1");  // black king vs all white
         assertThat(game.hasInsufficientMaterials()).isFalse();
-        game.timeIsOver();
+        game.markTimeComplete();
         assertThat(game.hasInsufficientMaterials()).isTrue();
     }
 
@@ -456,16 +456,26 @@ public class GameTest {
 
     @Test public void canPlayAFullGame() {
         Game game = new Game();
+        game.disable50MovesRule();
         int counter = 0;
-        while(!game.isOver() && counter++ < 55) {
+//        while(!game.isOver() && counter++ < 55) {
+        while(!game.isOver() && counter++ < 1055) {
+            LOGGER.info("--------------------------");
             var moves = game.moves();
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
-            game.move(move);
-            game.getBoard().printOccupied();
             LOGGER.info("move: " + move);
+            game.move(move);
+            LOGGER.info("%s check? %s --- %s check? %s === checkmate? %s".formatted(
+                game.getActivePlayerColor(),
+                game.isCheck(game.getActivePlayerColor()),
+                game.getWaitingPlayer(),
+                game.isCheck(game.getWaitingPlayer()),
+                game.isCheckmate()));
+            game.getBoard().printOccupied();
             LOGGER.info(game.asFen());
-            LOGGER.info("--------------------------");
         }
+
+        LOGGER.info("--------------------------");
         assertThat(game.isOver()).isTrue();
     }
 }

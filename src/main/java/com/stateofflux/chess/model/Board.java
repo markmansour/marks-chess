@@ -243,7 +243,7 @@ public class Board {
         return getBlackWithoutKing() == 0;
     }
 
-    public boolean blackHasOnlyOneMinorPiece() {
+    private boolean blackHasOnlyOneMinorPiece() {
         int knights = getKnightLocations(PlayerColor.BLACK).length;
         int bishops = getBishopLocations(PlayerColor.BLACK).length;
 
@@ -466,6 +466,16 @@ public class Board {
         return bitboardToArray(this.boards[Piece.BLACK_KING.getIndex()])[0];
     }
 
+    // TODO - still buggy
+    // TEST DATA:
+    // * FEN: r3Q1N1/2B3r1/P3b1p1/1pp4p/1R5P/1kR5/7N/4K3 w - - 0 97
+    // * move: R : c3b3
+    // results in a 0 length array.
+    public int getKingLocation(PlayerColor color) {
+        int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
+        return bitboardToArray(this.boards[index])[0];
+    }
+
     public long getPieceLocations(Piece p) {
         return this.boards[p.getIndex()];
     }
@@ -509,4 +519,32 @@ public class Board {
         return this.game;
     }
 
+    public boolean hasInsufficientMaterials(boolean isOutOfTime) {
+        // logic assumes there is always one black and white king.
+        // King vs king
+        if(hasBlackKingOnly() && hasWhiteKingOnly())
+            return true;
+
+        // King + minor piece (knight of bishop) vs king
+        if((hasWhiteKingOnly() && blackHasOnlyOneMinorPiece()) ||
+            (hasBlackKingOnly() && whiteHasOnlyOneMinorPiece()))
+            return true;
+
+        // King + minor piece vs king + minor piece
+        if(blackHasOnlyOneMinorPiece() && whiteHasOnlyOneMinorPiece())
+            return true;
+
+        // King + two knights vs king
+        if((hasBlackKingOnly() && whiteHasOnlyTwoKnights()) ||
+            (hasWhiteKingOnly() && blackHasOnlyTwoKnights()))
+            return true;
+
+        // Lone king vs all the pieces & time runs out
+        if(isOutOfTime &&
+            ((hasBlackKingOnly() && whiteHasAllOriginalPieces()) ||
+                (hasWhiteKingOnly() && blackHasAllOriginalPieces())))
+            return true;
+
+        return false;
+    }
 }

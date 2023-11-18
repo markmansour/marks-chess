@@ -10,4 +10,13 @@ public enum PlayerColor {
             case NONE -> "-";
         };
     }
+
+    public PlayerColor otherColor()
+    {
+        return switch (this) {
+            case BLACK -> WHITE;
+            case WHITE -> BLACK;
+            case NONE -> NONE;
+        };
+    }
 }

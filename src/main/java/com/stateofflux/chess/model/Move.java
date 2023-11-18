@@ -45,6 +45,10 @@ public class Move {
     }
 
     public String toString() {
-        return toLongSan();
+        StringBuilder sb = new StringBuilder()
+            .append(piece.getPieceChar())
+            .append(" : ")
+            .append(toLongSan());
+        return sb.toString();
     }
 }
