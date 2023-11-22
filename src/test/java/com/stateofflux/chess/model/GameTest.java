@@ -42,7 +42,8 @@ public class GameTest {
     @Test
     public void testNextMovesFromOpeningPosition() {
         Game game = new Game();
-        MoveList<Move> gameMoves = game.moves();
+        game.generateMoves();
+        MoveList<Move> gameMoves = game.getActivePlayerMoves();
         assertThat(gameMoves).hasSize(20);
         assertThat(gameMoves.asLongSan()).containsExactlyInAnyOrder("a2a3", "b2b3", "c2c3", "d2d3", "e2e3", "f2f3", "g2g3", "h2h3",
             "a2a4", "b2b4", "c2c4", "d2d4", "e2e4", "f2f4", "g2g4", "h2h4",
@@ -94,7 +95,8 @@ public class GameTest {
     public void validPawnMoveWithTwoTakeOptions() {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         // black can move from d5 to c4 or e4
-        MoveList<Move> potentialMoves = game.moves();
+        game.generateMoves();
+        MoveList<Move> potentialMoves = game.getActivePlayerMoves();
         assertThat(potentialMoves).hasSize(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
@@ -238,7 +240,7 @@ public class GameTest {
     }
 
     // https://www.chessprogramming.org/Castling
-    public class Castling {
+    public static class Castling {
         /*
          * TODO: finish writing the castling validation code.
          *
@@ -263,7 +265,9 @@ public class GameTest {
             Game game = new Game("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq -");
 
             // are we generating the castling move as an option?
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+
             assertThat(generatedMoves.asLongSan()).contains("e1c1");
 
             // can we make the castling move?
@@ -276,8 +280,8 @@ public class GameTest {
             Game game = new Game("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQK2R w KQkq -");
 
             // are we generating the castling move as an option?
-            game.moves();
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).contains("e1g1");
 
             // can we make the castling move?
@@ -290,7 +294,8 @@ public class GameTest {
             Game game = new Game("r3kbnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR b KQkq -");
 
             // are we generating the castling move as an option?
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).contains("e8c8");
 
             // can we make the castling move?
@@ -303,7 +308,8 @@ public class GameTest {
             Game game = new Game("rnbqk2r/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R b KQkq -");
 
             // are we generating the castling move as an option?
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).contains("e8g8");
 
             // can we make the castling move?
@@ -311,59 +317,69 @@ public class GameTest {
             assertThat(game.asFenNoCounters()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R w KQ -");
         }
     }
-    public class WhenPassingThroughCheck {
+    public static class WhenPassingThroughCheck {
         @Test
         public void kingDoesNotPassThroughCheckFromBishop() {
             Game game = new Game("rnbqk1nr/1pp3pp/5p2/p1bpp3/4P1PP/5P1N/PPPP2B1/RNBQK2R w KQkq -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n7/2pqP1B1/6b1/4P3/PP3PPP/RN1QKBNR b KQkq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
         @Test
         public void kingDoesNotPassThroughCheckFromKnight() {
             Game game = new Game("rnbqkb1r/pppppppp/8/8/6P1/5NnB/PPPPPP1P/RNBQK2R w KQkq -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p3pppp/bNnq4/2pP4/8/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
         @Test
         public void kingDoesNotPassThroughCheckFromRook() {
             Game game = new Game("1nbqkbnr/1pp3Pp/4N3/8/4pr1P/p7/PPPP2B1/RNBQK2R w KQk -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/7q/3p2Q1/N1R1P3/PP3PPP/4KBNR b Kkq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
         @Test
         public void kingDoesNotPassThroughCheckFromQueen() {
             Game game = new Game("rnb1kbnr/1pp3pp/5p2/p3p3/3qP1PP/7N/PPPP2B1/RNBQK2R w KQkq -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/2pq4/3p2Q1/4P3/PP3PPP/RN2KBNR b KQkq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
         @Test
         public void kingDoesNotPassThroughCheckFromKing() {
             Game game = new Game("rnB2b1r/ppp2p1p/5p2/8/8/8/P5kP/R1B1K2R w KQ -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3k1nr/p1K3pp/N7/5p2/2P1p2q/4PPP1/PP6/R1BQ1BNR b kq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -371,16 +387,18 @@ public class GameTest {
 
         public void kingDoesNotPassThroughCheckFromPawn() {
             Game game = new Game("rn1k1b1r/ppp1pp1p/8/3N1b2/8/7P/P5p1/R1B1K2R w KQ -");
-            MoveList<Move> generatedMoves = game.moves();
+            game.generateMoves();
+            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p1P1pppp/b7/8/N1p3q1/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
-            generatedMoves = game.moves();
+            game.generateMoves();
+            generatedMoves = game.getActivePlayerMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
     }
 
-    public class Promotion {
+    public static class Promotion {
         @Test
         public void promotion() {
             fail("todo");
@@ -405,42 +423,70 @@ public class GameTest {
         assertThat(game.asFenNoCounters()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq -");
     }
 
-    // Insufficient Materials
-    @Test public void kingVsKing() {
-        Game game = new Game("8/1K6/8/8/8/8/8/5k2 w - - 0 1"); // two kings
-        assertThat(game.hasInsufficientMaterials()).isTrue();
-    }
-
-    @Test public void kingAndMinorPiecesVsKing() {
-        Game game = new Game("8/8/8/8/8/8/1K3k1B/8 w - - 0 1");  // king & bishop vs king
-        assertThat(game.hasInsufficientMaterials()).isTrue();
-
-        game = new Game("3K4/8/8/8/8/8/1k2N3/8 w - - 0 1"); // king & knight vs king
-        assertThat(game.isOver()).isTrue();
-        assertThat(game.hasInsufficientMaterials()).isTrue();
-    }
-
-    @Test public void onlyKingVsAllOpponentPieces() {
-        Game game = new Game("8/P2kP1BR/5Q2/6P1/NP2P3/P7/2PKPR2/1B2N3 w - - 0 1");  // black king vs all white
-        assertThat(game.hasInsufficientMaterials()).isFalse();
-        game.markTimeComplete();
-        assertThat(game.hasInsufficientMaterials()).isTrue();
-    }
-
-    @Test public void kingAndTwoKnightsVsKing() {
-        Game game = new Game("4N3/3K4/k7/8/8/8/8/5N2 w - - 0 1");  // black king vs white king and two white knights
-        assertThat(game.hasInsufficientMaterials()).isTrue();
-    }
-
-    @Test public void kingAndMinorVsKingAndMinor() {
-        String[] fens = new String[] {
-            "1N6/8/8/3K2n1/8/8/3k4/8 w - - 0 1",  // black king & black knight vs white king & white knight
-            "5k2/b7/8/8/8/4N3/6K1/8 w - - 0 1",   // black king & black bishop vs white king & white knight
-            "8/8/4k3/8/8/8/4B2K/b7 w - - 0 1"     // black king & black bishop vs white king & white bishop
-        };
-        for (String fen : fens) {
-            Game game = new Game(fen);
+    public static class InsufficientMaterialsTest {
+        // Insufficient Materials
+        @Test
+        public void kingVsKing() {
+            Game game = new Game("8/1K6/8/8/8/8/8/5k2 w - - 0 1"); // two kings
             assertThat(game.hasInsufficientMaterials()).isTrue();
+        }
+
+        @Test
+        public void kingAndMinorPiecesVsKing() {
+            Game game = new Game("8/8/8/8/8/8/1K3k1B/8 w - - 0 1");  // king & bishop vs king
+            assertThat(game.hasInsufficientMaterials()).isTrue();
+
+            game = new Game("3K4/8/8/8/8/8/1k2N3/8 w - - 0 1"); // king & knight vs king
+            assertThat(game.isOver()).isTrue();
+            assertThat(game.hasInsufficientMaterials()).isTrue();
+        }
+
+        @Test
+        public void onlyKingVsAllOpponentPieces() {
+            Game game = new Game("8/P2kP1BR/5Q2/6P1/NP2P3/P7/2PKPR2/1B2N3 w - - 0 1");  // black king vs all white
+            assertThat(game.hasInsufficientMaterials()).isFalse();
+            game.markTimeComplete();
+            assertThat(game.hasInsufficientMaterials()).isTrue();
+        }
+
+        @Test
+        public void kingAndTwoKnightsVsKing() {
+            Game game = new Game("4N3/3K4/k7/8/8/8/8/5N2 w - - 0 1");  // black king vs white king and two white knights
+            assertThat(game.hasInsufficientMaterials()).isTrue();
+        }
+
+        @Test
+        public void kingAndMinorVsKingAndMinor() {
+            String[] fens = new String[]{
+                "1N6/8/8/3K2n1/8/8/3k4/8 w - - 0 1",  // black king & black knight vs white king & white knight
+                "5k2/b7/8/8/8/4N3/6K1/8 w - - 0 1",   // black king & black bishop vs white king & white knight
+                "8/8/4k3/8/8/8/4B2K/b7 w - - 0 1"     // black king & black bishop vs white king & white bishop
+            };
+            for (String fen : fens) {
+                Game game = new Game(fen);
+                assertThat(game.hasInsufficientMaterials()).isTrue();
+            }
+        }
+    }
+
+    public static class CheckTest {
+        @Test public void nextMoveGetsOutOfCheck() {
+            Game game = new Game("8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -");
+            assertThat(game.isCheck(PlayerColor.BLACK)).isTrue();
+
+            // generate next set of moves for the active player
+            game.generateMoves();
+            var moves = game.getActivePlayerMoves();
+
+            // all moves take black out of check
+            for(var move : moves) {
+                Game newGame = new Game(game.asFen());
+                LOGGER.info("fen: " + newGame.asFen());
+                newGame.move(move);
+                LOGGER.info("move: " + move);
+                LOGGER.info("inCheck? " + newGame.isCheck(PlayerColor.BLACK));
+                assertThat(newGame.isCheck(PlayerColor.BLACK)).isFalse();
+            }
         }
     }
 
@@ -461,7 +507,8 @@ public class GameTest {
 //        while(!game.isOver() && counter++ < 55) {
         while(!game.isOver() && counter++ < 1055) {
             LOGGER.info("--------------------------");
-            var moves = game.moves();
+            game.generateMoves();
+            var moves = game.getActivePlayerMoves();
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             LOGGER.info("move: " + move);
             game.move(move);

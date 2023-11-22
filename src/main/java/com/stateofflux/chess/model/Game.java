@@ -26,12 +26,14 @@ public class Game {
     protected Player black;
     protected Board board;
     protected PlayerColor activePlayerColor;
-    protected MoveList<Move> nextMoves;
+    protected MoveList<Move> activePlayerMoves;
+    protected MoveList<Move> otherPlayerMoves;
     protected int sourceLocation = -1;
     protected int destinationLocation = -1;
     private int secondarySourceLocation = -1;
     private int secondaryDestinationLocation = -1;
     private boolean limitMovesTo50 = true;
+    private int depth = 0;
 
     // If neither side has the ability to castle, this field uses the character "-".
     // Otherwise, this field contains one or more letters: "K" if White can castle
@@ -51,6 +53,7 @@ public class Game {
     // move
     protected int fullmoveCounter;
     private boolean outOfTime = false;
+    private boolean check = false;
 
     // game with players - intended for play
     public Game(Player white, Player black) {
@@ -62,6 +65,7 @@ public class Game {
 
     // game with no players - used for analysis
     public Game() {
+        this.depth = 0;
         this.board = new Board();
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
@@ -69,11 +73,16 @@ public class Game {
         this.setEnPassantTarget("-");
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
+        this.generateMoves();
     }
 
-    // game that can start midway through - used for analysis
     public Game(String fenString) {
+        this(fenString, 0);
+    }
+    // game that can start midway through - used for analysis
+    public Game(String fenString, int depth) {
         FenString fen = new FenString(fenString);
+        this.depth = depth;
         this.board = new Board(fen.getPiecePlacement());
         this.board.setGame(this);
         this.setActivePlayerColor(fen.getActivePlayerColor());
@@ -81,7 +90,14 @@ public class Game {
         this.setEnPassantTarget(fen.getEnPassantTarget());
         this.setHalfmoveClock(fen.getHalfmoveClock());
         this.setFullmoveCounter(fen.getFullmoveCounter());
+
+        // Are we in check?
+        this.generateMoves();
+        if(isCheck(activePlayerColor.otherColor()))
+            setPlayerInCheck();
     }
+
+    public void setDepth(int depth) { this.depth = depth; }
 
     public String getPiecePlacement() {
         return this.getBoard().toFen();
@@ -143,10 +159,6 @@ public class Game {
         return this.activePlayerColor.otherColor();
     }
 
-    public MoveList<Move> moves() {
-        return moves(true);
-    }
-
     /*
      * iterate over all pieces on the board
      * for each piece, generate the moves for that piece
@@ -160,37 +172,59 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    public MoveList<Move> moves(boolean onlyForActivePlayer) {
-        this.nextMoves = new MoveList<Move>(new ArrayList<Move>());
+    public void generateMoves() {
+        // reset the current state
+        this.activePlayerMoves = new MoveList<Move>(new ArrayList<Move>());
+        this.otherPlayerMoves = new MoveList<Move>(new ArrayList<Move>());
+
+        MoveList<Move> list;
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
             Piece piece = this.getBoard().get(i);
 
-            if (piece == Piece.EMPTY || (onlyForActivePlayer && piece.getColor() != this.activePlayerColor))
+            if (piece == Piece.EMPTY) // || (onlyActivePlayer && this.activePlayerColor != piece.getColor()))
                 continue;
 
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+            list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
             for(int dest: Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-                nextMoves.add(new Move(piece, i, dest, MoveFlag.NONCAPTURE));
+                list.add(new Move(piece, i, dest, MoveFlag.NONCAPTURE));
             }
 
             for(int dest: Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-                nextMoves.add(new Move(piece, i, dest, MoveFlag.CAPTURE));
+                list.add(new Move(piece, i, dest, MoveFlag.CAPTURE));
             }
         }
 
 //        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
-
-//        return this.nextMovesCount;
-        return this.nextMoves;
+        ensureMovesGetsPlayerOutOfCheck(this.activePlayerMoves);
+//        ensureMovesGetsPlayerOutOfCheck(this.otherPlayersMoves);
     }
 
+    public MoveList<Move> getActivePlayerMoves() { return this.activePlayerMoves; };
+    public MoveList<Move> getOtherPlayerMoves() { return this.otherPlayerMoves; };
 
 
-    public List<Move> getNextMoves() {
-        return this.nextMoves;
+    private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
+        if(depth > 0 || !isCheck(this.activePlayerColor))
+            return;
+
+        // if in check, make sure any move takes the player out of check.
+        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
+
+        for(var move: moves) {
+            Game tempGame = new Game(this.asFen(), depth + 1);
+            tempGame.move(move);
+
+            // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
+            if(tempGame.isCheck(this.activePlayerColor)) {
+                toRemove.add(move);
+            }
+        }
+
+        moves.removeAll(toRemove);
     }
 
     // using chess algebraic notation
@@ -233,32 +267,40 @@ public class Game {
 
                     // update the en passant value
                     updateForEnPassant(i, moved, destination);
-                    // update the castling rights
                 }
             }
         }
 
-        removeCastlingRightsFor(this.sourceLocation);
-
-        // TODO update board
-        // TODO update game state
-        // TODO update next moves
-        incrementClock();
-        switchActivePlayer();
+        postMoveAccounting();
     }
 
     public void move(Move move) {
+        setPlayerNotInCheck();
         this.sourceLocation = move.getFrom();
         this.destinationLocation = move.getTo();
         this.getBoard().move(this.sourceLocation, this.destinationLocation);
 
-        removeCastlingRightsFor(this.sourceLocation);
+        postMoveAccounting();
+    }
 
-        // TODO update board
-        // TODO update game state
-        // TODO update next moves
-        incrementClock();
+    private void postMoveAccounting() {
+        removeCastlingRightsFor(this.sourceLocation);
         switchActivePlayer();
+        generateMoves();
+
+        // If we put the other play in check, then record it.
+        if(isCheck(this.activePlayerColor))
+            setPlayerInCheck();
+
+        incrementClock();
+    }
+
+    private void setPlayerNotInCheck() {
+        this.check = false;
+    }
+
+    private void setPlayerInCheck() {
+        this.check = true;
     }
 
     private void incrementClock() {
@@ -271,11 +313,14 @@ public class Game {
     }
 
     private void switchActivePlayer() {
+        this.activePlayerColor = this.activePlayerColor.otherColor();
+/*
         if (this.activePlayerColor == PlayerColor.WHITE) {
             this.activePlayerColor = PlayerColor.BLACK;
         } else {
             this.activePlayerColor = PlayerColor.WHITE;
         }
+*/
     }
 
     private boolean movePawn(int i, PieceMoves bm, int destination) {
@@ -565,10 +610,11 @@ public class Game {
 */
     }
 
-    public boolean isCheck(PlayerColor color) {
-        var moves = this.moves(false);
 
-        int kingLocation = getBoard().getKingLocation(color);
+    public boolean isCheck(PlayerColor playerColor) {
+        int kingLocation = getBoard().getKingLocation(playerColor);
+        var moves = this.activePlayerColor == playerColor ? this.otherPlayerMoves : this.activePlayerMoves;
+
         for(Move move : moves) {
             // skip this move if it isn't trying to capture the king.
             if(move.getFlags() == MoveFlag.NONCAPTURE || move.getTo() != kingLocation)
@@ -578,10 +624,6 @@ public class Game {
         }
 
         return false;
-    }
-
-    public void enable50MovesRule() {
-        this.limitMovesTo50 = true;
     }
 
     public void disable50MovesRule() {
