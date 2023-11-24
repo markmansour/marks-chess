@@ -93,7 +93,7 @@ public class Game {
 
         // Are we in check?
         this.generateMoves();
-        if(isCheck(activePlayerColor.otherColor()))
+        if(isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
     }
 
@@ -200,7 +200,6 @@ public class Game {
 
 //        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
         ensureMovesGetsPlayerOutOfCheck(this.activePlayerMoves);
-//        ensureMovesGetsPlayerOutOfCheck(this.otherPlayersMoves);
     }
 
     public MoveList<Move> getActivePlayerMoves() { return this.activePlayerMoves; };
@@ -208,7 +207,7 @@ public class Game {
 
 
     private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
-        if(depth > 0 || !isCheck(this.activePlayerColor))
+        if(depth > 0)
             return;
 
         // if in check, make sure any move takes the player out of check.
@@ -219,7 +218,7 @@ public class Game {
             tempGame.move(move);
 
             // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            if(tempGame.isCheck(this.activePlayerColor)) {
+            if(tempGame.isChecked(this.activePlayerColor)) {
                 toRemove.add(move);
             }
         }
@@ -289,7 +288,7 @@ public class Game {
         generateMoves();
 
         // If we put the other play in check, then record it.
-        if(isCheck(this.activePlayerColor))
+        if(isChecked(this.activePlayerColor))
             setPlayerInCheck();
 
         incrementClock();
@@ -564,7 +563,11 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmate() || hasResigned() || isStalemate() || hasInsufficientMaterials() || (limitMovesTo50 && past50moves()) || hasRepeated();
+        return isCheckmated(this.activePlayerColor) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || hasRepeated();
+    }
+
+    public boolean exceededMoves() {
+        return limitMovesTo50 && past50moves();
     }
 
     public boolean hasRepeated() {
@@ -591,27 +594,11 @@ public class Game {
         return false;
     }
 
-    private boolean hasResigned() {
+    public boolean hasResigned() {
         return false;
     }
 
-    public boolean isCheckmate() {
-        return false;
-/*
-
-        int location = (activePlayerColor == PlayerColor.BLACK) ?
-            getBoard().getBlackKingLocation() :
-            getBoard().getWhiteKingLocation();
-        Piece king = Piece.getPieceByIndex(location);
-
-        // very expensive because it doesn't exit when a single move is found.
-        PieceMoves pv = king.generateMoves(getBoard(), location, getCastlingRights(), getEnPassantTargetAsInt());
-        return pv.getMovesCount() == 0;
-*/
-    }
-
-
-    public boolean isCheck(PlayerColor playerColor) {
+    public boolean isChecked(PlayerColor playerColor) {
         int kingLocation = getBoard().getKingLocation(playerColor);
         var moves = this.activePlayerColor == playerColor ? this.otherPlayerMoves : this.activePlayerMoves;
 
@@ -624,6 +611,10 @@ public class Game {
         }
 
         return false;
+    }
+
+    public boolean isCheckmated(PlayerColor playerColor) {
+        return this.activePlayerMoves.isEmpty();
     }
 
     public void disable50MovesRule() {

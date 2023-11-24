@@ -43,7 +43,7 @@ public class KingMovesTest {
         for(String fen : fens) {
             Game game = new Game(fen);
             LOGGER.info(fen);
-            assertThat(game.isCheck(PlayerColor.BLACK)).isTrue();
+            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
         }
     }
 
@@ -58,7 +58,7 @@ public class KingMovesTest {
 
         for(String fen : fens) {
             Game game = new Game(fen);
-            assertThat(game.isCheck(PlayerColor.WHITE)).isTrue();
+            assertThat(game.isChecked(PlayerColor.WHITE)).isTrue();
         }
     }
 

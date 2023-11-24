@@ -467,12 +467,23 @@ public class GameTest {
                 assertThat(game.hasInsufficientMaterials()).isTrue();
             }
         }
+
+        @Test public void fromFISCGamesDB() {
+            String[] fens = new String[]{
+                "8/7k/8/7K/8/8/8/8 w - -"  // black king & black bishop vs white king & white bishop
+            };
+            for (String fen : fens) {
+                Game game = new Game(fen);
+                assertThat(game.hasInsufficientMaterials()).isTrue();
+            }
+        }
+
     }
 
     public static class CheckTest {
         @Test public void nextMoveGetsOutOfCheck() {
             Game game = new Game("8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -");
-            assertThat(game.isCheck(PlayerColor.BLACK)).isTrue();
+            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
 
             // generate next set of moves for the active player
             game.generateMoves();
@@ -484,8 +495,36 @@ public class GameTest {
                 LOGGER.info("fen: " + newGame.asFen());
                 newGame.move(move);
                 LOGGER.info("move: " + move);
-                LOGGER.info("inCheck? " + newGame.isCheck(PlayerColor.BLACK));
-                assertThat(newGame.isCheck(PlayerColor.BLACK)).isFalse();
+                LOGGER.info("inCheck? " + newGame.isChecked(PlayerColor.BLACK));
+                assertThat(newGame.isChecked(PlayerColor.BLACK)).isFalse();
+                assertThat(game.isCheckmated(PlayerColor.BLACK)).isFalse();
+            }
+        }
+
+        @Test public void isCheckmated() {
+            Game game = new Game("6Q1/3rk3/4Q3/pp4P1/8/5P2/5PK1/8 b - -");
+            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
+            assertThat(game.isCheckmated(PlayerColor.BLACK)).isTrue();
+        }
+
+        @Test public void cannotMoveIntoCheck() {
+            Game game = new Game("r2q1k2/7n/p2N2nb/1ppp1b1p/1P5P/P1PP1P1B/3NP3/R1RK4 b - -");
+            game.generateMoves();
+            // LOGGER.info(game.getActivePlayerMoves().asLongSan().toString());
+            assertThat(game.getActivePlayerMoves().asLongSan()).doesNotContain("f8e8");  // d6 knight can take king in e8
+        }
+
+        @Test public void fromFISCGamesDB() {
+            String[] fens = new String[]{
+                "rk5r/p1Q1R1pp/3p1p2/6B1/8/2P4P/1PP2PP1/3K4 b - -", // 530202352
+                "4Q1kr/ppb3pp/2p5/2P3q1/8/8/PP3PPP/R5K1 b - -", // 530202201
+                "5rk1/p4ppp/8/1QP5/8/8/PP3qrP/R2RK3 w - -", // 530201993
+                "5k2/ppbb1Qp1/2p4p/8/2BP2Pq/8/PP3P2/1R3K2 b - -", // 530201946
+                "7r/2k5/2p5/8/5bnK/8/4q3/8 w - -" // 530201658
+            };
+            for (String fen : fens) {
+                Game game = new Game(fen);
+                assertThat(game.isCheckmated(game.activePlayerColor)).isTrue();
             }
         }
     }
@@ -512,17 +551,25 @@ public class GameTest {
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             LOGGER.info("move: " + move);
             game.move(move);
-            LOGGER.info("%s check? %s --- %s check? %s === checkmate? %s".formatted(
+            LOGGER.info("%d: %s check? %s --- %s check? %s === opponent checkmate? %s".formatted(
+                counter,
                 game.getActivePlayerColor(),
-                game.isCheck(game.getActivePlayerColor()),
+                game.isChecked(game.getActivePlayerColor()),
                 game.getWaitingPlayer(),
-                game.isCheck(game.getWaitingPlayer()),
-                game.isCheckmate()));
+                game.isChecked(game.getWaitingPlayer()),
+                game.isCheckmated(game.getWaitingPlayer())));
             game.getBoard().printOccupied();
             LOGGER.info(game.asFen());
         }
 
         LOGGER.info("--------------------------");
+        LOGGER.info("isOver: {}", game.isOver());
+        LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
+        LOGGER.info("hasResigned: {}", game.hasResigned());
+        LOGGER.info("isStalemate: {}", game.isStalemate());
+        LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
+        LOGGER.info("exceededMoves: {}", game.exceededMoves());
+        LOGGER.info("hasRepeated: {}", game.hasRepeated());
         assertThat(game.isOver()).isTrue();
     }
 }
