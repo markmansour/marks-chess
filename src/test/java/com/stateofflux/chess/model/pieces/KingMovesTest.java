@@ -1,11 +1,10 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
 
+import com.stateofflux.chess.model.Game;
+import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
-
-import com.stateofflux.chess.model.pieces.PieceMoves;
-import com.stateofflux.chess.model.pieces.KingMoves;
 
 import static org.assertj.core.api.Assertions.*;
 

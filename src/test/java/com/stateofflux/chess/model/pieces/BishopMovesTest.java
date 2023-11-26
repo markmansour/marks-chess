@@ -1,9 +1,7 @@
-package com.stateofflux.chess.model;
+package com.stateofflux.chess.model.pieces;
 
+import com.stateofflux.chess.model.Board;
 import org.testng.annotations.Test;
-
-import com.stateofflux.chess.model.pieces.BishopMoves;
-import com.stateofflux.chess.model.pieces.PieceMoves;
 
 import static org.assertj.core.api.Assertions.*;
 
