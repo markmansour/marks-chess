@@ -62,29 +62,28 @@ public class FenString {
         // if the size is 2, then it is a pawn move
         boolean check = false;
         boolean checkmate = false;
+        boolean incomplete = false;
         String square;
 
-        if (target.charAt(target.length() - 1) == '+')
-            check = true;
-        else if (target.charAt(target.length() - 1) == '*')
-            checkmate = true;
+        switch(target.charAt(target.length() - 1)) {
+            case '+':
+                check = true;
+                break;
+            case '*':
+                incomplete = true;
+                break;
+            case '#':
+                checkmate = true;
+                break;
+        }
 
         if (check || checkmate)
             square = target.substring(0, target.length() - 1);
         else
             square = target;
 
-        if (square.length() == 2) {
-            return simpleSquareToLocation(square);
-        } else if (square.length() == 3) {
-            return simpleSquareToLocation(square.substring(1, 3));
-        } else if (square.length() == 4 && square.charAt(1) == 'x') {
-            return simpleSquareToLocation(square.substring(2, 4));
-        } else if (square.length() == 5 && square.charAt(2) == 'x') {
-            return simpleSquareToLocation(square.substring(3, 5));
-        }
-
-        throw new IllegalArgumentException("target " + target +  " cannot be parsed");
+        int length = square.length();
+        return simpleSquareToLocation(square.substring(length - 2, length));
     }
 
     // must be 2 characters
