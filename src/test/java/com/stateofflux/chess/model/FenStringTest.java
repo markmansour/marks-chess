@@ -25,7 +25,7 @@ public class FenStringTest {
 
     @Test
     public void activePlayerColor() {
-        FenString fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+        FenString fs = new FenString(FenString.INITIAL_BOARD);
         assertThat(fs.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq -");
@@ -36,7 +36,7 @@ public class FenStringTest {
 
     @Test
     public void setCastlingRights() {
-        FenString fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+        FenString fs = new FenString(FenString.INITIAL_BOARD);
         assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'K', 'Q', 'k', 'q'});
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQk -");
@@ -53,7 +53,7 @@ public class FenStringTest {
 
     @Test
     public void setEnPassantTarget() {
-        FenString fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+        FenString fs = new FenString(FenString.INITIAL_BOARD);
         assertThat(fs.getEnPassantTarget()).isEqualTo("-");
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq a3");

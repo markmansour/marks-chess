@@ -18,8 +18,7 @@ public class GameTest {
 
     @Test
     public void scanInitialFenString() {
-        String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
-        Game g = new Game(fen);
+        Game g = new Game(FenString.INITIAL_BOARD);
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(g.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');

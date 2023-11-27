@@ -205,7 +205,6 @@ public class Game {
     public MoveList<Move> getActivePlayerMoves() { return this.activePlayerMoves; };
     public MoveList<Move> getOtherPlayerMoves() { return this.otherPlayerMoves; };
 
-
     private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
         if(depth > 0)
             return;
@@ -620,4 +619,27 @@ public class Game {
     public void disable50MovesRule() {
         this.limitMovesTo50 = false;
     }
+
+    public int perft(String fen, int depth) {
+        if(depth == 0)
+            return 0;
+
+        Game game = new Game(fen);
+        game.generateMoves();
+        MoveList<Move> moves = game.getActivePlayerMoves();
+        int moveCounter = 0;
+        String newFen;
+
+        for(var move: moves) {
+            Game temp = new Game(game.asFen());
+            temp.move(move);
+            newFen = temp.asFen();
+            temp = null;
+            if(depth - 1 > 0 )  moveCounter += perft(newFen, depth - 1);
+            else moveCounter++;
+        }
+
+        return moveCounter;
+    }
+
 }

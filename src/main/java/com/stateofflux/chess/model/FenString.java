@@ -20,6 +20,8 @@ import com.stateofflux.chess.model.pieces.PawnMoves;
  * ' ' <Fullmove counter>
  */
 public class FenString {
+    public static final String INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
+
     public static final char WHITE_KING_SIDE_CASTLE = 'K';
     public static final char WHITE_QUEEN_SIDE_CASTLE = 'Q';
     public static final char BLACK_KING_SIDE_CASTLE = 'k';
