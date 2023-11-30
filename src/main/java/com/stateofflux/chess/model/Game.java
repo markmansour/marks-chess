@@ -79,6 +79,28 @@ public class Game {
     public Game(String fenString) {
         this(fenString, 0);
     }
+
+    public Game(Game game) {
+        this(game, 0);
+    }
+
+    public Game(Game game, int depth) {
+        this.depth = depth;
+        this.board = new Board(game.getPiecePlacement());
+        this.board.setGame(this);
+
+        this.setActivePlayerColor(game.getActivePlayerColor());
+        this.setCastlingRights(game.getCastlingRights());
+        this.setEnPassantTarget(game.getEnPassantTarget());
+        this.setHalfmoveClock(game.getHalfmoveClock());
+        this.setFullmoveCounter(game.getFullmoveCounter());
+
+        // Are we in check?
+        this.generateMoves();
+        if (isChecked(activePlayerColor.otherColor()))
+            setPlayerInCheck();
+    }
+
     // game that can start midway through - used for analysis
     public Game(String fenString, int depth) {
         FenString fen = new FenString(fenString);
@@ -93,11 +115,13 @@ public class Game {
 
         // Are we in check?
         this.generateMoves();
-        if(isChecked(activePlayerColor.otherColor()))
+        if (isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
     }
 
-    public void setDepth(int depth) { this.depth = depth; }
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 
     public String getPiecePlacement() {
         return this.getBoard().toFen();
@@ -189,11 +213,11 @@ public class Game {
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
             list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
-            for(int dest: Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
                 list.add(new Move(piece, i, dest, MoveFlag.NONCAPTURE));
             }
 
-            for(int dest: Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
                 list.add(new Move(piece, i, dest, MoveFlag.CAPTURE));
             }
         }
@@ -202,22 +226,27 @@ public class Game {
         ensureMovesGetsPlayerOutOfCheck(this.activePlayerMoves);
     }
 
-    public MoveList<Move> getActivePlayerMoves() { return this.activePlayerMoves; };
-    public MoveList<Move> getOtherPlayerMoves() { return this.otherPlayerMoves; };
+    public MoveList<Move> getActivePlayerMoves() {
+        return this.activePlayerMoves;
+    }
+
+    public MoveList<Move> getOtherPlayerMoves() {
+        return this.otherPlayerMoves;
+    }
 
     private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
-        if(depth > 0)
+        if (depth > 0)
             return;
 
         // if in check, make sure any move takes the player out of check.
         MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
 
-        for(var move: moves) {
-            Game tempGame = new Game(this.asFen(), depth + 1);
+        for (var move : moves) {
+            Game tempGame = new Game(this, depth + 1);
             tempGame.move(move);
 
             // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            if(tempGame.isChecked(this.activePlayerColor)) {
+            if (tempGame.isChecked(this.activePlayerColor)) {
                 toRemove.add(move);
             }
         }
@@ -287,7 +316,7 @@ public class Game {
         generateMoves();
 
         // If we put the other play in check, then record it.
-        if(isChecked(this.activePlayerColor))
+        if (isChecked(this.activePlayerColor))
             setPlayerInCheck();
 
         incrementClock();
@@ -302,7 +331,7 @@ public class Game {
     }
 
     private void incrementClock() {
-        if(halfmoveClock == 0)
+        if (halfmoveClock == 0)
             halfmoveClock = 1;
         else {
             halfmoveClock = 0;
@@ -342,22 +371,22 @@ public class Game {
             if (location >= 8 && location <= 15 && destination - location == 16) { // two moves away
 
                 if (destination < 31 &&
-                        (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
+                    (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
                     this.setEnPassantTarget(FenString.locationToSquare(location + 8));
 
                 if (destination > 24 &&
-                        (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
+                    (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
                     this.setEnPassantTarget(FenString.locationToSquare(location + 8));
 
             } else if (location >= 48 && location <= 55 && destination - location == -16) {
 
                 // set the en passant target
                 if (destination < 39 &&
-                        (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
+                    (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
                     this.setEnPassantTarget(FenString.locationToSquare(location - 8));
 
                 if (destination > 32 &&
-                        (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
+                    (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
                     this.setEnPassantTarget(FenString.locationToSquare(location - 8));
 
             } else {
@@ -464,7 +493,7 @@ public class Game {
             tempLocation = possibleSourceLocations[i];
             Piece piece = this.getBoard().get(tempLocation);
             PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
-                    getEnPassantTargetAsInt());
+                getEnPassantTargetAsInt());
 
             // playing non-capture move
             if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
@@ -476,7 +505,7 @@ public class Game {
                 } else {
                     // verify the source as there are multiple pieces that make a capture
                     if (rankSpecified == '1' + (tempLocation / 8) ||
-                            fileSpecified == 'a' + (tempLocation % 8)) {
+                        fileSpecified == 'a' + (tempLocation % 8)) {
                         source = tempLocation;
                         capture = true;
                     }
@@ -517,7 +546,7 @@ public class Game {
             }
         };
 
-        if(this.castlingRights.isEmpty())
+        if (this.castlingRights.isEmpty())
             this.castlingRights = "-";
     }
 
@@ -530,33 +559,31 @@ public class Game {
      * ' ' <Fullmove counter>
      */
     public String asFen() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getPiecePlacement());
-        sb.append(' ');
-        sb.append(this.getActivePlayerColor());
-        sb.append(' ');
-        sb.append(this.getCastlingRights());
-        sb.append(' ');
-        sb.append(this.getEnPassantTarget());
-        sb.append(' ');
-        sb.append(this.getHalfmoveClock());
-        sb.append(' ');
-        sb.append(this.getFullmoveCounter());
-        return sb.toString();
+        String sb = this.getPiecePlacement() +
+            ' ' +
+            this.getActivePlayerColor() +
+            ' ' +
+            this.getCastlingRights() +
+            ' ' +
+            this.getEnPassantTarget() +
+            ' ' +
+            this.getHalfmoveClock() +
+            ' ' +
+            this.getFullmoveCounter();
+        return sb;
     }
 
     public String asFenNoCounters() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getPiecePlacement());
-        sb.append(' ');
-        sb.append(this.getActivePlayerColor());
-        sb.append(' ');
-        sb.append(this.getCastlingRights());
-        sb.append(' ');
-        sb.append(this.getEnPassantTarget());
-        return sb.toString();
+        String sb = this.getPiecePlacement() +
+            ' ' +
+            this.getActivePlayerColor() +
+            ' ' +
+            this.getCastlingRights() +
+            ' ' +
+            this.getEnPassantTarget();
+        return sb;
     }
-    
+
     public Board getBoard() {
         return this.board;
     }
@@ -601,9 +628,9 @@ public class Game {
         int kingLocation = getBoard().getKingLocation(playerColor);
         var moves = this.activePlayerColor == playerColor ? this.otherPlayerMoves : this.activePlayerMoves;
 
-        for(Move move : moves) {
+        for (Move move : moves) {
             // skip this move if it isn't trying to capture the king.
-            if(move.getFlags() == MoveFlag.NONCAPTURE || move.getTo() != kingLocation)
+            if (move.getFlags() == MoveFlag.NONCAPTURE || move.getTo() != kingLocation)
                 continue;
 
             return true;
@@ -620,26 +647,39 @@ public class Game {
         this.limitMovesTo50 = false;
     }
 
-    public int perft(String fen, int depth) {
-        if(depth == 0)
+    private SortedMap<String, Integer> perftResults;
+
+    public int perft(Game oldGame, int depth) {
+        perftResults = new TreeMap<>();
+        if (depth == 0)
             return 0;
 
-        Game game = new Game(fen);
+        Game game = new Game(oldGame);
         game.generateMoves();
         MoveList<Move> moves = game.getActivePlayerMoves();
         int moveCounter = 0;
-        String newFen;
 
-        for(var move: moves) {
-            Game temp = new Game(game.asFen());
+        for (var move : moves) {
+            Game temp = new Game(game);
             temp.move(move);
-            newFen = temp.asFen();
-            temp = null;
-            if(depth - 1 > 0 )  moveCounter += perft(newFen, depth - 1);
-            else moveCounter++;
+
+            if (depth - 1 > 0)
+                moveCounter += perft(temp, depth - 1);
+            else
+                moveCounter++;
+
+            perftResults.put(move.toLongSan(), moveCounter);
         }
 
         return moveCounter;
     }
 
+    public void printPerftResults() {
+        LOGGER.info("Perft Results");
+        LOGGER.info("-------------");
+        LOGGER.info("Game {}", this.asFen());
+        for(var r : perftResults.keySet()) {
+            LOGGER.info("{} {}", r, perftResults.get(r));
+        }
+    }
 }
