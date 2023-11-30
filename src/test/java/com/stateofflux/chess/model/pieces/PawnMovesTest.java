@@ -31,6 +31,19 @@ public class PawnMovesTest {
     }
 
     @Test
+    public void openingMovesCannotPassthroughAnotherPiece() {
+        // load this in as "rnbqkbnr/1ppppppp/4P3/8/8/P7/P1PP1PPP/RNBQKBNR b KQkq -"
+        Board openingBoard = new Board("rnbqkbnr/1ppppppp/4P3/8/8/p7/PPPPP1PP/RNBQKBNR");
+        PieceMoves bm = new PawnMoves(openingBoard, 52, -1);
+
+        int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
+        LOGGER.info("non capture positions: {}", nonCapturePositions);
+
+        assertThat(bm.getNonCaptureMoves()).isZero();
+        assertThat(bm.getCaptureMoves()).isZero();
+    }
+
+    @Test
     public void oneCapture() {
         Board openingBoard = new Board(); // default board
         openingBoard.move(52, 36); // move black pawn from E7 to E5

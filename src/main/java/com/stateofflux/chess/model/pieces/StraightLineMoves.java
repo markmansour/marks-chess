@@ -16,7 +16,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         findCaptureAndNonCaptureMovesInStraightLines();
     }
 
-    public boolean checkForCaptures() {
+    public boolean isCheckingForCaptures() {
         return true;
     }
 
@@ -44,12 +44,18 @@ public abstract class StraightLineMoves extends PieceMoves {
                 if ((currentPlayerBoard & nextPositionBit) != 0)
                     break; // stop looking in the current direction
 
-                if (!this.checkForCaptures())
-                    continue;
+                // this is only used by the pawn.
+                if (!this.isCheckingForCaptures()) {
+                    if ((opponentBoard & nextPositionBit) != 0)
+                        break;  // if the piece in front of the pawn is an opponent piece, then stop moving in this direction
+                    else
+                        continue;  // the next space is empty, so keep going in the same direction.
+                }
 
                 // if the next position is occupied, add it to the bitmap and stop
                 if ((this.opponentBoard & nextPositionBit) != 0) {
                     this.captureMoves |= nextPositionBit;
+
                     break; // no more searches in this direction.
                 }
             }
