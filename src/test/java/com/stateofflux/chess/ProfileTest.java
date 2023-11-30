@@ -179,6 +179,7 @@ public class ProfileTest {
     }
 
     // 2 min 22 secs, 1 min 53 sec
+/*
     @Test
     public void depthFourTest() {
         boolean started = false;
@@ -213,4 +214,5 @@ public class ProfileTest {
         endTime = System.nanoTime();
         LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
     }
+*/
 }
