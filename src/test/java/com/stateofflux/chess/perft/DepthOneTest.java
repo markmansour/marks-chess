@@ -93,7 +93,7 @@ public class DepthOneTest {
             if(perftCount != pr.d1()) {
                 game.printPerftResults();
             }
-            assertThat(perftCount).as("FenString '%s' of depth 1", pr.FenString()).isEqualTo(pr.d1());
+            assertThat(pr.d1()).as("FenString '%s' of depth 1", pr.FenString()).isEqualTo(perftCount);
         }
     }
 }

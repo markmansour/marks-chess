@@ -68,7 +68,7 @@ public class PawnMoves extends StraightLineMoves {
     }
 
     @Override
-    public boolean checkForCaptures() {
+    public boolean isCheckingForCaptures() {
         return false;
     }
 

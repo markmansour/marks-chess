@@ -45,6 +45,7 @@ public class QueenMovesTest {
     public void doesNotMoveThroughPieces() {
         // Empty slots are a3 (2), a4 (3)
         // d8 (59)
+        // rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR b KQkq -
         Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR");
 
         PieceMoves bm = new QueenMoves(openingBoard, 26);
@@ -62,4 +63,13 @@ public class QueenMovesTest {
         assertThat(bm.getCaptureMoves())
                 .isEqualTo(1L << 50 | 1L << 53);
     }
-}
+
+    @Test void doesNotTakeThroughOpponentsPieces() {
+        // rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR w KQkq -
+        Board board = new Board("rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR");
+        PieceMoves bm = new QueenMoves(board, 26);
+        int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
+        // should not contain 42, 50, 58!
+        int[] expected = new int[]{17, 18, 19, 24, 25, 27, 28, 29, 30, 31, 33, 35, 40, 44};
+        assertThat(nonCapturePositions).containsExactly(expected);
+    }}
