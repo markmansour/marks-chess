@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProfileTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProfileTest.class);
 
-    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, in.t d6) {
+    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {
     }
 
     ;

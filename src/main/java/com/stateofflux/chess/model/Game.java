@@ -101,6 +101,7 @@ public class Game {
             setPlayerInCheck();
     }
 
+
     // game that can start midway through - used for analysis
     public Game(String fenString, int depth) {
         FenString fen = new FenString(fenString);
@@ -115,13 +116,31 @@ public class Game {
 
         // Are we in check?
         this.generateMoves();
-        if (isChecked(activePlayerColor.otherColor()))
+        if(isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
+    public Game(Pgn pgn) {
+        this.depth = 0;
+        this.board = new Board();
+        this.board.setGame(this);
+        this.setActivePlayerColor(PlayerColor.WHITE);
+        this.setCastlingRights("KQkq");
+        this.setEnPassantTarget("-");
+        this.setHalfmoveClock(0);
+        this.setFullmoveCounter(1);
+        this.generateMoves();
+
+        for(var move : pgn.moves) {
+//            LOGGER.info(move.toString());
+            this.move(move.whiteMove());
+            if(! move.blackMove().isBlank())
+                this.move(move.blackMove());
+//            this.getBoard().printOccupied();
+        }
     }
+
+    public void setDepth(int depth) { this.depth = depth; }
 
     public String getPiecePlacement() {
         return this.getBoard().toFen();
@@ -230,9 +249,6 @@ public class Game {
         return this.activePlayerMoves;
     }
 
-    public MoveList<Move> getOtherPlayerMoves() {
-        return this.otherPlayerMoves;
-    }
 
     private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
         if (depth > 0)
@@ -275,26 +291,9 @@ public class Game {
                 this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
             }
             default -> {
-                // can this be moved into the findSourceAndDestination method?
-                // pawn move
-                int destination = FenString.squareToLocation(action);
-                locations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
-                boolean moved = false;
-
-                // TODO: this can be done smarter. if we know the destination (from the action),
-                // then
-                // we don't need to iterate through all the locations and instead we can take
-                // the pawnlocatin that
-                // is in the same file as the destination.
-                for (int i : locations) {
-                    Piece piece = this.getBoard().get(i);
-                    PieceMoves bm = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
-
-                    moved = movePawn(i, bm, destination);
-
-                    // update the en passant value
-                    updateForEnPassant(i, moved, destination);
-                }
+                findSourceAndDestination(action);
+                this.getBoard().move(this.sourceLocation, this.destinationLocation);
+                updateForEnPassant(this.sourceLocation, true, this.destinationLocation);
             }
         }
 
@@ -472,28 +471,28 @@ public class Game {
             case 'R' -> possibleSourceLocations = this.getBoard().getRookLocations(this.getActivePlayerColor());
             case 'Q' -> possibleSourceLocations = this.getBoard().getQueenLocations(this.getActivePlayerColor());
             case 'K' -> possibleSourceLocations = this.getBoard().getKingLocations(this.getActivePlayerColor());
-            default -> possibleSourceLocations = new int[0];
+            default -> possibleSourceLocations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
         }
 
         char rankSpecified = 0;
         char fileSpecified = 0;
 
-        // If this is a capture move (the 'x') then work out whether we should prioritize the file or rank.
-        if (action.length() == 5 && action.charAt(2) == 'x') {
-            if (action.charAt(1) >= 'a' && action.charAt(1) <= 'h')
-                fileSpecified = action.charAt(1);
-            else if (action.charAt(1) >= '1' && action.charAt(1) <= '8')
-                rankSpecified = action.charAt(1);
+        if(action.contains("x")) {
+            String[] fields = action.split("x");
+            char positionChar = fields[0].charAt(fields[0].length() - 1);
+            if(positionChar >= 'a' && positionChar <= 'h')
+                fileSpecified = positionChar;
+            else if(positionChar >= '1' && positionChar <= '8')
+                rankSpecified = positionChar;
         }
 
-        int tempLocation;
+       int tempLocation;
         boolean capture = false;
 
         for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
             tempLocation = possibleSourceLocations[i];
             Piece piece = this.getBoard().get(tempLocation);
-            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(),
-                getEnPassantTargetAsInt());
+            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
 
             // playing non-capture move
             if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
@@ -559,31 +558,33 @@ public class Game {
      * ' ' <Fullmove counter>
      */
     public String asFen() {
-        String sb = this.getPiecePlacement() +
-            ' ' +
-            this.getActivePlayerColor() +
-            ' ' +
-            this.getCastlingRights() +
-            ' ' +
-            this.getEnPassantTarget() +
-            ' ' +
-            this.getHalfmoveClock() +
-            ' ' +
-            this.getFullmoveCounter();
-        return sb;
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getPiecePlacement());
+        sb.append(' ');
+        sb.append(this.getActivePlayerColor());
+        sb.append(' ');
+        sb.append(this.getCastlingRights());
+        sb.append(' ');
+        sb.append(this.getEnPassantTarget());
+        sb.append(' ');
+        sb.append(this.getHalfmoveClock());
+        sb.append(' ');
+        sb.append(this.getFullmoveCounter());
+        return sb.toString();
     }
 
     public String asFenNoCounters() {
-        String sb = this.getPiecePlacement() +
-            ' ' +
-            this.getActivePlayerColor() +
-            ' ' +
-            this.getCastlingRights() +
-            ' ' +
-            this.getEnPassantTarget();
-        return sb;
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getPiecePlacement());
+        sb.append(' ');
+        sb.append(this.getActivePlayerColor());
+        sb.append(' ');
+        sb.append(this.getCastlingRights());
+        sb.append(' ');
+        sb.append(this.getEnPassantTarget());
+        return sb.toString();
     }
-
+    
     public Board getBoard() {
         return this.board;
     }

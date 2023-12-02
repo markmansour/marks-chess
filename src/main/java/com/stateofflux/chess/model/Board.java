@@ -186,7 +186,7 @@ public class Board {
     public boolean move(int fromIndex, int toIndex) {
         // attempting to move from an empty location
         if (fromIndex == -1)
-            throw new AssertionError("Source location not found: " + this);
+            throw new AssertionError("Source location not found: " + fromIndex);
 
         int boardIndex = this.getBitSetIndex(fromIndex);
 
@@ -384,6 +384,19 @@ public class Board {
         }
 
         LOGGER.info("   abcdefgh");
+
+        var game = this.getGame();
+        if(game != null) {
+            LOGGER.info("FEN: {}", game.asFen());
+            LOGGER.info("isOver: {}", game.isOver());
+            LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
+            LOGGER.info("hasResigned: {}", game.hasResigned());
+            LOGGER.info("isStalemate: {}", game.isStalemate());
+            LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
+            LOGGER.info("exceededMoves: {}", game.exceededMoves());
+            LOGGER.info("hasRepeated: {}", game.hasRepeated());
+        }
+        LOGGER.info("--------------------------");
     }
 
     // --------------------------- Static Methods ---------------------------

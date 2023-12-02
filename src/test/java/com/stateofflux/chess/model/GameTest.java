@@ -238,6 +238,12 @@ public class GameTest {
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
     }
 
+    @Test public void takeKnightWithPawn() {
+        Game game = new Game("rnbqkb1r/ppp2ppp/3p4/8/8/2n2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 6");
+        game.move("dxc3"); // move from d4 to c3 (but takes from d2)
+        assertThat(game.asFen()).isEqualTo("rnbqkb1r/ppp2ppp/3p4/8/8/2P2N2/PPP2PPP/R1BQKB1R b KQkq - 1 6");
+    }
+
     // https://www.chessprogramming.org/Castling
     public static class Castling {
         /*
@@ -570,5 +576,38 @@ public class GameTest {
         LOGGER.info("exceededMoves: {}", game.exceededMoves());
         LOGGER.info("hasRepeated: {}", game.hasRepeated());
         assertThat(game.isOver()).isTrue();
+    }
+
+    public static class PgnGame {
+        /*
+        @Test public void playToCheckmate() {
+            String pgnString = """
+                [Event "FICS rated standard game"]
+                [Site "FICS freechess.org"]
+                [FICSGamesDBGameNo "530202352"]
+                [White "Indrayoga"]
+                [Black "scalaQueen"]
+                [WhiteElo "2001"]
+                [BlackElo "2051"]
+                [WhiteRD "43.7"]
+                [BlackRD "26.8"]
+                [BlackIsComp "Yes"]
+                [TimeControl "900+0"]
+                [Date "2023.01.31"]
+                [Time "18:23:00"]
+                [WhiteClock "0:15:00.000"]
+                [BlackClock "0:15:00.000"]
+                [ECO "C42"]
+                [PlyCount "41"]
+                [Result "1-0"]
+                                
+                1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. Nc3 Nxc3 6. dxc3 Bg4 7. h3 Bxf3 8. Qxf3 Qe7+ 9. Be3 Nc6 10. Bb5 Kd7 11. O-O-O Qe6 12. Rhe1 Qxa2 13. Bg5 f6 14. Qg4+ Kd8 15. Bxc6 bxc6 16. Qe4 Qa1+ 17. Kd2 Kc8 18. Qxc6 Qxd1+ 19. Kxd1 Be7 20. Rxe7 Kb8 21. Qxc7# {Black checkmated} 1-0
+                """;
+
+            Pgn pgn = new Pgn(pgnString);
+            Game game = new Game(pgn);
+            assertThat(game.isOver()).isTrue();
+        }
+        */
     }
 }
