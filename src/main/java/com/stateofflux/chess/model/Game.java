@@ -131,7 +131,7 @@ public class Game {
         this.setFullmoveCounter(1);
         this.generateMoves();
 
-        for(var move : pgn.moves) {
+        for(var move : pgn.getMoves()) {
 //            LOGGER.info(move.toString());
             this.move(move.whiteMove());
             if(! move.blackMove().isBlank())

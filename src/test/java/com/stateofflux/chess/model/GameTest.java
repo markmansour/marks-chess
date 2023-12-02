@@ -579,7 +579,6 @@ public class GameTest {
     }
 
     public static class PgnGame {
-        /*
         @Test public void playToCheckmate() {
             String pgnString = """
                 [Event "FICS rated standard game"]
@@ -608,6 +607,5 @@ public class GameTest {
             Game game = new Game(pgn);
             assertThat(game.isOver()).isTrue();
         }
-        */
     }
 }
