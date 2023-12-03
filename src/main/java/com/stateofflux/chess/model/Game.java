@@ -56,6 +56,7 @@ public class Game {
     private boolean outOfTime = false;
     private boolean check = false;
 
+/*
     // game with players - intended for play
     public Game(Player white, Player black) {
         this.white = white;
@@ -63,6 +64,7 @@ public class Game {
         this.board = new Board();
         this.board.setGame(this);
     }
+*/
 
     // game with no players - used for analysis
     public Game() {
@@ -291,6 +293,7 @@ public class Game {
     // using chess algebraic notation
     // this method executes most moves sent to it.  It isn't checking for correctness.
     public void move(String action) {
+        LOGGER.info("action ({}): {}", getActivePlayerColor(), action);
         int[] locations;
         // TODO validate action
 
@@ -448,8 +451,6 @@ public class Game {
          2. rank of departure if the files are the same but the ranks differ
          3. the complete origin square coordinate otherwise
         */
-        char[] actionChars = action.toCharArray();
-
         // source and destination for castling represents the kings movement
         if (action.equals("O-O-O")) {
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
@@ -457,16 +458,14 @@ public class Game {
                 this.destinationLocation = CastlingLocations.BLACK_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
                 this.secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
                 this.secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
-
-                return;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
                 this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
                 this.destinationLocation = CastlingLocations.WHITE_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
                 this.secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
                 this.secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
-
-                return;
             }
+
+            return;
         } else if (action.equals("O-O")) {
             // king side castle
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
@@ -474,16 +473,14 @@ public class Game {
                 this.destinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location();
                 this.secondarySourceLocation = CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location();
                 this.secondaryDestinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location();
-
-                return;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
                 this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
                 this.destinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location();
                 this.secondarySourceLocation = CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location();
                 this.secondaryDestinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location();
-
-                return;
             }
+
+            return;
         }
 
         int destination = FenString.squareToLocation(action);
