@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /*
  * See JMH repo for examples on how to use the profiler:
@@ -31,10 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProfileTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProfileTest.class);
 
-    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {
-    }
+    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) { };
 
-    ;
     private ArrayList<PerftRecord> perftRecords;
     AsyncProfiler asyncProfiler;
 
@@ -154,6 +153,8 @@ public class ProfileTest {
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
     @Test public void depthThreeTest() {
+        fail("todo");
+
         boolean started = false;
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();
