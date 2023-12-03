@@ -5,6 +5,9 @@ import com.google.common.collect.ForwardingList;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Used to store the capture and non-capture moves for a given board.
+ */
 public class MoveList<E> extends ForwardingList<E> {
     final List<E> delegate;
 

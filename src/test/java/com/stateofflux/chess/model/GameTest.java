@@ -171,6 +171,15 @@ public class GameTest {
     }
 
     @Test
+    public void twoKnightsOnTheSameFile() {
+        // two knights in the same file
+        Game game = new Game("rn1qkb1r/1p3ppp/p2pbn2/1N2p3/2P5/1P4P1/P3PP1P/RNBQKB1R w KQkq -");
+        game.move("N5c3"); // from b5 to c3
+        assertThat(game.asFenNoCounters()).isEqualTo("rn1qkb1r/1p3ppp/p2pbn2/4p3/2P5/1PN3P1/P3PP1P/RNBQKB1R b KQkq -");
+    }
+
+
+    @Test
     public void validBishopMove() {
         Game game = new Game("rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq -");
         game.move("Bh6"); // from c1 to h6

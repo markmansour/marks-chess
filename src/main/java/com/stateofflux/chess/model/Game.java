@@ -112,8 +112,6 @@ public class Game {
         this.setActivePlayerColor(fen.getActivePlayerColor());
         this.setCastlingRights(fen.getCastlingRights());
         this.setEnPassantTarget(fen.getEnPassantTarget());
-        this.setHalfmoveClock(fen.getHalfmoveClock());
-        this.setFullmoveCounter(fen.getFullmoveCounter());
         this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
         this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
 
@@ -492,17 +490,64 @@ public class Game {
         int source = -1;
         int[] possibleSourceLocations;
 
-        switch (actionChars[0]) {
+        /*
+         * Need to parse out:
+         * d3 - implied pawn + destination
+         * dxe3 - implied pawn + rank + destination
+         * d3xe3 im implied pawn + rank + file + capture + destination
+         * d3+ - implied pawn + destination + check
+         * Nd3 - piece + destination
+         * Ncd3 - piece + rank + destination
+         * N5d3 - piece + file + destination
+         * Nc5d3 - piece + rank + file + destination
+         */
+
+        int takeMarker = action.contains("x") ? 1 : 0;
+        String sourceHint = switch (action.charAt(action.length() - 1)) {
+            case '+', '*', '#' -> action.substring(0, action.length() - 3 - takeMarker);
+            default -> action.substring(0, action.length() - 2 - takeMarker);
+        };
+
+        char pieceToMoveChar = sourceHint.isEmpty() ? 0 : sourceHint.charAt(0);
+
+        switch (pieceToMoveChar) {
             case 'N' -> possibleSourceLocations = this.getBoard().getKnightLocations(this.getActivePlayerColor());
             case 'B' -> possibleSourceLocations = this.getBoard().getBishopLocations(this.getActivePlayerColor());
             case 'R' -> possibleSourceLocations = this.getBoard().getRookLocations(this.getActivePlayerColor());
             case 'Q' -> possibleSourceLocations = this.getBoard().getQueenLocations(this.getActivePlayerColor());
             case 'K' -> possibleSourceLocations = this.getBoard().getKingLocations(this.getActivePlayerColor());
-            default -> possibleSourceLocations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
+            default -> {
+                possibleSourceLocations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
+                pieceToMoveChar = 'P';
+            }
+        }
+
+        String sourceHintWithoutPiece;
+
+        switch(pieceToMoveChar) {
+            case 'N', 'B', 'R', 'Q', 'K' -> sourceHintWithoutPiece = sourceHint.substring(1);
+            default -> sourceHintWithoutPiece = sourceHint;
         }
 
         char rankSpecified = 0;
         char fileSpecified = 0;
+        char firstChar;
+
+        switch(sourceHintWithoutPiece.length()) {
+            case 1:
+                firstChar = sourceHintWithoutPiece.charAt(0);
+                if(firstChar >= '1' && firstChar <= '8')
+                    rankSpecified = firstChar;
+                else if (firstChar >= 'a' && firstChar <= 'h') {
+                    fileSpecified = firstChar;
+                }
+                break;
+            case 2:
+                rankSpecified = sourceHintWithoutPiece.charAt(0);
+                fileSpecified = sourceHintWithoutPiece.charAt(1);
+                break;
+        }
+/*
 
         if(action.contains("x")) {
             String[] fields = action.split("x");
@@ -512,14 +557,28 @@ public class Game {
             else if(positionChar >= '1' && positionChar <= '8')
                 rankSpecified = positionChar;
         }
+*/
 
-       int tempLocation;
+        int tempLocation;
         boolean capture = false;
 
         for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
             tempLocation = possibleSourceLocations[i];
             Piece piece = this.getBoard().get(tempLocation);
             PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
+
+            if(rankSpecified != 0 && (('1' + (tempLocation / 8)) != rankSpecified)) {
+                continue;
+            }
+
+            if(fileSpecified != 0 && (('a' + (tempLocation % 8)) != fileSpecified)) {
+                continue;
+            }
+
+            if(((pm.getNonCaptureMoves() | pm.getCaptureMoves()) & (1L << destination)) != 0) {
+                source = tempLocation;
+            }
+/*
 
             // playing non-capture move
             if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
@@ -537,6 +596,7 @@ public class Game {
                     }
                 }
             }
+*/
         }
 
         // TODO: replace with getters/setters
