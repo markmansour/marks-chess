@@ -34,7 +34,7 @@ public class Pgn {
                 if ((line.isBlank())) break;  // exit the tag pair section and start the move text section
                 Matcher m = tagPairsPattern.matcher(line);
                 boolean found = m.find();
-                if (!found) continue;
+                if (!found) break;
                 if (m.groupCount() != 2)
                     throw new IllegalArgumentException("wrong number of groups found for \"" + line + "\": " + m.groupCount());
 
