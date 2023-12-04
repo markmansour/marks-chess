@@ -55,6 +55,16 @@ public enum Piece {
         return EMPTY;
     }
 
+    public static int getPieceByPieceChar(String c) {
+        for (Piece piece : Piece.values()) {
+            if (piece.getPieceChar() == c.charAt(0)) {
+                return piece.getIndex();
+            }
+        }
+
+        throw new IllegalArgumentException("piece character not found: " + c);
+    }
+
     @Override
     public String toString() {
         return String.valueOf(pieceChar);

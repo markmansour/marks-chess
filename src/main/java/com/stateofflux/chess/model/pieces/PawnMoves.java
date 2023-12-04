@@ -17,13 +17,12 @@ public class PawnMoves extends StraightLineMoves {
 
     protected Direction[] captureDirections;
 
-    private int enPassantTarget;
+    private final int enPassantTarget;
 
     public PawnMoves(Board board, int location, int enPassant) {
         super(board, location);
         this.enPassantTarget = enPassant;
         findEnPassantCaptures();
-
     }
 
     protected void setupPaths() {

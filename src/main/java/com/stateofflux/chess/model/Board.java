@@ -192,6 +192,16 @@ public class Board {
 
         this.clearLocation(toIndex);  // take the destination piece off the board if it exists
         this.boards[boardIndex] ^= (1L << fromIndex); // clear
+
+        String promotionPiece = "";
+
+        if(getGame() != null)  // only in my test harness.
+            promotionPiece = getGame().getPromotionPiece();
+
+        if (!promotionPiece.isEmpty()) {
+            boardIndex = Piece.getPieceByPieceChar(promotionPiece);
+        }
+
         this.boards[boardIndex] |= (1L << toIndex); // set
 
         return true;
@@ -394,7 +404,7 @@ public class Board {
             LOGGER.info("isStalemate: {}", game.isStalemate());
             LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
             LOGGER.info("exceededMoves: {}", game.exceededMoves());
-            LOGGER.info("hasRepeated: {}", game.hasRepeated());
+            LOGGER.info("hasRepeated: {}", game.isRepetition());
         }
         LOGGER.info("--------------------------");
     }

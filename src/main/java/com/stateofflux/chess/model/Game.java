@@ -55,6 +55,7 @@ public class Game {
     protected int fullmoveCounter;
     private boolean outOfTime = false;
     private boolean check = false;
+    private String promotionPiece;
 
 /*
     // game with players - intended for play
@@ -236,11 +237,15 @@ public class Game {
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
     public void generateMoves() {
+        char pieceChar;
+
         // reset the current state
         this.activePlayerMoves = new MoveList<Move>(new ArrayList<Move>());
         this.otherPlayerMoves = new MoveList<Move>(new ArrayList<Move>());
+        this.promotionPiece = "";
 
         MoveList<Move> list;
+        MoveFlag mf;
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
@@ -250,14 +255,91 @@ public class Game {
                 continue;
 
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+            pieceChar = piece.getPieceChar();
             list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-                list.add(new Move(piece, i, dest, MoveFlag.NONCAPTURE));
+
+
+                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.WHITE_KNIGHT.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.WHITE_ROOK.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.BLACK_QUEEN.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.BLACK_BISHOP.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.BLACK_KNIGHT.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.nonCapture();
+                    mf.setPromotionPiece(Piece.BLACK_ROOK.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+                } else { // normal move
+                    mf = MoveFlag.nonCapture();
+                    list.add(new Move(piece, i, dest, mf));
+                }
             }
 
             for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-                list.add(new Move(piece, i, dest, MoveFlag.CAPTURE));
+
+                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
+                    mf = MoveFlag.capture();
+
+                    list.add(new Move(piece, i, dest, mf));
+                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
+
+                    mf = MoveFlag.capture();
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.WHITE_KNIGHT.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.WHITE_ROOK.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.BLACK_QUEEN.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.BLACK_BISHOP.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.BLACK_KNIGHT.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+
+                    mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.BLACK_ROOK.getPieceChar());
+                    list.add(new Move(piece, i, dest, mf));
+                } else { // normal move
+                    mf = MoveFlag.capture();
+                    list.add(new Move(piece, i, dest, mf));
+                }
+
             }
         }
 
@@ -292,6 +374,8 @@ public class Game {
 
     // using chess algebraic notation
     // this method executes most moves sent to it.  It isn't checking for correctness.
+    // TODO: Instead of setting sourceLocation and destinationLocation, make an object to hold the move data.  Why am
+    // I not using the exiting Move class?
     public void move(String action) {
         LOGGER.info("action ({}): {}", getActivePlayerColor(), action);
         int[] locations;
@@ -440,26 +524,41 @@ public class Game {
         }
     }
 
+    public String getPromotionPiece() {
+        return this.promotionPiece;
+    }
     /*
      * This method simply finds the source and target positions.  It doesn't check if the
      * for any conditions such as whether the king is in check.
      *
      * Examples:
-     * d2    - pawns may have no char to represent them
-     * Nd4   - non pawns will have their type as the first character
-     * Nxb8  - captures will have an x
-     * cxb5  - pawn captures will start with the file
-     * Nxc8+ - check
+     * d3 - implied pawn + destination
+     * dxe3 - implied pawn + rank + destination
+     * d3xe3 im implied pawn + rank + file + capture + destination
+     * d3+ - implied pawn + destination + check
      * Nxc8* - checkmate
+     * Nd3 - piece + destination
+     * Ncd3 - piece + rank + destination
+     * N5d3 - piece + file + destination
+     * Nc5d3 - piece + rank + file + destination
      * O-O   - king side castle
      * O-O-O - queen side castle
      * e8=Q  - pawn promotion
+     * e8=Q+  - pawn promotion and check
      *
      * need to work backward from the destination to the source.
      * 1. the piece type can be derived from the action (first char)
      * 2. source has to be derived from the destination
      */
     private void findSourceAndDestination(String action) {
+        int promotionMarker = action.indexOf('=');
+        if(promotionMarker >= 0) {
+            promotionPiece = action.substring(promotionMarker + 1, promotionMarker + 2);
+            action = action.substring(0, promotionMarker);
+        } else {
+            promotionPiece = "";  // reset the promotionPiece marker - this is why it is done before any returns.
+        }
+
         /*
          when there is ambiguity
          [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
@@ -503,18 +602,6 @@ public class Game {
         int destination = FenString.squareToLocation(action);
         int source = -1;
         int[] possibleSourceLocations;
-
-        /*
-         * Need to parse out:
-         * d3 - implied pawn + destination
-         * dxe3 - implied pawn + rank + destination
-         * d3xe3 im implied pawn + rank + file + capture + destination
-         * d3+ - implied pawn + destination + check
-         * Nd3 - piece + destination
-         * Ncd3 - piece + rank + destination
-         * N5d3 - piece + file + destination
-         * Nc5d3 - piece + rank + file + destination
-         */
 
         int takeMarker = action.contains("x") ? 1 : 0;
         String sourceHint = switch (action.charAt(action.length() - 1)) {
@@ -561,17 +648,6 @@ public class Game {
                 fileSpecified = sourceHintWithoutPiece.charAt(1);
                 break;
         }
-/*
-
-        if(action.contains("x")) {
-            String[] fields = action.split("x");
-            char positionChar = fields[0].charAt(fields[0].length() - 1);
-            if(positionChar >= 'a' && positionChar <= 'h')
-                fileSpecified = positionChar;
-            else if(positionChar >= '1' && positionChar <= '8')
-                rankSpecified = positionChar;
-        }
-*/
 
         int tempLocation;
         boolean capture = false;
@@ -691,15 +767,11 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmated(this.activePlayerColor) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || hasRepeated();
+        return isCheckmated(this.activePlayerColor) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition();
     }
 
     public boolean exceededMoves() {
         return limitMovesTo50 && past50moves();
-    }
-
-    public boolean hasRepeated() {
-        return false;
     }
 
     public boolean past50moves() {
@@ -719,7 +791,7 @@ public class Game {
     }
 
     public boolean isStalemate() {
-        return false;
+        return isChecked(this.getActivePlayerColor()) && this.getActivePlayerMoves().isEmpty();
     }
 
     public boolean hasResigned() {
@@ -732,13 +804,20 @@ public class Game {
 
         for (Move move : moves) {
             // skip this move if it isn't trying to capture the king.
-            if (move.getFlags() == MoveFlag.NONCAPTURE || move.getTo() != kingLocation)
+            if (move.getFlags().isNonCapturing() || move.getTo() != kingLocation)
                 continue;
 
             return true;
         }
 
         return false;
+    }
+
+    public boolean isDraw() {
+        return getFullmoveCounter() * 50 >= 100 ||
+            isStalemate() ||
+            hasInsufficientMaterials() ||
+            isRepetition();
     }
 
     public boolean isCheckmated(PlayerColor playerColor) {

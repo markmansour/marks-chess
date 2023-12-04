@@ -95,7 +95,20 @@ public class DepthOneTest {
             if(perftCount != pr.d1()) {
                 game.printPerftResults();
             }
-            assertThat(pr.d1()).as("FenString '%s' of depth 1", pr.FenString()).isEqualTo(perftCount);
+            assertThat(perftCount).as("FenString '%s' of depth 3", pr.FenString()).isEqualTo(pr.d1());
+        }
+    }
+
+    @Test public void depthOfThree() {
+        int perftCount;
+
+        for(PerftRecord pr : perftRecords) {
+            Game game = new Game(pr.FenString());
+            perftCount = game.perft(game, 3);
+            if(perftCount != pr.d3()) {
+                game.printPerftResults();
+            }
+            assertThat(perftCount).as("FenString '%s' of depth 3", pr.FenString()).isEqualTo(pr.d3());
         }
     }
 }

@@ -41,7 +41,8 @@ public class Move {
 
     public String toLongSan() {
         return FenString.locationToSquare(from) +
-            FenString.locationToSquare(to);
+            FenString.locationToSquare(to) +
+            (flags.isPromoting() ? flags.getPromotionPiece() : "");
     }
 
     public String toString() {

@@ -153,8 +153,6 @@ public class ProfileTest {
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
     @Test public void depthThreeTest() {
-        fail("todo");
-
         boolean started = false;
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();

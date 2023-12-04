@@ -424,8 +424,19 @@ public class GameTest {
 
     public static class Promotion {
         @Test
-        public void promotion() {
-            fail("todo");
+        public void basicPromotion() {
+            Game game = new Game("8/Pk6/8/8/8/8/6Kp/8 w - - 0 1");
+            game.move("a8=Q+");
+
+            // draws
+            assertThat(game.asFen()).isEqualTo("Q7/1k6/8/8/8/8/6Kp/8 b - - 1 1");
+        }
+
+        @Test public void promotionTakingQueen () {
+            Game game = new Game("1q6/P6k/8/5N1K/8/8/8/8 w - -");
+            assertThat(game.getActivePlayerMoves().asLongSan()).contains("a7a8N", "a7a8B", "a7a8R", "a7a8Q");
+            game.move("axb8=Q");
+            assertThat(game.asFen()).isEqualTo("1Q6/7k/8/5N1K/8/8/8/8 b - - 1 1");
         }
     }
 
@@ -671,7 +682,7 @@ public class GameTest {
         LOGGER.info("isStalemate: {}", game.isStalemate());
         LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
         LOGGER.info("exceededMoves: {}", game.exceededMoves());
-        LOGGER.info("hasRepeated: {}", game.hasRepeated());
+        LOGGER.info("hasRepeated: {}", game.isRepetition());
         assertThat(game.isOver()).isTrue();
     }
 
