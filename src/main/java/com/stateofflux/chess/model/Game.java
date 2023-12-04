@@ -341,12 +341,29 @@ public class Game {
 
         switchActivePlayer();
         generateMoves();
+        removeEnPassantIfAttackingPieceIsPinned();
 
         // If we put the other play in check, then record it.
         if (isChecked(this.activePlayerColor))
             setPlayerInCheck();
 
         incrementClock();
+    }
+
+    private void removeEnPassantIfAttackingPieceIsPinned() {
+        // get each move by a Pawn that can end up in the en passant position
+        var moves = getActivePlayerMoves().stream()
+            .filter(m -> m.getPiece().isPawn())
+            .filter(m -> m.getTo() == getEnPassantTargetAsInt())
+            .toArray();
+
+        // if there are no valid attacking pawn moves for en passant, then remove the en passant and recaluclate the
+        // zobrist hash.
+        if (moves.length == 0) { // the pawns cannot use en passant to take the initial 2 square move
+            history.removeLast();
+            setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
+            history.add(getZobristKey());
+        }
     }
 
     private void setPlayerNotInCheck() {
@@ -879,6 +896,10 @@ public class Game {
      * @see <a href="https://en.wikipedia.org/wiki/Zobrist_hashing">Zobrist hashing in Wikipedia</a>
      */
     public long getZobristKey() {
+        return getZobristKey(this.getActivePlayerColor());
+    }
+
+    public long getZobristKey(PlayerColor color) {
         long hash = 0;
         if(this.castlingRights.contains("K"))
             hash ^= getCastleRightKey(1, PlayerColor.WHITE);
@@ -898,7 +919,7 @@ public class Game {
                 hash ^= getPieceSquareKey(piece, i);
         }
 
-        hash ^= getSideKey(this.getActivePlayerColor());
+        hash ^= getSideKey(color);
 
         int epT = getEnPassantTargetAsInt();
         if (epT >= 0) {

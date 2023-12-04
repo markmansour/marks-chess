@@ -105,4 +105,11 @@ public enum Piece {
             default -> false;
         };
     }
+
+    public boolean isPawn() {
+        return switch (this) {
+            case BLACK_PAWN, WHITE_PAWN -> true;
+            default -> false;
+        };
+    }
 }

@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model;
 
+import com.stateofflux.chess.model.pieces.PawnMoves;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
@@ -245,6 +246,15 @@ public class GameTest {
         assertThat(game.getEnPassantTarget()).isEqualTo("c6");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
+    }
+
+    @Test public void initialTwoSquareOpeningNextToPawnButNoEnPassant() {
+        Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
+        // 1. f4 Kf7 2. Kf2 Kg8 3. Kg1 Kh7 4. Kh2 Kg8 5. Kg1
+        game.move("f4");  // initial position - two square pawn advance
+        // move from g4 to f3 would be possible IF it didn't put the black king in check.
+        // therefore this is NOT an en passant move.
+        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
     }
 
     @Test public void takeKnightWithPawn() {
