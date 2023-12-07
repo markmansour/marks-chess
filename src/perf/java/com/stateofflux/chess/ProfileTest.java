@@ -39,7 +39,7 @@ public class ProfileTest {
 
     @BeforeSuite
     public void setUp() {
-        String resourceName = "perftsuite.epd";
+        String resourceName = "./perftsuite.epd";
         perftRecords = new ArrayList<>();
         asyncProfiler = AsyncProfiler.getInstance();
 

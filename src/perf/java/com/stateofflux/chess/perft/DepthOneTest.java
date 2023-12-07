@@ -26,7 +26,7 @@ public class DepthOneTest {
 
     @BeforeSuite
     public void setUp() {
-        String resourceName = "perftsuite.epd";
+        String resourceName = "src/perf/resources/perftsuite.epd";
         perftRecords = new ArrayList<>();
 
         try(InputStream contents = getClass().getClassLoader().getResourceAsStream(resourceName)) {
