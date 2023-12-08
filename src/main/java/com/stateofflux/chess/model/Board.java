@@ -185,8 +185,9 @@ public class Board {
 
     public boolean move(int fromIndex, int toIndex) {
         // attempting to move from an empty location
-        if (fromIndex == -1)
+        if (fromIndex == -1) {
             throw new AssertionError("Source location not found: " + fromIndex);
+        }
 
         int boardIndex = this.getBitSetIndex(fromIndex);
 

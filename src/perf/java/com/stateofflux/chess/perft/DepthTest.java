@@ -10,7 +10,10 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,15 +21,15 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class DepthOneTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DepthOneTest.class);
+public class DepthTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);
     record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {};
 ;
     private ArrayList<PerftRecord> perftRecords;
 
     @BeforeSuite
     public void setUp() {
-        String resourceName = "src/perf/resources/perftsuite.epd";
+        String resourceName = "./perftsuite.epd";
         perftRecords = new ArrayList<>();
 
         try(InputStream contents = getClass().getClassLoader().getResourceAsStream(resourceName)) {
@@ -59,6 +62,7 @@ public class DepthOneTest {
 
     }
 
+/*
 
     @Test public void testFirstItem() {
         fail("todo");
@@ -85,30 +89,51 @@ public class DepthOneTest {
         }
 
     }
+*/
 
-    @Test public void depthOfOne() {
-        int perftCount;
-
-        for(PerftRecord pr : perftRecords) {
-            Game game = new Game(pr.FenString());
-            perftCount = game.perft(game, 1);
-            if(perftCount != pr.d1()) {
-                game.printPerftResults();
-            }
-            assertThat(perftCount).as("FenString '%s' of depth 3", pr.FenString()).isEqualTo(pr.d1());
-        }
+    // 1.4 seconds
+    @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        depthHelper(1);
     }
 
-    @Test public void depthOfThree() {
-        int perftCount;
+    // 11 seconds
+    @Test public void depthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        depthHelper(2);
+    }
+
+    // 3 mins 41 seconds
+    @Test public void depthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        depthHelper(3);
+    }
+
+    private void depthHelper(int depth) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        SortedMap<String, Integer> perftResults;
+        int counter = 1;
 
         for(PerftRecord pr : perftRecords) {
+            LOGGER.info("{}: {}", counter++, pr.FenString());
             Game game = new Game(pr.FenString());
-            perftCount = game.perft(game, 3);
-            if(perftCount != pr.d3()) {
-                game.printPerftResults();
+            perftResults = game.perftAtRoot(game, depth);
+            int perftCount = perftResults.values()
+                .stream()
+                .reduce(0, Integer::sum);
+
+            Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
+            Integer actual = (Integer) expectedDepthMethod.invoke(pr, null);
+
+            if(perftCount != actual) {
+                game.printPerft(perftResults);
+
+                LOGGER.info(
+                    "\n" +
+                    "uci\n" +
+                    "position fen " + game.asFen() + "\n" +
+                    "go perft " + depth + "\n" +
+                    "d\n");
+
             }
-            assertThat(perftCount).as("FenString '%s' of depth 3", pr.FenString()).isEqualTo(pr.d3());
+
+            assertThat(perftCount).as("FenString '%s' of depth %d", pr.FenString(), depth).isEqualTo(actual);
         }
     }
 }

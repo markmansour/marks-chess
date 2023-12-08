@@ -103,6 +103,8 @@ public class Game {
         this.generateMoves();
         if (isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
+        else
+            setPlayerNotInCheck();
     }
 
 
@@ -122,6 +124,8 @@ public class Game {
         this.generateMoves();
         if(isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
+        else
+            setPlayerNotInCheck();
     }
 
     public Game(Pgn pgn) {
@@ -258,9 +262,8 @@ public class Game {
             pieceChar = piece.getPieceChar();
             list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
+            // TODO: There has to be a better way to do this.
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-
-
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
                     mf = MoveFlag.nonCapture();
                     mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
@@ -300,16 +303,13 @@ public class Game {
             }
 
             for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
                     mf = MoveFlag.capture();
                     mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
-                    mf = MoveFlag.capture();
-
                     list.add(new Move(piece, i, dest, mf));
-                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
 
                     mf = MoveFlag.capture();
+                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
                     list.add(new Move(piece, i, dest, mf));
 
                     mf = MoveFlag.capture();
@@ -407,9 +407,39 @@ public class Game {
     }
 
     public void move(Move move) {
-        setPlayerNotInCheck();
+        this.secondarySourceLocation = -1;
+        this.secondaryDestinationLocation = -1;
         this.sourceLocation = move.getFrom();
         this.destinationLocation = move.getTo();
+        boolean checked = this.isChecked(this.activePlayerColor);
+
+        if(!checked && move.getFrom() == 4) { // e1 -> 4
+            if(move.getTo() == 6 & castlingRights.contains("K")) { // g1
+                this.secondarySourceLocation = 7;
+                this.secondaryDestinationLocation = 5;
+            } else if(move.getTo() == 2 && castlingRights.contains("Q")) { // b1
+                this.secondarySourceLocation = 0;
+                this.secondaryDestinationLocation = 3;
+            }
+        } else if(!checked && move.getFrom() == 60) { // g8 || b8
+            if(move.getTo() == 62 && castlingRights.contains("k")) {
+                this.secondarySourceLocation = 63;
+                this.secondaryDestinationLocation = 61;
+            } else if(move.getTo() == 58 && castlingRights.contains("q")) {
+                this.secondarySourceLocation = 56;
+                this.secondaryDestinationLocation = 59;
+            }
+        }
+
+        if(!checked && this.secondarySourceLocation >= 0) {
+            this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
+        }
+
+        if(move.getPiece() == Piece.WHITE_PAWN && move.getTo() >= 56)
+            this.promotionPiece = String.valueOf(move.getFlags().getPromotionPiece());
+        else if(move.getPiece() == Piece.BLACK_PAWN && move.getTo() <= 7)
+            this.promotionPiece = String.valueOf(move.getFlags().getPromotionPiece());
+
         this.getBoard().move(this.sourceLocation, this.destinationLocation);
 
         postMoveAccounting();
@@ -430,6 +460,8 @@ public class Game {
         // If we put the other play in check, then record it.
         if (isChecked(this.activePlayerColor))
             setPlayerInCheck();
+        else
+            setPlayerNotInCheck();
 
         incrementClock();
     }
@@ -527,6 +559,7 @@ public class Game {
     public String getPromotionPiece() {
         return this.promotionPiece;
     }
+
     /*
      * This method simply finds the source and target positions.  It doesn't check if the
      * for any conditions such as whether the king is in check.
@@ -549,6 +582,14 @@ public class Game {
      * need to work backward from the destination to the source.
      * 1. the piece type can be derived from the action (first char)
      * 2. source has to be derived from the destination
+     *
+     * when there is ambiguity
+     *    [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
+     *    the following rules in order:
+     *    1. file of departure if different
+     *    2. rank of departure if the files are the same but the ranks differ
+     *    3. the complete origin square coordinate otherwise
+     *
      */
     private void findSourceAndDestination(String action) {
         int promotionMarker = action.indexOf('=');
@@ -559,14 +600,6 @@ public class Game {
             promotionPiece = "";  // reset the promotionPiece marker - this is why it is done before any returns.
         }
 
-        /*
-         when there is ambiguity
-         [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
-         the following rules in order:
-         1. file of departure if different
-         2. rank of departure if the files are the same but the ranks differ
-         3. the complete origin square coordinate otherwise
-        */
         // source and destination for castling represents the kings movement
         if (action.equals("O-O-O")) {
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
@@ -668,25 +701,6 @@ public class Game {
             if(((pm.getNonCaptureMoves() | pm.getCaptureMoves()) & (1L << destination)) != 0) {
                 source = tempLocation;
             }
-/*
-
-            // playing non-capture move
-            if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
-                source = tempLocation;
-            } else if ((pm.getCaptureMoves() & (1L << destination)) != 0) {
-                if (rankSpecified == 0 && fileSpecified == 0) {
-                    source = tempLocation;
-                    capture = true;
-                } else {
-                    // verify the source as there are multiple pieces that make a capture
-                    if (rankSpecified == '1' + (tempLocation / 8) ||
-                        fileSpecified == 'a' + (tempLocation % 8)) {
-                        source = tempLocation;
-                        capture = true;
-                    }
-                }
-            }
-*/
         }
 
         // TODO: replace with getters/setters
@@ -828,12 +842,39 @@ public class Game {
         this.limitMovesTo50 = false;
     }
 
-    private SortedMap<String, Integer> perftResults;
+    public SortedMap<String, Integer> perftAtRoot(Game oldGame, int depth) {
+        SortedMap<String, Integer> perftResults = new TreeMap<>();
+
+        Game game = new Game(oldGame);
+        game.generateMoves();
+        MoveList<Move> moves = game.getActivePlayerMoves();
+        int moveCounter = 0;
+
+        for (var move : moves) {
+            Game temp = new Game(game);
+            // temp.moveAsSan(move.toLongSan());
+            temp.move(move);
+            moveCounter = perft(temp, depth - 1);
+            perftResults.put(move.toLongSan(), moveCounter);
+        }
+
+        printPerft(perftResults);
+
+        return perftResults;
+    }
+
+    public void printPerft(SortedMap<String, Integer> perftResults) {
+        LOGGER.info("Perft Results");
+        LOGGER.info("-------------");
+        LOGGER.info("Game {}", this.asFen());
+        for(var r : perftResults.keySet()) {
+            LOGGER.info("{} {}", r, perftResults.get(r));
+        }
+    }
 
     public int perft(Game oldGame, int depth) {
-        perftResults = new TreeMap<>();
         if (depth == 0)
-            return 0;
+            return 1;
 
         Game game = new Game(oldGame);
         game.generateMoves();
@@ -843,25 +884,10 @@ public class Game {
         for (var move : moves) {
             Game temp = new Game(game);
             temp.move(move);
-
-            if (depth - 1 > 0)
-                moveCounter += perft(temp, depth - 1);
-            else
-                moveCounter++;
-
-            perftResults.put(move.toLongSan(), moveCounter);
+            moveCounter += perft(temp, depth - 1);
         }
 
         return moveCounter;
-    }
-
-    public void printPerftResults() {
-        LOGGER.info("Perft Results");
-        LOGGER.info("-------------");
-        LOGGER.info("Game {}", this.asFen());
-        for(var r : perftResults.keySet()) {
-            LOGGER.info("{} {}", r, perftResults.get(r));
-        }
     }
 
     /*

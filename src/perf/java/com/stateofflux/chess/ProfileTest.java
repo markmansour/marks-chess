@@ -72,6 +72,7 @@ public class ProfileTest {
         }
 
     }
+/*
 
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
@@ -111,6 +112,7 @@ public class ProfileTest {
         LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
     }
 
+
     // 3 runs from IntelliJ - 627ms, 592ms, 529ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 271ms, 207ms, 203ms
@@ -148,6 +150,7 @@ public class ProfileTest {
         endTime = System.nanoTime();
         LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
     }
+*/
 
     // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
@@ -165,22 +168,22 @@ public class ProfileTest {
         try {
             asyncProfiler.start(Events.CPU, 1_000_000);
             game = new Game(first.FenString());
-            assertThat(game.perft(game, 3)).isEqualTo(first.d3());
-
+            int actual = game.perft(game, 3);
+            int expected = first.d3();
             profile = asyncProfiler.dumpFlat(100);
+            asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
+            assertThat(actual).isEqualTo(expected);
+        } catch (IOException ioe) {
+            LOGGER.error("IOException " + ioe);
         } finally {
-            try {
-                asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
-                LOGGER.info(profile);
-            } catch (IOException ioe) {
-                LOGGER.error("IOException " + ioe);
-            }
-
+            LOGGER.info(profile);
         }
 
+/*
         if(game != null) {
-            game.printPerftResults();
+            game.printPerft(perftResults);
         }
+*/
 
         endTime = System.nanoTime();
         LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
