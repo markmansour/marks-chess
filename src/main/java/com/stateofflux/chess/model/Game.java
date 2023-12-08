@@ -1006,17 +1006,14 @@ public class Game {
 
     public long getZobristKey(PlayerColor color) {
         long hash = 0;
-        if(this.castlingRights.contains("K"))
-            hash ^= getCastleRightKey(1, PlayerColor.WHITE);
-
-        if(this.castlingRights.contains("Q"))
-            hash ^= getCastleRightKey(2, PlayerColor.WHITE);
-
-        if(this.castlingRights.contains("k"))
-            hash ^= getCastleRightKey(3, PlayerColor.BLACK);
-
-        if(this.castlingRights.contains("q"))
-            hash ^= getCastleRightKey(4, PlayerColor.BLACK);
+        for(char c : castlingRights.toCharArray()) {
+            switch(c) {
+                case 'K': hash ^= getCastleRightKey(1, PlayerColor.WHITE); break;
+                case 'Q': hash ^= getCastleRightKey(2, PlayerColor.WHITE); break;
+                case 'k': hash ^= getCastleRightKey(3, PlayerColor.BLACK); break;
+                case 'q': hash ^= getCastleRightKey(4, PlayerColor.BLACK); break;
+            }
+        }
 
         for (int i = 0; i < 64; i++) {
             Piece piece = this.getBoard().get(i);
