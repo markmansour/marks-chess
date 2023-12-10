@@ -19,11 +19,15 @@ public enum Piece {
     BLACK_PAWN   (11, PlayerColor.BLACK, 'p'),
     EMPTY        (12, PlayerColor.NONE,  ' ');
 
-    private final int index;
+    public final static char KING_ALEGBRAIC = 'K';
+    public final static char QUEEN_ALEGBRAIC = 'Q';
+    public final static char ROOK_ALEGBRAIC = 'R';
+    public final static char BISHOP_ALEGBRAIC = 'B';
+    public final static char KNIGHT_ALEGBRAIC = 'N';
+
+    private final int index; // TODO: can this be replaced by .ordinal()?
     private final PlayerColor color;
     private final char pieceChar;
-    private int enPassantTarget;
-    private String castlingRights;
 
     public static final int SIZE;
 
@@ -35,13 +39,8 @@ public enum Piece {
         this.index = index;
         this.color = color;
         this.pieceChar = pieceChar;
-        this.enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
     }
 
-    public int getEnPassantTarget() { return this.enPassantTarget; }
-    protected void setEnPassantTarget(int enPassantTarget) { this.enPassantTarget = enPassantTarget; }
-    public String getCastlingRights() { return this.castlingRights; }
-    protected void setCastlingRights(String castlingRights) { this.castlingRights = castlingRights; }
     public int getIndex() { return this.index; }
     public PlayerColor getColor() { return this.color; }
     public char getPieceChar() { return this.pieceChar; }
@@ -55,41 +54,71 @@ public enum Piece {
         return EMPTY;
     }
 
+    public static int getPieceIndexByPieceChar(String c) {
+        for (Piece piece : Piece.values()) {
+            if (piece.getPieceChar() == c.charAt(0)) {
+                return piece.getIndex();
+            }
+        }
+
+        throw new IllegalArgumentException("piece character not found: " + c);
+    }
+
+    public static Piece getPieceByAlgebraicPieceChar(char algebraicPiece, PlayerColor color) {
+        if(color == PlayerColor.BLACK) {
+            return switch(algebraicPiece) {
+                case KING_ALEGBRAIC -> BLACK_KING;
+                case QUEEN_ALEGBRAIC -> BLACK_QUEEN;
+                case BISHOP_ALEGBRAIC -> BLACK_BISHOP;
+                case KNIGHT_ALEGBRAIC -> BLACK_KNIGHT;
+                case ROOK_ALEGBRAIC -> BLACK_ROOK;
+                default -> BLACK_PAWN;
+            };
+        }
+
+        if(color == PlayerColor.WHITE) {
+            return switch(algebraicPiece) {
+                case KING_ALEGBRAIC -> WHITE_KING;
+                case QUEEN_ALEGBRAIC -> WHITE_QUEEN;
+                case BISHOP_ALEGBRAIC -> WHITE_BISHOP;
+                case KNIGHT_ALEGBRAIC -> WHITE_KNIGHT;
+                case ROOK_ALEGBRAIC -> WHITE_ROOK;
+                default -> WHITE_PAWN;
+            };
+        }
+
+        throw new IllegalArgumentException("piece character not found: " + algebraicPiece);
+    }
+
+    public static Piece getPieceByPieceChar(String c) {
+        for (Piece piece : Piece.values()) {
+            if (piece.getPieceChar() == c.charAt(0)) {
+                return piece;
+            }
+        }
+
+        throw new IllegalArgumentException("piece character not found: " + c);
+    }
+
     @Override
     public String toString() {
         return String.valueOf(pieceChar);
     }
 
     public PieceMoves generateMoves(Board b, int location, String castlingRights, int enPassantTarget) {
-        switch(this) {
-            case WHITE_KING:
-            case BLACK_KING:
-                return new KingMoves(b, location);
-            case WHITE_QUEEN:
-            case BLACK_QUEEN:
-                return new QueenMoves(b, location);
-            case WHITE_ROOK:
-            case BLACK_ROOK:
-                return new RookMoves(b, location);
-            case WHITE_BISHOP:
-            case BLACK_BISHOP:
-                return new BishopMoves(b, location);
-            case WHITE_KNIGHT:
-            case BLACK_KNIGHT:
-                return new KnightMoves(b, location);
-            case WHITE_PAWN:
-            case BLACK_PAWN:
-                return new PawnMoves(b, location, enPassantTarget);
-            default:
-                throw new IllegalArgumentException("Unexpected value: " + this);
-        }
+        return switch (this) {
+            case WHITE_KING, BLACK_KING -> new KingMoves(b, location);
+            case WHITE_QUEEN, BLACK_QUEEN -> new QueenMoves(b, location);
+            case WHITE_ROOK, BLACK_ROOK -> new RookMoves(b, location);
+            case WHITE_BISHOP, BLACK_BISHOP -> new BishopMoves(b, location);
+            case WHITE_KNIGHT, BLACK_KNIGHT -> new KnightMoves(b, location);
+            case WHITE_PAWN, BLACK_PAWN -> new PawnMoves(b, location, enPassantTarget);
+            default -> throw new IllegalArgumentException("Unexpected value: " + this);
+        };
     }
 
     public boolean isEmpty() {
-        return switch (this) {
-            case EMPTY -> true;
-            default -> false;
-        };
+        return this == EMPTY;
     }
 
     public boolean isBlack() {
@@ -102,6 +131,13 @@ public enum Piece {
     public boolean isWhite() {
         return switch (this) {
             case WHITE_KING, WHITE_QUEEN, WHITE_ROOK, WHITE_BISHOP, WHITE_KNIGHT, WHITE_PAWN -> true;
+            default -> false;
+        };
+    }
+
+    public boolean isPawn() {
+        return switch (this) {
+            case BLACK_PAWN, WHITE_PAWN -> true;
             default -> false;
         };
     }

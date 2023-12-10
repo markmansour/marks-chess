@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model;
 
+import com.stateofflux.chess.model.pieces.Piece;
 import org.testng.annotations.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -73,61 +74,70 @@ public class BoardTest {
   // ---------------------- Moving -------------------------------------
   @Test
   public void moveKing() {
-    Board b = new Board();
-    b.move("e2", "e4");
-    b.move("e1", "e2");
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("e2e4");
+    game.moveLongNotation("e7e5");
+    game.moveLongNotation("e1e2");
+
+    assertThat(game.asFen())
         .as("Move King")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPPKPPP/RNBQ1BNR");
+        .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2");
   }
 
   @Test
   public void moveQueen() {
-    Board b = new Board();
-    b.move("d2", "d3"); // move pawn up
-    b.move("d1", "a4"); // move queen NW 4 places
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("c2c3");
+    game.moveLongNotation("c7e5");
+    game.moveLongNotation("d1a4");
+
+    assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/Q7/3P4/PPP1PPPP/RNB1KBNR");
+        .isEqualTo("rnbqkbnr/pp1ppppp/8/4p3/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
   }
 
   @Test
   public void moveRook() {
-    Board b = new Board();
-    b.move("a2", "a4");
-    b.move("a1", "a3");
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("a2a4");
+    game.moveLongNotation("a7a5");
+    game.moveLongNotation("a1a3");
+
+    assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/R7/1PPPPPPP/1NBQKBNR");
+        .isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR b Kkq - 1 2");
   }
 
   @Test
   public void moveBishop() {
-    Board b = new Board();
-    b.move("b2", "b3"); // move pawn up
-    b.move("c1", "a3");
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("b2b3");
+    game.moveLongNotation("a7a5");
+    game.moveLongNotation("c1a3");
+
+    assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/BP6/P1PPPPPP/RN1QKBNR");
-    b.printOccupied();
+        .isEqualTo("rnbqkbnr/1ppppppp/8/p7/8/BP6/P1PPPPPP/RN1QKBNR b KQkq - 1 2");
   }
 
   @Test
   public void moveKnight() {
-    Board b = new Board();
-    b.move("b1", "a3");
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("b1a3");
+
+    assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1");
   }
 
   @Test
   public void movePawn() {
-    Board b = new Board();
-    b.move("a2", "a4");
-    assertThat(b.toFen())
+    Game game = new Game();
+    game.moveLongNotation("a2a4");
+
+    assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR");
+        .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 1 1");
   }
 
   @Test

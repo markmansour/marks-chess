@@ -61,5 +61,12 @@ public class KingMovesTest {
         }
     }
 
+    @Test void postCastlingShoudLimitNextMoves() {
+        Game game = new Game("4k3/8/8/8/8/8/8/4K2R w K -");
+        game.moveLongNotation("e1g1");  // castle king side white
+        // black should not be able to move into f file as the castled rook blocks the king from moving into check
+        assertThat(game.getActivePlayerMoves()).hasSize(3);
+    }
+
 
 }

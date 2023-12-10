@@ -38,9 +38,9 @@ public class PgnTest {
         // PgnReader reader = new PgnReader(new BufferedReader(new StringReader(pgnString)));
         Pgn pgn = new Pgn(pgnString);
 
-        assertThat(pgn.moves).hasSize(17);
-        assertThat(pgn.tagPairs).hasSize(18);
-        assertThat(pgn.moves.get(pgn.moves.size() -1).blackMove()).isEmpty();
+        assertThat(pgn.getMoves()).hasSize(17);
+        assertThat(pgn.getTagPairs()).hasSize(18);
+        assertThat(pgn.getMoves().get(pgn.getMoves().size() -1).blackMove()).isEmpty();
     }
 
     @Test public void readWellFormedPgnWithDraw() {
@@ -71,9 +71,9 @@ public class PgnTest {
         // PgnReader reader = new PgnReader(new BufferedReader(new StringReader(pgnString)));
         Pgn pgn = new Pgn(pgnString);
 
-        assertThat(pgn.moves).hasSize(125);
-        assertThat(pgn.tagPairs).hasSize(19);
-        assertThat(pgn.moves.get(pgn.moves.size() -1).blackMove()).isNotEmpty();
+        assertThat(pgn.getMoves()).hasSize(125);
+        assertThat(pgn.getTagPairs()).hasSize(19);
+        assertThat(pgn.getMoves().get(pgn.getMoves().size() -1).blackMove()).isNotEmpty();
     }
 
     @Test public void readWellFormedPgnWithTrailingLine() {
@@ -104,9 +104,9 @@ public class PgnTest {
         // PgnReader reader = new PgnReader(new BufferedReader(new StringReader(pgnString)));
         Pgn pgn = new Pgn(pgnString);
 
-        assertThat(pgn.moves).hasSize(17);
-        assertThat(pgn.tagPairs).hasSize(18);
-        assertThat(pgn.moves.get(pgn.moves.size() -1).blackMove()).isEmpty();
+        assertThat(pgn.getMoves()).hasSize(17);
+        assertThat(pgn.getTagPairs()).hasSize(18);
+        assertThat(pgn.getMoves().get(pgn.getMoves().size() -1).blackMove()).isEmpty();
     }
 
     @Test public void readWellFormedPgnWithLeadingLine() {
@@ -137,9 +137,9 @@ public class PgnTest {
         // PgnReader reader = new PgnReader(new BufferedReader(new StringReader(pgnString)));
         Pgn pgn = new Pgn(pgnString);
 
-        assertThat(pgn.moves).hasSize(17);
-        assertThat(pgn.tagPairs).hasSize(18);
-        assertThat(pgn.moves.get(pgn.moves.size() -1).blackMove()).isEmpty();
+        assertThat(pgn.getMoves()).hasSize(17);
+        assertThat(pgn.getTagPairs()).hasSize(18);
+        assertThat(pgn.getMoves().get(pgn.getMoves().size() -1).blackMove()).isEmpty();
     }
 
 }

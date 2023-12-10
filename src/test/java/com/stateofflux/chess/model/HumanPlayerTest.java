@@ -7,11 +7,4 @@ public class HumanPlayerTest {
     public void setUp() {
       // code that will be invoked when this test is instantiated
     }
-
-    @Test
-    public void moveBasic() {
-        Board b = new Board(); // default board
-        HumanPlayer p = new HumanPlayer(b, PlayerColor.BLACK);
-        p.move("e2", "e4");
-    }
 }
