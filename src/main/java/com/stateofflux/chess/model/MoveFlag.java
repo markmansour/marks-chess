@@ -3,7 +3,7 @@ package com.stateofflux.chess.model;
 import java.awt.*;
 
 public class MoveFlag {
-    private static final int CAPTURE_FLAG = 1;
+/*    private static final int CAPTURE_FLAG = 1;
     private static final int PROMOTION_FLAG = 2;
 
     private int flags;
@@ -40,7 +40,7 @@ public class MoveFlag {
 
     public char getPromotionPiece() {
         return promotionPiece;
-    }
+    }*/
 }
 
 

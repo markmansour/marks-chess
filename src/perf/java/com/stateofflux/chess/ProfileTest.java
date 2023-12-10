@@ -155,7 +155,7 @@ public class ProfileTest {
     // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
-    @Test public void depthThreeTest() {
+    public void depthThreeTest() {
         boolean started = false;
         String methodName = new Object() {
         }.getClass().getEnclosingMethod().getName();

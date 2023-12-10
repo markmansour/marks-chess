@@ -45,29 +45,37 @@ public class PawnMovesTest {
 
     @Test
     public void oneCapture() {
-        Board openingBoard = new Board(); // default board
-        openingBoard.move(52, 36); // move black pawn from E7 to E5
-        openingBoard.move(11, 27); // move white pawn from D2 to D4
+        Game game = new Game();
+        game.moveLongNotation("d2d4"); // move white pawn from D2 to D4
+        game.moveLongNotation("e7e5"); // move black pawn from E7 to E5
 
-        PieceMoves bm = new PawnMoves(openingBoard, 27, -1);// white pawn at D4
+        assertThat(game.asFen())
+            .as("Initial board setup")
+            .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2");
+
+        PieceMoves bm = new PawnMoves(game.getBoard(), 27, -1);// white pawn at D4
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 35); // move forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 36); // take the black pawn at D5
 
-        bm = new PawnMoves(openingBoard, 36, -1); // black pawn at E5
+        bm = new PawnMoves(game.getBoard(), 36, -1); // black pawn at E5
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 28); // move forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 27); // take the black pawn at E5
-
     }
 
     @Test
     public void whiteWithTwoCaptures() {
-        Board openingBoard = new Board(); // default board
-        openingBoard.move(52, 36); // move black pawn from E7 to E5
-        openingBoard.move(50, 34); // move black pawn from C7 to C5
-        openingBoard.move(11, 27); // move white pawn from D2 to D4
+        Game game = new Game();
+        game.moveLongNotation("d2d4"); // move white pawn from D2 to D4
+        game.moveLongNotation("e7e5"); // move black pawn from E7 to E5
+        game.moveLongNotation("h2h3"); // move white pawn from H2 to H3
+        game.moveLongNotation("c7c5"); // move black pawn from E7 to E5
 
-        PieceMoves bm = new PawnMoves(openingBoard, 27, -1); // white pawn at D4
+        assertThat(game.asFen())
+            .as("Initial board setup")
+            .isEqualTo("rnbqkbnr/pp1p1ppp/8/2p1p3/3P4/7P/PPP1PPP1/RNBQKBNR w KQkq - 0 3");
+
+        PieceMoves bm = new PawnMoves(game.getBoard(), 27, -1); // white pawn at D4
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 35); // move forward
         assertThat(bm.getCaptureMoves()).isEqualTo(1L << 36 | 1L << 34); // take the black pawn at C5 or E5

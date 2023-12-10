@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Game;
 import org.testng.annotations.Test;
 
 import com.stateofflux.chess.model.pieces.PieceMoves;
@@ -33,5 +34,17 @@ public class RookMovesTest {
         assertThat(bm.getCaptureMoves())
                 .isEqualTo(1L << 48);
 
+    }
+
+    @Test void castleTakeCastleAffectsCastlingRights() {
+        Game game = new Game("r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
+        game.move("Ra8");
+        assertThat(game.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'k', 'K'});
+    }
+
+    @Test void cantUseCastlingToGetOutOfCheck() {
+        Game game = new Game("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
+        game.generateMoves();
+        assertThat(game.getActivePlayerMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 }

@@ -114,8 +114,4 @@ public class Player {
 
         return results;
     }
-
-    public void move(String from, String to) {
-        board.move(from, to);
-    }
 }

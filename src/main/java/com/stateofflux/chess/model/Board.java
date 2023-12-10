@@ -176,46 +176,50 @@ public class Board {
 
     /*
      * Move a piece on the board, but do not perform validation.
+     * return the removed location
      */
-    public boolean move(String from, String to) {
-        int fromIndex = FenString.squareToLocation(from);
-        int toIndex = FenString.squareToLocation(to);
-        return move(fromIndex, toIndex);
-    }
+    public int update(Move m) {
+        boolean standardMove = true;
+        int removed = -1;
 
-    public boolean move(int fromIndex, int toIndex) {
-        // attempting to move from an empty location
-        if (fromIndex == -1) {
-            throw new AssertionError("Source location not found: " + fromIndex);
+        int fromBoardIndex = this.getBitSetIndex(m.getFrom());
+        this.boards[fromBoardIndex] ^= (1L << m.getFrom()); // clear
+        removed = m.getTo();
+        this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
+
+        // if promotion
+        if(m.isPromoting()) {
+            fromBoardIndex = m.getPromotionPiece().getIndex();
+            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set promoted piece
+            standardMove = false;
         }
 
-        int boardIndex = this.getBitSetIndex(fromIndex);
-
-        this.clearLocation(toIndex);  // take the destination piece off the board if it exists
-        this.boards[boardIndex] ^= (1L << fromIndex); // clear
-
-        String promotionPiece = "";
-
-        if(getGame() != null)  // only in my test harness.
-            promotionPiece = getGame().getPromotionPiece();
-
-        if (!promotionPiece.isEmpty()) {
-            boardIndex = Piece.getPieceByPieceChar(promotionPiece);
+        // if en passant
+        if(m.isEnPassant()) {
+            int target = FenString.squareToLocation(m.getEnPassantTarget());
+            // boardIndex doesn't change (pawn to pawn)
+            removed = target;
+            this.clearLocation(target);  // clear en passant target
+            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set new pawn location
+            standardMove = false;
         }
 
-        this.boards[boardIndex] |= (1L << toIndex); // set
+        // if castling - king already moved
+        if(m.isCastling()) {
+            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set king location
 
-        return true;
-    }
+            int toBoardIndex = this.getBitSetIndex(m.getSecondaryFrom());
+            this.boards[toBoardIndex] ^= (1L << m.getSecondaryFrom()); // clear
+            this.boards[toBoardIndex] |= (1L << m.getSecondaryTo()); // set rook location
 
-    public boolean move(Move m) {
-        int boardIndex = this.getBitSetIndex(m.getFrom());
+            standardMove = false;
+        }
 
-        this.clearLocation(m.getTo());  // take the destination piece off the board if it exists
-        this.boards[boardIndex] ^= (1L << m.getFrom()); // clear
-        this.boards[boardIndex] |= (1L << m.getTo()); // set
+        if(standardMove) {
+            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set
+        }
 
-        return true;
+        return removed;
     }
 
     public boolean isEmpty(int location) {

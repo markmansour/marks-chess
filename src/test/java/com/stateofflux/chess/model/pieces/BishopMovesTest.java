@@ -1,6 +1,8 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.Game;
+import com.stateofflux.chess.model.Move;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -34,10 +36,10 @@ public class BishopMovesTest extends NoPieceLogicBoardMovesTest {
 
     @Test
     public void moveFromOpeningPositionWithPawnOutOfTheWay() {
-        Board openingBoard = new Board(); // default board
-        openingBoard.move("b2", "b3"); // move pawn out of the way
+        Game game = new Game();
+        game.move(new Move(Piece.WHITE_PAWN, "b2", "b3", false));
 
-        PieceMoves bm = new BishopMoves(openingBoard, 2);
+        PieceMoves bm = new BishopMoves(game.getBoard(), 2);
 
         assertThat(bm.getNonCaptureMoves()).isEqualTo(1L << 9 | 1L << 16);
         assertThat(bm.getCaptureMoves()).isZero();

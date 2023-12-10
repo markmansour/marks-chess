@@ -3,6 +3,8 @@ package com.stateofflux.chess.model;
 import java.util.*;
 
 import com.stateofflux.chess.model.pieces.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,24 +16,16 @@ public class Game {
     // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
-    /*
-     * private static final long RANK = 255L;
-     * private static final long RANK_2 = RANK << 8;
-     * private static final long RANK_4 = RANK << 24;
-     * private static final long RANK_5 = RANK << 32;
-     * private static final long RANK_7 = RANK << 48;
-     */
-
     protected Player white;
     protected Player black;
     protected Board board;
     protected PlayerColor activePlayerColor;
     protected MoveList<Move> activePlayerMoves;
     protected MoveList<Move> otherPlayerMoves;
-    protected int sourceLocation = -1;
-    protected int destinationLocation = -1;
-    private int secondarySourceLocation = -1;
-    private int secondaryDestinationLocation = -1;
+    protected MoveList<Move> moveHistory;
+
+    protected int enPassantTarget;
+    private boolean check = false;
     private boolean limitMovesTo50 = true;
     private int depth = 0;
     private final LinkedList<Long> history = new LinkedList<>();
@@ -43,8 +37,6 @@ public class Game {
     // prevents castling does not prevent the use of this notation.
     protected String castlingRights;
 
-    // En passant target square
-    protected int enPassantTarget;
 
     // The number of halfmoves since the last capture or pawn advance, used for the
     // fifty-move rule
@@ -54,18 +46,6 @@ public class Game {
     // move
     protected int fullmoveCounter;
     private boolean outOfTime = false;
-    private boolean check = false;
-    private String promotionPiece;
-
-/*
-    // game with players - intended for play
-    public Game(Player white, Player black) {
-        this.white = white;
-        this.black = black;
-        this.board = new Board();
-        this.board.setGame(this);
-    }
-*/
 
     // game with no players - used for analysis
     public Game() {
@@ -114,14 +94,15 @@ public class Game {
         this.depth = depth;
         this.board = new Board(fen.getPiecePlacement());
         this.board.setGame(this);
+
         this.setActivePlayerColor(fen.getActivePlayerColor());
         this.setCastlingRights(fen.getCastlingRights());
         this.setEnPassantTarget(fen.getEnPassantTarget());
         this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
         this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
 
-        // Are we in check?
         this.generateMoves();
+
         if(isChecked(activePlayerColor.otherColor()))
             setPlayerInCheck();
         else
@@ -164,8 +145,6 @@ public class Game {
 
         return g;
     }
-
-    public void setDepth(int depth) { this.depth = depth; }
 
     public String getPiecePlacement() {
         return this.getBoard().toFen();
@@ -246,10 +225,9 @@ public class Game {
         // reset the current state
         this.activePlayerMoves = new MoveList<Move>(new ArrayList<Move>());
         this.otherPlayerMoves = new MoveList<Move>(new ArrayList<Move>());
-        this.promotionPiece = "";
 
         MoveList<Move> list;
-        MoveFlag mf;
+        Move m;
 
         // TODO find a faster way to iterate over the board.
         for (int i = 0; i < 64; i++) {
@@ -265,81 +243,86 @@ public class Game {
             // TODO: There has to be a better way to do this.
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.WHITE_QUEEN);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.WHITE_BISHOP);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.WHITE_KNIGHT.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.WHITE_KNIGHT);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.WHITE_ROOK.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.WHITE_ROOK);
+                    list.add(m);
+
                 } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.BLACK_QUEEN.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.BLACK_QUEEN);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.BLACK_BISHOP.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.BLACK_BISHOP);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.BLACK_KNIGHT.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.BLACK_KNIGHT);
+                    list.add(m);
 
-                    mf = MoveFlag.nonCapture();
-                    mf.setPromotionPiece(Piece.BLACK_ROOK.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.setPromotion(Piece.BLACK_ROOK);
+                    list.add(m);
                 } else { // normal move
-                    mf = MoveFlag.nonCapture();
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
+                    m.updateMoveForCastling(check, castlingRights);
+                    m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+                    list.add(m);
                 }
             }
 
             for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.WHITE_QUEEN.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.WHITE_QUEEN);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.WHITE_BISHOP.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.WHITE_BISHOP);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.WHITE_KNIGHT.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.WHITE_KNIGHT);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.WHITE_ROOK.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.WHITE_ROOK);
+                    list.add(m);
+
                 } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.BLACK_QUEEN.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.BLACK_QUEEN);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.BLACK_BISHOP.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.BLACK_BISHOP);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.BLACK_KNIGHT.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.BLACK_KNIGHT);
+                    list.add(m);
 
-                    mf = MoveFlag.capture();
-                    mf.setPromotionPiece(Piece.BLACK_ROOK.getPieceChar());
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.setPromotion(Piece.BLACK_ROOK);
+                    list.add(m);
                 } else { // normal move
-                    mf = MoveFlag.capture();
-                    list.add(new Move(piece, i, dest, mf));
+                    m = new Move(piece, i, dest, Move.CAPTURE);
+                    m.updateMoveForCastling(check, castlingRights);
+                    m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+                    list.add(m);
                 }
-
             }
         }
 
@@ -361,6 +344,13 @@ public class Game {
 
         for (var move : moves) {
             Game tempGame = new Game(this, depth + 1);
+
+            // can't use castling to get out of check
+            if(tempGame.isChecked(this.activePlayerColor) && move.isCastling()) {
+                toRemove.add(move);
+                continue;
+            }
+
             tempGame.move(move);
 
             // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
@@ -372,84 +362,196 @@ public class Game {
         moves.removeAll(toRemove);
     }
 
+    /*
+     * Long Alegbraic notation without piece names is in the format
+     * <FROM_AS_SQUARE_COORDS><TO_AS_SQUARE_COORDS><PROMOTION>
+     * e.g.
+     * - c2c3  <-- move pawn one space
+     * - b7b8Q <-- queen promotion
+     */
+    public void moveLongNotation(String action) {
+        String from, to;
+        from = action.substring(0,2);
+        to = action.substring(2, 4);
+        Piece promotion = (action.length() == 5) ? Piece.getPieceByPieceChar(action.substring(4,5)) : null;
+
+        int fromSquare = FenString.squareToLocation(from);
+        int toSquare = FenString.squareToLocation(to);
+        Piece piece = board.get(fromSquare);
+
+        Move m = new Move(piece, fromSquare, toSquare, false);
+
+        if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
+            m.setPromotion(promotion);
+        else {
+            m.updateMoveForCastling(check, castlingRights);
+            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+        }
+
+        move(m);
+    }
+
     // using chess algebraic notation
     // this method executes most moves sent to it.  It isn't checking for correctness.
     // TODO: Instead of setting sourceLocation and destinationLocation, make an object to hold the move data.  Why am
     // I not using the exiting Move class?
+    /*
+     * This method simply finds the source and target positions.  It doesn't check if the
+     * for any conditions such as whether the king is in check.
+     *
+     * Examples:
+     * d3 - implied pawn + destination
+     * dxe3 - implied pawn + rank + destination
+     * d3xe3 im implied pawn + rank + file + capture + destination
+     * d3+ - implied pawn + destination + check
+     * Nxc8* - checkmate
+     * Nd3 - piece + destination
+     * Ncd3 - piece + rank + destination
+     * N5d3 - piece + file + destination
+     * Nc5d3 - piece + rank + file + destination
+     * O-O   - king side castle
+     * O-O-O - queen side castle
+     * e8=Q  - pawn promotion
+     * e8=Q+  - pawn promotion and check
+     *
+     * need to work backward from the destination to the source.
+     * 1. the piece type can be derived from the action (first char)
+     * 2. source has to be derived from the destination
+     *
+     * when there is ambiguity
+     *    [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
+     *    the following rules in order:
+     *    1. file of departure if different
+     *    2. rank of departure if the files are the same but the ranks differ
+     *    3. the complete origin square coordinate otherwise
+     *
+     */
     public void move(String action) {
         LOGGER.info("action ({}): {}", getActivePlayerColor(), action);
-        int[] locations;
-        // TODO validate action
+        Piece promotionPiece = null;
+        Move move;
 
-        // TODO validate move
+        // Castling
+        move = extractCastlingMove(action);
 
-        // test if the action is valid
-        switch (action.charAt(0)) {
-            case 'R', 'N', 'B', 'Q', 'K' -> {
-                findSourceAndDestination(action);
-                this.getBoard().move(this.sourceLocation, this.destinationLocation);
-                updateForEnPassant(this.sourceLocation, true, this.destinationLocation);
+        if (move == null) {
+            // Promotion
+            int promotionMarker = action.indexOf('=');
+            if (promotionMarker >= 0) {
+                promotionPiece = Piece.getPieceByPieceChar(action.substring(promotionMarker + 1, promotionMarker + 2));
+                action = action.substring(0, promotionMarker);
             }
-            case 'O' -> {
-                // TODO: How do I use the knowledge in KingMoves when castling?
-                findSourceAndDestination(action);
-                this.getBoard().move(this.sourceLocation, this.destinationLocation);
-                this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
-            }
-            default -> {
-                findSourceAndDestination(action);
-                this.getBoard().move(this.sourceLocation, this.destinationLocation);
-                updateForEnPassant(this.sourceLocation, true, this.destinationLocation);
-            }
+
+            move = extractMoveFromAlgebraicNotation(action);
+            move.setPromotion(promotionPiece);  // ok to set to null
+            move.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            setEnPassantTarget(move.getEnPassantTarget());
         }
 
-        postMoveAccounting();
+        int removedLocation = this.getBoard().update(move);
+        postMoveAccounting(move, removedLocation);
     }
 
+    @NotNull
+    private Move extractMoveFromAlgebraicNotation(String action) {
+        int destination = FenString.squareToLocation(action);
+        int source = -1;
+        int[] possibleSourceLocations;
+
+        int takeMarker = action.contains("x") ? 1 : 0;
+        String sourceHint = switch (action.charAt(action.length() - 1)) {
+            case '+', '*', '#' -> action.substring(0, action.length() - 3 - takeMarker);
+            default -> action.substring(0, action.length() - 2 - takeMarker);
+        };
+
+        char pieceToMoveChar = sourceHint.isEmpty() ? 0 : sourceHint.charAt(0);
+        String sourceHintWithoutPiece;
+
+        switch(pieceToMoveChar) {
+            case 'N', 'B', 'R', 'Q', 'K' -> sourceHintWithoutPiece = sourceHint.substring(1);
+            default -> sourceHintWithoutPiece = sourceHint;
+        }
+
+        char rankSpecified = 0;
+        char fileSpecified = 0;
+        char firstChar;
+
+        switch(sourceHintWithoutPiece.length()) {
+            case 1:
+                firstChar = sourceHintWithoutPiece.charAt(0);
+                if(firstChar >= '1' && firstChar <= '8')
+                    rankSpecified = firstChar;
+                else if (firstChar >= 'a' && firstChar <= 'h') {
+                    fileSpecified = firstChar;
+                }
+                break;
+            case 2:
+                rankSpecified = sourceHintWithoutPiece.charAt(0);
+                fileSpecified = sourceHintWithoutPiece.charAt(1);
+                break;
+        }
+
+        int tempLocation;
+        boolean capture = false;
+
+        possibleSourceLocations =
+            switch(pieceToMoveChar) {
+                case Piece.KING_ALEGBRAIC -> this.getBoard().getKingLocations(this.getActivePlayerColor());
+                case Piece.QUEEN_ALEGBRAIC -> this.getBoard().getQueenLocations(this.getActivePlayerColor());
+                case Piece.BISHOP_ALEGBRAIC -> this.getBoard().getBishopLocations(this.getActivePlayerColor());
+                case Piece.KNIGHT_ALEGBRAIC -> this.getBoard().getKnightLocations(this.getActivePlayerColor());
+                case Piece.ROOK_ALEGBRAIC -> this.getBoard().getRookLocations(this.getActivePlayerColor());
+                default -> this.getBoard().getPawnLocations(this.getActivePlayerColor());
+            };
+
+        Piece piece = null;
+
+        for (int possibleSourceLocation : possibleSourceLocations) {
+            tempLocation = possibleSourceLocation;
+            piece = this.getBoard().get(tempLocation);
+            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
+
+            // if the piece being reviewed isn't in the rank specified then skip over it
+            if (rankSpecified != 0 && (('1' + (tempLocation / 8)) != rankSpecified)) {
+                continue;
+            }
+
+            // if the piece being reviewed isn't in the file specified then skip over it
+            if (fileSpecified != 0 && (('a' + (tempLocation % 8)) != fileSpecified)) {
+                continue;
+            }
+
+            if ((pm.getNonCaptureMoves() & (1L << destination)) != 0) {
+                source = tempLocation;
+                break;
+            }
+
+            if ((pm.getCaptureMoves() & (1L << destination)) != 0) {
+                capture = true;
+                source = tempLocation;
+                break;
+            }
+        }
+
+        assert(source != -1);  // source wasn't found in the possible locations
+
+        return new Move(piece, source, destination, capture);
+    }
+
+    /*
+     * expects en passant, castling, and promotion to be set in the move object.
+     */
     public void move(Move move) {
-        this.secondarySourceLocation = -1;
-        this.secondaryDestinationLocation = -1;
-        this.sourceLocation = move.getFrom();
-        this.destinationLocation = move.getTo();
-        boolean checked = this.isChecked(this.activePlayerColor);
-
-        if(!checked && move.getFrom() == 4) { // e1 -> 4
-            if(move.getTo() == 6 & castlingRights.contains("K")) { // g1
-                this.secondarySourceLocation = 7;
-                this.secondaryDestinationLocation = 5;
-            } else if(move.getTo() == 2 && castlingRights.contains("Q")) { // b1
-                this.secondarySourceLocation = 0;
-                this.secondaryDestinationLocation = 3;
-            }
-        } else if(!checked && move.getFrom() == 60) { // g8 || b8
-            if(move.getTo() == 62 && castlingRights.contains("k")) {
-                this.secondarySourceLocation = 63;
-                this.secondaryDestinationLocation = 61;
-            } else if(move.getTo() == 58 && castlingRights.contains("q")) {
-                this.secondarySourceLocation = 56;
-                this.secondaryDestinationLocation = 59;
-            }
-        }
-
-        if(!checked && this.secondarySourceLocation >= 0) {
-            this.getBoard().move(this.secondarySourceLocation, this.secondaryDestinationLocation);
-        }
-
-        if(move.getPiece() == Piece.WHITE_PAWN && move.getTo() >= 56)
-            this.promotionPiece = String.valueOf(move.getFlags().getPromotionPiece());
-        else if(move.getPiece() == Piece.BLACK_PAWN && move.getTo() <= 7)
-            this.promotionPiece = String.valueOf(move.getFlags().getPromotionPiece());
-
-        this.getBoard().move(this.sourceLocation, this.destinationLocation);
-
-        postMoveAccounting();
+        int removed = this.getBoard().update(move);
+        postMoveAccounting(move, removed);
     }
 
     public LinkedList<Long> getHistory() {
         return history;
     }
-    private void postMoveAccounting() {
-        removeCastlingRightsFor(this.sourceLocation);
+
+    private void postMoveAccounting(Move move, int removedLocation) {
+        removeCastlingRightsFor(move.getFrom(), removedLocation);
 
         history.add(getZobristKey());
 
@@ -501,243 +603,77 @@ public class Game {
 
     private void switchActivePlayer() {
         this.activePlayerColor = this.activePlayerColor.otherColor();
-/*
-        if (this.activePlayerColor == PlayerColor.WHITE) {
-            this.activePlayerColor = PlayerColor.BLACK;
-        } else {
-            this.activePlayerColor = PlayerColor.WHITE;
-        }
-*/
     }
 
-    private boolean movePawn(int i, PieceMoves bm, int destination) {
-        boolean moved;
-        if ((bm.getNonCaptureMoves() & (1L << destination)) != 0) {
-            this.getBoard().move(i, destination);
-            moved = true;
-        } else if ((bm.getCaptureMoves() & (1L << destination)) != 0) {
-            // normal capture
-            this.getBoard().move(i, destination);
-            moved = true;
-        } else {
-            moved = false;
-        }
-        return moved;
-    }
+    private Move extractCastlingMove(String action) {
+        Piece castlingPiece = null;
+        int sourceLocation = -1;
+        int destinationLocation = -1;
+        int secondarySourceLocation = -1;
+        int secondaryDestinationLocation = -1;
+        Move move;
 
-    private void updateForEnPassant(int location, boolean moved, int destination) {
-        if (moved) {
-            // if the pawn is on their home position && if the destination is two moves away
-            if (location >= 8 && location <= 15 && destination - location == 16) { // two moves away
-
-                if (destination < 31 &&
-                    (((1L << (destination + 1)) & this.getBoard().getBlackPawns()) != 0))
-                    this.setEnPassantTarget(FenString.locationToSquare(location + 8));
-
-                if (destination > 24 &&
-                    (((1L << (destination - 1)) & this.getBoard().getBlackPawns()) != 0))
-                    this.setEnPassantTarget(FenString.locationToSquare(location + 8));
-
-            } else if (location >= 48 && location <= 55 && destination - location == -16) {
-
-                // set the en passant target
-                if (destination < 39 &&
-                    (((1L << (destination + 1)) & this.getBoard().getWhitePawns()) != 0))
-                    this.setEnPassantTarget(FenString.locationToSquare(location - 8));
-
-                if (destination > 32 &&
-                    (((1L << (destination - 1)) & this.getBoard().getWhitePawns()) != 0))
-                    this.setEnPassantTarget(FenString.locationToSquare(location - 8));
-
-            } else {
-                // reset the en passant target
-                this.setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
-            }
-        }
-    }
-
-    public String getPromotionPiece() {
-        return this.promotionPiece;
-    }
-
-    /*
-     * This method simply finds the source and target positions.  It doesn't check if the
-     * for any conditions such as whether the king is in check.
-     *
-     * Examples:
-     * d3 - implied pawn + destination
-     * dxe3 - implied pawn + rank + destination
-     * d3xe3 im implied pawn + rank + file + capture + destination
-     * d3+ - implied pawn + destination + check
-     * Nxc8* - checkmate
-     * Nd3 - piece + destination
-     * Ncd3 - piece + rank + destination
-     * N5d3 - piece + file + destination
-     * Nc5d3 - piece + rank + file + destination
-     * O-O   - king side castle
-     * O-O-O - queen side castle
-     * e8=Q  - pawn promotion
-     * e8=Q+  - pawn promotion and check
-     *
-     * need to work backward from the destination to the source.
-     * 1. the piece type can be derived from the action (first char)
-     * 2. source has to be derived from the destination
-     *
-     * when there is ambiguity
-     *    [https://www.chessprogramming.org/Algebraic_Chess_Notation#Ambiguities], use
-     *    the following rules in order:
-     *    1. file of departure if different
-     *    2. rank of departure if the files are the same but the ranks differ
-     *    3. the complete origin square coordinate otherwise
-     *
-     */
-    private void findSourceAndDestination(String action) {
-        int promotionMarker = action.indexOf('=');
-        if(promotionMarker >= 0) {
-            promotionPiece = action.substring(promotionMarker + 1, promotionMarker + 2);
-            action = action.substring(0, promotionMarker);
-        } else {
-            promotionPiece = "";  // reset the promotionPiece marker - this is why it is done before any returns.
-        }
-
-        // source and destination for castling represents the kings movement
-        if (action.equals("O-O-O")) {
+        if (action.equals("O-O-O")) {  // queen side castling
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
-                this.sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
-                this.destinationLocation = CastlingLocations.BLACK_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
-                this.secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
-                this.secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+                castlingPiece = Piece.BLACK_KING;
+                sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.BLACK_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
+                secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
-                this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
-                this.destinationLocation = CastlingLocations.WHITE_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
-                this.secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
-                this.secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+                castlingPiece = Piece.WHITE_KING;
+                sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.WHITE_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
+                secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
             }
-
-            return;
-        } else if (action.equals("O-O")) {
-            // king side castle
+        } else if (action.equals("O-O")) { // king side castle
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
-                this.sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
-                this.destinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location();
-                this.secondarySourceLocation = CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location();
-                this.secondaryDestinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location();
+                castlingPiece = Piece.BLACK_KING;
+                sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location();
+                secondarySourceLocation = CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location();
+                secondaryDestinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location();
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
-                this.sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
-                this.destinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location();
-                this.secondarySourceLocation = CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location();
-                this.secondaryDestinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location();
-            }
-
-            return;
-        }
-
-        int destination = FenString.squareToLocation(action);
-        int source = -1;
-        int[] possibleSourceLocations;
-
-        int takeMarker = action.contains("x") ? 1 : 0;
-        String sourceHint = switch (action.charAt(action.length() - 1)) {
-            case '+', '*', '#' -> action.substring(0, action.length() - 3 - takeMarker);
-            default -> action.substring(0, action.length() - 2 - takeMarker);
-        };
-
-        char pieceToMoveChar = sourceHint.isEmpty() ? 0 : sourceHint.charAt(0);
-
-        switch (pieceToMoveChar) {
-            case 'N' -> possibleSourceLocations = this.getBoard().getKnightLocations(this.getActivePlayerColor());
-            case 'B' -> possibleSourceLocations = this.getBoard().getBishopLocations(this.getActivePlayerColor());
-            case 'R' -> possibleSourceLocations = this.getBoard().getRookLocations(this.getActivePlayerColor());
-            case 'Q' -> possibleSourceLocations = this.getBoard().getQueenLocations(this.getActivePlayerColor());
-            case 'K' -> possibleSourceLocations = this.getBoard().getKingLocations(this.getActivePlayerColor());
-            default -> {
-                possibleSourceLocations = this.getBoard().getPawnLocations(this.getActivePlayerColor());
-                pieceToMoveChar = 'P';
+                castlingPiece = Piece.WHITE_KING;
+                sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location();
+                secondarySourceLocation = CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location();
+                secondaryDestinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location();
             }
         }
 
-        String sourceHintWithoutPiece;
+        if(castlingPiece != null) {
+            move = new Move(castlingPiece, sourceLocation, destinationLocation, Move.NON_CAPTURE);
+            move.setCastling(secondarySourceLocation, secondaryDestinationLocation);
 
-        switch(pieceToMoveChar) {
-            case 'N', 'B', 'R', 'Q', 'K' -> sourceHintWithoutPiece = sourceHint.substring(1);
-            default -> sourceHintWithoutPiece = sourceHint;
+            return move;
         }
 
-        char rankSpecified = 0;
-        char fileSpecified = 0;
-        char firstChar;
-
-        switch(sourceHintWithoutPiece.length()) {
-            case 1:
-                firstChar = sourceHintWithoutPiece.charAt(0);
-                if(firstChar >= '1' && firstChar <= '8')
-                    rankSpecified = firstChar;
-                else if (firstChar >= 'a' && firstChar <= 'h') {
-                    fileSpecified = firstChar;
-                }
-                break;
-            case 2:
-                rankSpecified = sourceHintWithoutPiece.charAt(0);
-                fileSpecified = sourceHintWithoutPiece.charAt(1);
-                break;
-        }
-
-        int tempLocation;
-        boolean capture = false;
-
-        for (int i = 0; i < possibleSourceLocations.length && source == -1; i++) {
-            tempLocation = possibleSourceLocations[i];
-            Piece piece = this.getBoard().get(tempLocation);
-            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
-
-            if(rankSpecified != 0 && (('1' + (tempLocation / 8)) != rankSpecified)) {
-                continue;
-            }
-
-            if(fileSpecified != 0 && (('a' + (tempLocation % 8)) != fileSpecified)) {
-                continue;
-            }
-
-            if(((pm.getNonCaptureMoves() | pm.getCaptureMoves()) & (1L << destination)) != 0) {
-                source = tempLocation;
-            }
-        }
-
-        // TODO: replace with getters/setters
-        this.sourceLocation = source;
-        this.destinationLocation = destination;
+        return null;
     }
 
     /*
      * If the King or their respective rooks move, then remove the castling option
      */
-    private void removeCastlingRightsFor(int i) {
-        this.castlingRights = switch (i) {
-            case 0 -> {
-                yield this.castlingRights.replace("Q", "");
-            }
-            case 4 -> {
-                yield this.castlingRights.replace("K", "").replace("Q", "");
-            }
-            case 7 -> {
-                yield this.castlingRights.replace("K", "");
-            }
-            case 56 -> {
-                yield this.castlingRights.replace("q", "");
-            }
-            case 60 -> {
-                yield this.castlingRights.replace("k", "").replace("q", "");
-            }
-            case 63 -> {
-                yield this.castlingRights.replace("k", "");
-            }
-            default -> {
-                yield this.castlingRights;
-            }
-        };
+    private void removeCastlingRightsFor(int i, int dest) {
+        removeCastlingRightsForLocation(i);
+        removeCastlingRightsForLocation(dest);
 
         if (this.castlingRights.isEmpty())
             this.castlingRights = "-";
+    }
+
+    private void removeCastlingRightsForLocation(int location) {
+        this.castlingRights = switch (location) {
+            case 0 -> this.castlingRights.replace("Q", "");
+            case 4 -> this.castlingRights.replace("K", "").replace("Q", "");
+            case 7 -> this.castlingRights.replace("K", "");
+            case 56 -> this.castlingRights.replace("q", "");
+            case 60 -> this.castlingRights.replace("k", "").replace("q", "");
+            case 63 -> this.castlingRights.replace("k", "");
+            default -> this.castlingRights;
+        };
     }
 
     /*
@@ -818,7 +754,7 @@ public class Game {
 
         for (Move move : moves) {
             // skip this move if it isn't trying to capture the king.
-            if (move.getFlags().isNonCapturing() || move.getTo() != kingLocation)
+            if (!move.isCapture() || move.getTo() != kingLocation)
                 continue;
 
             return true;
