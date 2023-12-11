@@ -21,16 +21,27 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/*
+ * See JMH repo for examples on how to use the profiler:
+ * https://github.com/openjdk/jmh/tree/master/jmh-samples/src/main/java/org/openjdk/jmh/samples
+ *
+ * TODO: Instead of using Unit Test annotations to run performance tests, conver this to
+ *       JMH annotations.
+ * TODO: Move from the unit test package to a performance test package.
+ * TODO: Utilize IntelliJ plugin - https://github.com/artyushov/idea-jmh-plugin
+ */
 public class DepthTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);
     record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {};
-;
+
     private ArrayList<PerftRecord> perftRecords;
+    AsyncProfiler asyncProfiler;
 
     @BeforeSuite
     public void setUp() {
         String resourceName = "./perftsuite.epd";
         perftRecords = new ArrayList<>();
+        asyncProfiler = AsyncProfiler.getInstance();
 
         try(InputStream contents = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             assert contents != null;
@@ -62,34 +73,29 @@ public class DepthTest {
 
     }
 
-/*
-
-    @Test public void testFirstItem() {
-        fail("todo");
-
-        try {
-            long startTime = System.nanoTime();
-            long endTime;
-            AsyncProfiler.getInstance().start(Events.CPU, 1_000_000);
-
-            PerftRecord first = perftRecords.get(0);
-            Game game = new Game(first.FenString());
-//            assertThat(game.perft(first.FenString(), 1)).isEqualTo(first.d1());
-//            assertThat(game.perft(first.FenString(), 2)).isEqualTo(first.d2());
-            assertThat(game.perft(game, 3)).isEqualTo(first.d3());
-
-            String profile = AsyncProfiler.getInstance().dumpFlat(100);
-            System.out.println(profile);
-
-            AsyncProfiler.getInstance().execute("stop,file=profile2.html");
-            endTime = System.nanoTime();
-            LOGGER.info("Ran for: {} seconds", TimeUnit.NANOSECONDS.toSeconds(endTime - startTime));
-        } catch(IOException e) {
-            LOGGER.error("IOException " + e);
-        }
-
+    // 3 runs from IntelliJ - 793ms, 770ms, 921ms
+    // Stopped using constructor Game(String FenString) and instead used Game(Game g)
+    // 208ms, 207ms, 20ms
+    @Test public void firstRecordDepthOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
+        depthHelper(1);
     }
-*/
+
+    // 3 runs from IntelliJ - 627ms, 592ms, 529ms
+    // Stopped using constructor Game(String FenString) and instead used Game(Game g)
+    // 271ms, 207ms, 203ms
+    @Test public void firstRecordDepthTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
+        depthHelper(2);
+    }
+
+    // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
+    // Stopped using constructor Game(String FenString) and instead used Game(Game g)
+    // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
+    @Test public void firstRecordDepthThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
+        depthHelper(3);
+    }
 
     // 1.4 seconds
     @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -107,33 +113,51 @@ public class DepthTest {
     }
 
     private void depthHelper(int depth) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        SortedMap<String, Integer> perftResults;
+        SortedMap<String, Integer> actual;
         int counter = 1;
+        String profile = "EMPTY";
+        String methodName = "depthOf" + depth;
+        long startTime = System.nanoTime();
+        long endTime;
 
-        for(PerftRecord pr : perftRecords) {
-            LOGGER.info("{}: {}", counter++, pr.FenString());
-            Game game = new Game(pr.FenString());
-            perftResults = game.perftAtRoot(game, depth);
-            int perftCount = perftResults.values()
-                .stream()
-                .reduce(0, Integer::sum);
+        try {
+            asyncProfiler.start(Events.CPU, 1_000_000);
 
-            Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
-            Integer actual = (Integer) expectedDepthMethod.invoke(pr, null);
+            for(PerftRecord pr : perftRecords) {
+                LOGGER.info("{}: {}", counter++, pr.FenString());
+                Game game = new Game(pr.FenString());
+                actual = game.perftAtRoot(game, depth);
+                int perftCount = actual.values()
+                    .stream()
+                    .reduce(0, Integer::sum);
 
-            if(perftCount != actual) {
-                game.printPerft(perftResults);
+                Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
+                Integer expected = (Integer) expectedDepthMethod.invoke(pr, null);
 
-                LOGGER.info(
-                    "\n" +
-                    "uci\n" +
-                    "position fen " + game.asFen() + "\n" +
-                    "go perft " + depth + "\n" +
-                    "d\n");
+                if(perftCount != expected) {
+                    game.printPerft(actual);
 
+                    LOGGER.info(
+                        "\n" +
+                        "uci\n" +
+                        "position fen " + game.asFen() + "\n" +
+                        "go perft " + depth + "\n" +
+                        "d\n");
+
+                }
+
+                assertThat(perftCount).as("FenString '%s' of depth %d", pr.FenString(), depth).isEqualTo(expected);
             }
 
-            assertThat(perftCount).as("FenString '%s' of depth %d", pr.FenString(), depth).isEqualTo(actual);
+            profile = asyncProfiler.dumpFlat(100);
+            asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
+        } catch (IOException ioe) {
+            LOGGER.error("IOException " + ioe);
+        } finally {
+            LOGGER.info(profile);
         }
+
+        endTime = System.nanoTime();
+        LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
     }
 }
