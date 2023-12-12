@@ -4,7 +4,6 @@ import java.util.*;
 
 import com.stateofflux.chess.model.pieces.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +14,7 @@ import org.slf4j.LoggerFactory;
 public class Game {
     // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+    record History(Move move, long[] boards, MoveList<Move> activePlayerMoves, MoveList<Move> otherPlayerMoves, int enPassantTarget, boolean check, String castlingRights) {};
 
     protected Player white;
     protected Player black;
@@ -22,13 +22,13 @@ public class Game {
     protected PlayerColor activePlayerColor;
     protected MoveList<Move> activePlayerMoves;
     protected MoveList<Move> otherPlayerMoves;
-    protected MoveList<Move> moveHistory;
 
     protected int enPassantTarget;
     private boolean check = false;
     private boolean limitMovesTo50 = true;
     private int depth = 0;
-    private final LinkedList<Long> history = new LinkedList<>();
+    private final LinkedList<Long> historyAsHashes = new LinkedList<>();
+    private LinkedList<History> history = new LinkedList<>();
 
     // If neither side has the ability to castle, this field uses the character "-".
     // Otherwise, this field contains one or more letters: "K" if White can castle
@@ -36,7 +36,6 @@ public class Game {
     // kingside, and "q" if Black can castle queenside. A situation that temporarily
     // prevents castling does not prevent the use of this notation.
     protected String castlingRights;
-
 
     // The number of halfmoves since the last capture or pawn advance, used for the
     // fifty-move rule
@@ -448,8 +447,13 @@ public class Game {
             setEnPassantTarget(move.getEnPassantTarget());
         }
 
-        int removedLocation = this.getBoard().update(move);
+        int removedLocation = updateBoard(move);
         postMoveAccounting(move, removedLocation);
+    }
+
+    private int updateBoard(Move move) {
+        recordMove(move);
+        return this.getBoard().update(move);
     }
 
     @NotNull
@@ -542,18 +546,18 @@ public class Game {
      * expects en passant, castling, and promotion to be set in the move object.
      */
     public void move(Move move) {
-        int removed = this.getBoard().update(move);
+        int removed = updateBoard(move);
         postMoveAccounting(move, removed);
     }
 
     public LinkedList<Long> getHistory() {
-        return history;
+        return historyAsHashes;
     }
 
     private void postMoveAccounting(Move move, int removedLocation) {
         removeCastlingRightsFor(move.getFrom(), removedLocation);
 
-        history.add(getZobristKey());
+        historyAsHashes.add(getZobristKey());
 
         switchActivePlayer();
         generateMoves();
@@ -568,6 +572,37 @@ public class Game {
         incrementClock();
     }
 
+    private void recordMove(Move move) {
+        MoveList<Move> apm = new MoveList<Move>(new ArrayList<Move>());
+        apm.addAll(activePlayerMoves);
+        MoveList<Move> opm = new MoveList<Move>(new ArrayList<Move>());
+        opm.addAll(otherPlayerMoves);
+
+        History h = new History(
+            move,
+            Arrays.copyOf(getBoard().getBoards(), getBoard().getBoards().length),
+            apm,
+            opm,
+            enPassantTarget,
+            check,
+            castlingRights
+        );
+        history.add(h);
+    }
+
+    public void undo() {
+        History h = history.pop();
+        getBoard().setBoards(h.boards());
+        this.activePlayerMoves = h.activePlayerMoves();
+        this.otherPlayerMoves = h.otherPlayerMoves();
+        this.enPassantTarget = h.enPassantTarget();
+        this.check = h.check();
+        this.castlingRights = h.castlingRights();
+
+        switchActivePlayer();
+        decrementClock();
+    }
+
     private void removeEnPassantIfAttackingPieceIsPinned() {
         // get each move by a Pawn that can end up in the en passant position
         var moves = getActivePlayerMoves().stream()
@@ -578,9 +613,9 @@ public class Game {
         // if there are no valid attacking pawn moves for en passant, then remove the en passant and recaluclate the
         // zobrist hash.
         if (moves.length == 0) { // the pawns cannot use en passant to take the initial 2 square move
-            history.removeLast();
+            historyAsHashes.removeLast();
             setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
-            history.add(getZobristKey());
+            historyAsHashes.add(getZobristKey());
         }
     }
 
@@ -598,6 +633,16 @@ public class Game {
         else {
             halfmoveClock = 0;
             fullmoveCounter++;
+        }
+    }
+
+    private void decrementClock()
+    {
+        if (halfmoveClock == 1)
+            halfmoveClock = 0;
+        else {
+            halfmoveClock = 1;
+            fullmoveCounter--;
         }
     }
 
@@ -778,25 +823,38 @@ public class Game {
         this.limitMovesTo50 = false;
     }
 
-    public SortedMap<String, Integer> perftAtRoot(Game oldGame, int depth) {
+    public SortedMap<String, Integer> perftAtRoot(int depth) {
         SortedMap<String, Integer> perftResults = new TreeMap<>();
 
-        Game game = new Game(oldGame);
-        game.generateMoves();
-        MoveList<Move> moves = game.getActivePlayerMoves();
+        MoveList<Move> moves = getActivePlayerMoves();
         int moveCounter = 0;
 
         for (var move : moves) {
-            Game temp = new Game(game);
-            // temp.moveAsSan(move.toLongSan());
-            temp.move(move);
-            moveCounter = perft(temp, depth - 1);
+            move(move);
+            moveCounter = perft(depth - 1);
+            undo();
             perftResults.put(move.toLongSan(), moveCounter);
         }
 
         printPerft(perftResults);
 
         return perftResults;
+    }
+
+    public int perft(int depth) {
+        if (depth == 0)
+            return 1;
+
+        MoveList<Move> moves = getActivePlayerMoves();
+        int moveCounter = 0;
+
+        for (var move : moves) {
+            move(move);
+            moveCounter += perft(depth - 1);
+            undo();
+        }
+
+        return moveCounter;
     }
 
     public void printPerft(SortedMap<String, Integer> perftResults) {
@@ -806,24 +864,6 @@ public class Game {
         for(var r : perftResults.keySet()) {
             LOGGER.info("{} {}", r, perftResults.get(r));
         }
-    }
-
-    public int perft(Game oldGame, int depth) {
-        if (depth == 0)
-            return 1;
-
-        Game game = new Game(oldGame);
-        game.generateMoves();
-        MoveList<Move> moves = game.getActivePlayerMoves();
-        int moveCounter = 0;
-
-        for (var move : moves) {
-            Game temp = new Game(game);
-            temp.move(move);
-            moveCounter += perft(temp, depth - 1);
-        }
-
-        return moveCounter;
     }
 
     /*
@@ -916,7 +956,7 @@ public class Game {
         * You can use these to create an opening book that handles transpositions.
      */
     // from https://github.com/bhlangonijr/chesslib/blob/49599909c02fc652b15d89048ec88f8b707facf6/src/main/java/com/github/bhlangonijr/chesslib/Board.java
-    private static final List<Long> keys = new ArrayList<>();
+    private static final List<Long> zorbistRandomKeys = new ArrayList<>();
     private static final long RANDOM_SEED = 49109794719L;
     private static final int ZOBRIST_TABLE_SIZE = 2000;
 
@@ -924,7 +964,7 @@ public class Game {
         final XorShiftRandom random = new XorShiftRandom(RANDOM_SEED);
         for (int i = 0; i < ZOBRIST_TABLE_SIZE; i++) {
             long key = random.nextLong();
-            keys.add(key);
+            zorbistRandomKeys.add(key);
         }
     }
 
@@ -968,19 +1008,19 @@ public class Game {
     }
 
     private long getCastleRightKey(int castlingRightOrdinal, PlayerColor color) {
-        return keys.get(3 * castlingRightOrdinal+ 300 + 3 * color.ordinal());
+        return zorbistRandomKeys.get(3 * castlingRightOrdinal+ 300 + 3 * color.ordinal());
     }
 
     private long getSideKey(PlayerColor side) {
-        return keys.get(3 * side.ordinal() + 500);
+        return zorbistRandomKeys.get(3 * side.ordinal() + 500);
     }
 
     private long getEnPassantKey(int enPassantTarget) {
-        return keys.get(3 * enPassantTarget + 400);
+        return zorbistRandomKeys.get(3 * enPassantTarget + 400);
     }
 
     private long getPieceSquareKey(Piece piece, int square) {
-        return keys.get(57 * piece.getIndex() + 13 * square);
+        return zorbistRandomKeys.get(57 * piece.getIndex() + 13 * square);
     }
 
     public boolean isRepetition() {

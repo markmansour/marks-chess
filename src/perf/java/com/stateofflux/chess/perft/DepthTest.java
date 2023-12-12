@@ -76,7 +76,7 @@ public class DepthTest {
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 208ms, 207ms, 20ms
-    @Test public void firstRecordDepthOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    @Test public void firstRecordDepthOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
         depthHelper(1);
     }
@@ -84,7 +84,7 @@ public class DepthTest {
     // 3 runs from IntelliJ - 627ms, 592ms, 529ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 271ms, 207ms, 203ms
-    @Test public void firstRecordDepthTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    @Test public void firstRecordDepthTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
         depthHelper(2);
     }
@@ -92,11 +92,12 @@ public class DepthTest {
     // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
-    @Test public void firstRecordDepthThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    @Test public void firstRecordDepthThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
         depthHelper(3);
     }
 
+/*
     // 1.4 seconds
     @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         depthHelper(1);
@@ -111,8 +112,9 @@ public class DepthTest {
     @Test public void depthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         depthHelper(3);
     }
+*/
 
-    private void depthHelper(int depth) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private void depthHelper(int depth) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;
         int counter = 1;
         String profile = "EMPTY";
@@ -126,7 +128,7 @@ public class DepthTest {
             for(PerftRecord pr : perftRecords) {
                 LOGGER.info("{}: {}", counter++, pr.FenString());
                 Game game = new Game(pr.FenString());
-                actual = game.perftAtRoot(game, depth);
+                actual = game.perftAtRoot(depth);
                 int perftCount = actual.values()
                     .stream()
                     .reduce(0, Integer::sum);
@@ -150,10 +152,8 @@ public class DepthTest {
             }
 
             profile = asyncProfiler.dumpFlat(100);
-            asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
-        } catch (IOException ioe) {
-            LOGGER.error("IOException " + ioe);
         } finally {
+            asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
             LOGGER.info(profile);
         }
 

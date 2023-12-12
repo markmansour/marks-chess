@@ -84,6 +84,14 @@ public class Board {
         this.populate(fen);
     }
 
+    public void setBoards(long[] boards) {
+        this.boards = boards;
+    }
+
+    public long[] getBoards() {
+        return boards;
+    }
+
     public void populate(String fen) {
         char[] fenCh = fen.toCharArray();
         int rank = 7;
