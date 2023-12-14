@@ -33,6 +33,7 @@ public class Board {
 
     protected long[] boards = new long[Piece.SIZE];
     private Game game;
+    private final Piece[] pieceByLocationCache = new Piece[64];
 
     /**
      * RANKS:
@@ -75,6 +76,8 @@ public class Board {
         this.boards[Piece.BLACK_BISHOP.getIndex()] = 1L << 58 | 1L << 61;
         this.boards[Piece.BLACK_KNIGHT.getIndex()] = 1L << 57 | 1L << 62;
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
+
+        preWarmCache();
     }
 
     // --------------------------- Constructors ---------------------------
@@ -83,6 +86,16 @@ public class Board {
      */
     public Board(String fen) {
         this.populate(fen);
+        preWarmCache();
+    }
+
+    private void preWarmCache() {
+        // warming of the cache doesn't have a measurable impact on speed
+/*
+        for(int i = 0; i < 64; i++) {
+            get(i);
+        }
+*/
     }
 
     public void setBoards(long[] boards) {
@@ -151,10 +164,19 @@ public class Board {
      */
     public Piece get(int location) {
         long bitLocation = 1L << location;
+        Piece cachedPiece = pieceByLocationCache[location];
 
+        // cache hit
+        if(cachedPiece != null && (this.boards[cachedPiece.getIndex()] & bitLocation) != 0)
+            return cachedPiece;
+
+        // cache miss
         for (int i = 0; i < this.boards.length; i++) {
-            if ((this.boards[i] & bitLocation) != 0)
-                return Piece.getPieceByIndex(i);
+            if ((this.boards[i] & bitLocation) != 0) {
+                Piece p = Piece.getPieceByIndex(i);
+                pieceByLocationCache[location] = p;
+                return p;
+            }
         }
 
         return Piece.EMPTY;
