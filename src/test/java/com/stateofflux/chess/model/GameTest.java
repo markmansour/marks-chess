@@ -42,8 +42,7 @@ public class GameTest {
     @Test
     public void testNextMovesFromOpeningPosition() {
         Game game = new Game();
-        game.generateMoves();
-        MoveList<Move> gameMoves = game.getActivePlayerMoves();
+        MoveList<Move> gameMoves = game.generateMoves();
         assertThat(gameMoves).hasSize(20);
         assertThat(gameMoves.asLongSan()).containsExactlyInAnyOrder("a2a3", "b2b3", "c2c3", "d2d3", "e2e3", "f2f3", "g2g3", "h2h3",
             "a2a4", "b2b4", "c2c4", "d2d4", "e2e4", "f2f4", "g2g4", "h2h4",
@@ -95,9 +94,9 @@ public class GameTest {
     public void validPawnMoveWithTwoTakeOptions() {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         // black can move from d5 to c4 or e4
-        game.generateMoves();
-        MoveList<Move> potentialMoves = game.getActivePlayerMoves();
-        assertThat(potentialMoves).hasSize(30);
+        MoveList<Move> gameMoves = game.generateMoves();
+
+        assertThat(gameMoves).hasSize(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
         assertThat(game.getCastlingRights()).isEqualTo("KQkq");
@@ -237,6 +236,8 @@ public class GameTest {
         assertThat(game.getCastlingRights()).isEqualTo("-");
         assertThat(game.getEnPassantTarget()).isEqualTo("b3");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
+        // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - - 1 22
+        // 2r3k1/1q1nbppp/r3p3/3pP3/1P1P4/PpQ2N2/2RN1PPP/2R4K b - - 1 22
         assertThat(game.getPiecePlacement()).isEqualTo("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K");
 
         game = new Game("rnbqkbnr/ppppppp1/8/1P1P4/8/2P4p/P3PPPP/RNBQKBNR b KQkq -");
@@ -254,7 +255,8 @@ public class GameTest {
         game.move("f4");  // initial position - two square pawn advance
         // move from g4 to f3 would be possible IF it didn't put the black king in check.
         // therefore this is NOT an en passant move.
-        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
+        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(21);
+        assertThat(game.generateMoves().asLongSan()).doesNotContain("g4f3");
     }
 
     @Test public void takeKnightWithPawn() {
@@ -289,9 +291,7 @@ public class GameTest {
             Game game = new Game("rnbqkbnr/pp2p2p/2p2pp1/3p4/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq -");
 
             // are we generating the castling move as an option?
-            game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
-
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).contains("e1c1");
 
             // can we make the castling move?
@@ -304,8 +304,7 @@ public class GameTest {
             Game game = new Game("rnbqk1nr/p1pp1ppp/8/1p2p3/1b4P1/5N1B/PPPPPP1P/RNBQK2R w KQkq -");
 
             // are we generating the castling move as an option?
-            game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).contains("e1g1");
 
             // can we make the castling move?
@@ -318,8 +317,7 @@ public class GameTest {
             Game game = new Game("r3kbnr/ppp1pppp/2nq4/3p4/QPP3b1/3P4/P3PP1P/RNB1KBNR b KQkq -");
 
             // are we generating the castling move as an option?
-            game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).contains("e8c8");
 
             // can we make the castling move?
@@ -332,8 +330,7 @@ public class GameTest {
             Game game = new Game("rnbqk2r/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R b KQkq -");
 
             // are we generating the castling move as an option?
-            game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).contains("e8g8");
 
             // can we make the castling move?
@@ -345,13 +342,11 @@ public class GameTest {
         @Test
         public void kingDoesNotPassThroughCheckFromBishop() {
             Game game = new Game("rnbqk1nr/1pp3pp/5p2/p1bpp3/4P1PP/5P1N/PPPP2B1/RNBQK2R w KQkq -");
-            game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n7/2pqP1B1/6b1/4P3/PP3PPP/RN1QKBNR b KQkq -");
-            game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -359,12 +354,12 @@ public class GameTest {
         public void kingDoesNotPassThroughCheckFromKnight() {
             Game game = new Game("rnbqkb1r/pppppppp/8/8/6P1/5NnB/PPPPPP1P/RNBQK2R w KQkq -");
             game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p3pppp/bNnq4/2pP4/8/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
             game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -372,12 +367,12 @@ public class GameTest {
         public void kingDoesNotPassThroughCheckFromRook() {
             Game game = new Game("1nbqkbnr/1pp3Pp/4N3/8/4pr1P/p7/PPPP2B1/RNBQK2R w KQk -");
             game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/7q/3p2Q1/N1R1P3/PP3PPP/4KBNR b Kkq -");
             game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -385,12 +380,12 @@ public class GameTest {
         public void kingDoesNotPassThroughCheckFromQueen() {
             Game game = new Game("rnb1kbnr/1pp3pp/5p2/p3p3/3qP1PP/7N/PPPP2B1/RNBQK2R w KQkq -");
             game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/2pq4/3p2Q1/4P3/PP3PPP/RN2KBNR b KQkq -");
             game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -398,12 +393,12 @@ public class GameTest {
         public void kingDoesNotPassThroughCheckFromKing() {
             Game game = new Game("rnB2b1r/ppp2p1p/5p2/8/8/8/P5kP/R1B1K2R w KQ -");
             game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3k1nr/p1K3pp/N7/5p2/2P1p2q/4PPP1/PP6/R1BQ1BNR b kq -");
             game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
 
@@ -412,12 +407,12 @@ public class GameTest {
         public void kingDoesNotPassThroughCheckFromPawn() {
             Game game = new Game("rn1k1b1r/ppp1pp1p/8/3N1b2/8/7P/P5p1/R1B1K2R w KQ -");
             game.generateMoves();
-            MoveList<Move> generatedMoves = game.getActivePlayerMoves();
+            MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p1P1pppp/b7/8/N1p3q1/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
             game.generateMoves();
-            generatedMoves = game.getActivePlayerMoves();
+            generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
     }
@@ -434,7 +429,7 @@ public class GameTest {
 
         @Test public void promotionTakingQueen () {
             Game game = new Game("1q6/P6k/8/5N1K/8/8/8/8 w - -");
-            assertThat(game.getActivePlayerMoves().asLongSan()).contains("a7a8N", "a7a8B", "a7a8R", "a7a8Q");
+            assertThat(game.generateMoves().asLongSan()).contains("a7a8N", "a7a8B", "a7a8R", "a7a8Q");
             game.move("axb8=Q");
             assertThat(game.asFen()).isEqualTo("1Q6/7k/8/5N1K/8/8/8/8 b - - 1 1");
         }
@@ -518,11 +513,10 @@ public class GameTest {
     public static class CheckTest {
         @Test public void nextMoveGetsOutOfCheck() {
             Game game = new Game("8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -");
-            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
+            assertThat(game.getChecked()).isTrue();
 
             // generate next set of moves for the active player
-            game.generateMoves();
-            var moves = game.getActivePlayerMoves();
+            MoveList<Move> moves = game.generateMoves();
 
             // all moves take black out of check
             for(var move : moves) {
@@ -538,7 +532,7 @@ public class GameTest {
 
         @Test public void isCheckmated() {
             Game game = new Game("6Q1/3rk3/4Q3/pp4P1/8/5P2/5PK1/8 b - -");
-            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
+            assertThat(game.getChecked()).isTrue();
             assertThat(game.isCheckmated(PlayerColor.BLACK)).isTrue();
         }
 
@@ -546,7 +540,7 @@ public class GameTest {
             Game game = new Game("r2q1k2/7n/p2N2nb/1ppp1b1p/1P5P/P1PP1P1B/3NP3/R1RK4 b - -");
             game.generateMoves();
             // LOGGER.info(game.getActivePlayerMoves().asLongSan().toString());
-            assertThat(game.getActivePlayerMoves().asLongSan()).doesNotContain("f8e8");  // d6 knight can take king in e8
+            assertThat(game.generateMoves().asLongSan()).doesNotContain("f8e8");  // d6 knight can take king in e8
         }
 
         @Test public void fromFISCGamesDB() {
@@ -615,16 +609,16 @@ public class GameTest {
             Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
             // 1. f4 Kf7 2. Kf2 Kg8 3. Kg1 Kh7 4. Kh2 Kg8 5. Kg1
             game.move("f4");  // initial position - two square pawn advance
-            game.move("Kf7"); // en passant capture not possible - would expose own king to check
+            game.move("Kf7"); // move 2: (initial) en passant capture not possible - would expose own king to check
             game.move("Kf2");
             game.move("Kg8");
-            game.move("Kg1"); // twofold repetition
+            game.move("Kg1"); // move 5: twofold repetition
             game.move("Kh7");
             game.move("Kh2");
             game.getBoard().printOccupied();
             game.move("Kg8");
             game.getBoard().printOccupied();
-            game.move("Kg1");
+            game.move("Kg1"); // move 9: threefold repetition
             assertThat(game.isRepetition()).isTrue();
         }
 
@@ -660,7 +654,7 @@ public class GameTest {
         while(!game.isOver() && counter++ < 1055) {
             LOGGER.info("--------------------------");
             game.generateMoves();
-            var moves = game.getActivePlayerMoves();
+            MoveList<Move> moves = game.generateMoves();
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             LOGGER.info("move: " + move);
             game.move(move);

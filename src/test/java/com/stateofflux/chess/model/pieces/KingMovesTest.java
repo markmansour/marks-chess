@@ -42,7 +42,7 @@ public class KingMovesTest {
         for(String fen : fens) {
             Game game = new Game(fen);
             LOGGER.info(fen);
-            assertThat(game.isChecked(PlayerColor.BLACK)).isTrue();
+            assertThat(game.getChecked()).isTrue();
         }
     }
 
@@ -57,7 +57,7 @@ public class KingMovesTest {
 
         for(String fen : fens) {
             Game game = new Game(fen);
-            assertThat(game.isChecked(PlayerColor.WHITE)).isTrue();
+            assertThat(game.getChecked()).isTrue();
         }
     }
 
@@ -65,7 +65,7 @@ public class KingMovesTest {
         Game game = new Game("4k3/8/8/8/8/8/8/4K2R w K -");
         game.moveLongNotation("e1g1");  // castle king side white
         // black should not be able to move into f file as the castled rook blocks the king from moving into check
-        assertThat(game.getActivePlayerMoves()).hasSize(3);
+        assertThat(game.generateMoves()).hasSize(3);
     }
 
 

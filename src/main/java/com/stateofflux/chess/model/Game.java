@@ -14,14 +14,12 @@ import org.slf4j.LoggerFactory;
 public class Game {
     // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
-    record History(Move move, long[] boards, MoveList<Move> activePlayerMoves, MoveList<Move> otherPlayerMoves, int enPassantTarget, boolean check, String castlingRights) {};
+    record History(Move move, long[] boards, int enPassantTarget, boolean check, String castlingRights) {};
 
     protected Player white;
     protected Player black;
     protected Board board;
     protected PlayerColor activePlayerColor;
-    protected MoveList<Move> activePlayerMoves;
-    protected MoveList<Move> otherPlayerMoves;
 
     protected int enPassantTarget;
     private boolean check = false;
@@ -56,7 +54,6 @@ public class Game {
         this.setEnPassantTarget("-");
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
-        this.generateMoves();
     }
 
     public Game(String fenString) {
@@ -78,12 +75,7 @@ public class Game {
         this.setHalfmoveClock(game.getHalfmoveClock());
         this.setFullmoveCounter(game.getFullmoveCounter());
 
-        // Are we in check?
-        this.generateMoves();
-        if (isChecked(activePlayerColor.otherColor()))
-            setPlayerInCheck();
-        else
-            setPlayerNotInCheck();
+        setActivePlayerIsInCheck();
     }
 
 
@@ -100,12 +92,7 @@ public class Game {
         this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
         this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
 
-        this.generateMoves();
-
-        if(isChecked(activePlayerColor.otherColor()))
-            setPlayerInCheck();
-        else
-            setPlayerNotInCheck();
+        setActivePlayerIsInCheck();
     }
 
     public Game(Pgn pgn) {
@@ -117,7 +104,6 @@ public class Game {
         this.setEnPassantTarget("-");
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
-        this.generateMoves();
 
         for(var move : pgn.getMoves()) {
 //            LOGGER.info(move.toString());
@@ -126,6 +112,8 @@ public class Game {
                 this.move(move.blackMove());
 //            this.getBoard().printOccupied();
         }
+
+        setActivePlayerIsInCheck();  // this is a smell!  It should be handled in the postMoveAccounting() method, but it isn't.
     }
 
     static public Game fromSan(String san) {
@@ -139,7 +127,7 @@ public class Game {
                 g.move(pgnMove.blackMove());
             }
 
-            g.getBoard().printOccupied();
+//            g.getBoard().printOccupied();
         }
 
         return g;
@@ -166,11 +154,12 @@ public class Game {
     }
 
     private void setEnPassantTarget(String target) {
-        if (target.equals(PawnMoves.NO_EN_PASSANT)) {
-            this.enPassantTarget = -1;
-        } else {
-            this.enPassantTarget = FenString.squareToLocation(target);
-        }
+        this.enPassantTarget = enPassantTargetToLocation(target);
+    }
+
+    // TODO: Move to PawnMoves
+    public static int enPassantTargetToLocation(String target) {
+        return (target.equals(PawnMoves.NO_EN_PASSANT)) ? PawnMoves.NO_EN_PASSANT_VALUE : FenString.squareToLocation(target);
     }
 
     public String getEnPassantTarget() {
@@ -205,6 +194,14 @@ public class Game {
         return this.activePlayerColor.otherColor();
     }
 
+    public MoveList<Move> generateOpponentsMoves() {
+        return generateMovesFor(getActivePlayerColor().otherColor());
+    }
+
+    public MoveList<Move> generateMoves() {
+        return generateMovesFor(getActivePlayerColor());
+    }
+
     /*
      * iterate over all pieces on the board
      * for each piece, generate the moves for that piece
@@ -218,14 +215,11 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    public void generateMoves() {
+    private MoveList<Move> generateMovesFor(PlayerColor playerColor) {
         char pieceChar;
 
         // reset the current state
-        this.activePlayerMoves = new MoveList<Move>(new ArrayList<Move>());
-        this.otherPlayerMoves = new MoveList<Move>(new ArrayList<Move>());
-
-        MoveList<Move> list;
+        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>());;
         Move m;
 
         // TODO find a faster way to iterate over the board.
@@ -235,50 +229,56 @@ public class Game {
             if (piece == Piece.EMPTY) // || (onlyActivePlayer && this.activePlayerColor != piece.getColor()))
                 continue;
 
+            // only process moves for the active player
+            if (piece.getColor() != playerColor)
+                continue;
+
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
             pieceChar = piece.getPieceChar();
-            list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
+            // list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
             // TODO: There has to be a better way to do this.
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.WHITE_QUEEN);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.WHITE_BISHOP);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.WHITE_KNIGHT);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.WHITE_ROOK);
-                    list.add(m);
+                    playerMoves.add(m);
 
                 } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.BLACK_QUEEN);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.BLACK_BISHOP);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.BLACK_KNIGHT);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.BLACK_ROOK);
-                    list.add(m);
+                    playerMoves.add(m);
                 } else { // normal move
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.updateMoveForCastling(check, castlingRights);
+                    // TODO can en passant ever happen here for NON CAPTURE MOVES?
                     m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-                    list.add(m);
+                    removeEnPassantIfAttackingPieceIsPinned(m);
+                    playerMoves.add(m);
                 }
             }
 
@@ -286,79 +286,116 @@ public class Game {
                 if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.WHITE_QUEEN);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.WHITE_BISHOP);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.WHITE_KNIGHT);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.WHITE_ROOK);
-                    list.add(m);
+                    playerMoves.add(m);
 
                 } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.BLACK_QUEEN);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.BLACK_BISHOP);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.BLACK_KNIGHT);
-                    list.add(m);
+                    playerMoves.add(m);
 
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.BLACK_ROOK);
-                    list.add(m);
+                    playerMoves.add(m);
                 } else { // normal move
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.updateMoveForCastling(check, castlingRights);
                     m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-                    list.add(m);
+                    removeEnPassantIfAttackingPieceIsPinned(m);
+                    playerMoves.add(m);
                 }
             }
         }
 
-//        LOGGER.debug("pieces with generated moves: " + this.getNextMoves().size());
-        ensureMovesGetsPlayerOutOfCheck(this.activePlayerMoves);
-    }
-
-    public MoveList<Move> getActivePlayerMoves() {
-        return this.activePlayerMoves;
-    }
-
-
-    private void ensureMovesGetsPlayerOutOfCheck(MoveList<Move> moves) {
         if (depth > 0)
-            return;
+            return playerMoves;
 
         // if in check, make sure any move takes the player out of check.
         MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
 
-        for (var move : moves) {
-            Game tempGame = new Game(this, depth + 1);
-
-            // can't use castling to get out of check
-            if(tempGame.isChecked(this.activePlayerColor) && move.isCastling()) {
+        for (var move : playerMoves) {
+           // can't use castling to get out of check
+            if(getChecked() && move.isCastling()) {
                 toRemove.add(move);
                 continue;
             }
 
-            tempGame.move(move);
+            move(move);
 
             // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            if (tempGame.isChecked(this.activePlayerColor)) {
+            if(getChecked())
                 toRemove.add(move);
-            }
+
+            undo();
         }
 
-        moves.removeAll(toRemove);
+        playerMoves.removeAll(toRemove);
+
+        return playerMoves;
+    }
+
+    private void setOtherPlayerIsInCheck() {
+        setPlayerIsInCheck(getActivePlayerColor().otherColor());
+    }
+
+    private void setActivePlayerIsInCheck() {
+        setPlayerIsInCheck(getActivePlayerColor());
+    }
+
+    // review the other players moves that could attack the king
+    private void setPlayerIsInCheck(PlayerColor playerColor) {
+        this.check = isPlayerInCheck(playerColor);
+    }
+
+    private boolean isPlayerInCheck(PlayerColor playerColor) {
+        int kingLocation = board.getKingLocation(playerColor);
+        boolean check = false;
+
+        // for every square
+        for (int i = 0; i < 64; i++) {
+            // find the opponent pieces
+            Piece piece = this.getBoard().get(i);
+
+            // only continue if we're examining the opponent's piece
+            if (piece == Piece.EMPTY || piece.getColor() == playerColor)
+                continue;
+
+            // for each of the available opposition piece moves
+            PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+
+            // see if any can capture the king
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                if(dest == kingLocation) {
+                    // check!
+                    check = true;
+                    break;
+                }
+
+            }
+
+            if(check)
+                break;
+        }
+        return check;
     }
 
     /*
@@ -385,6 +422,7 @@ public class Game {
         else {
             m.updateMoveForCastling(check, castlingRights);
             m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            removeEnPassantIfAttackingPieceIsPinned(m);
         }
 
         move(m);
@@ -447,13 +485,17 @@ public class Game {
             setEnPassantTarget(move.getEnPassantTarget());
         }
 
-        int removedLocation = updateBoard(move);
-        postMoveAccounting(move, removedLocation);
+        move(move);
     }
 
     private int updateBoard(Move move) {
-        recordMove(move);
-        return this.getBoard().update(move);
+        long[] boardsBeforeUpdate = getBoard().getCopyOfBoards();
+        int removed = this.getBoard().update(move);
+
+        removeEnPassantIfAttackingPieceIsPinned(move);
+        recordMove(move, boardsBeforeUpdate);
+
+        return removed;
     }
 
     @NotNull
@@ -556,33 +598,16 @@ public class Game {
 
     private void postMoveAccounting(Move move, int removedLocation) {
         removeCastlingRightsFor(move.getFrom(), removedLocation);
-
+        setActivePlayerIsInCheck();
         historyAsHashes.add(getZobristKey());
-
         switchActivePlayer();
-        generateMoves();
-        removeEnPassantIfAttackingPieceIsPinned();
-
-        // If we put the other play in check, then record it.
-        if (isChecked(this.activePlayerColor))
-            setPlayerInCheck();
-        else
-            setPlayerNotInCheck();
-
         incrementClock();
     }
 
-    private void recordMove(Move move) {
-        MoveList<Move> apm = new MoveList<Move>(new ArrayList<Move>());
-        apm.addAll(activePlayerMoves);
-        MoveList<Move> opm = new MoveList<Move>(new ArrayList<Move>());
-        opm.addAll(otherPlayerMoves);
-
+    private void recordMove(Move move, long[] boards) {
         History h = new History(
             move,
-            Arrays.copyOf(getBoard().getBoards(), getBoard().getBoards().length),
-            apm,
-            opm,
+            boards,
             enPassantTarget,
             check,
             castlingRights
@@ -591,10 +616,9 @@ public class Game {
     }
 
     public void undo() {
-        History h = history.pop();
+        History h = history.pollLast();
         getBoard().setBoards(h.boards());
-        this.activePlayerMoves = h.activePlayerMoves();
-        this.otherPlayerMoves = h.otherPlayerMoves();
+        historyAsHashes.pollLast();  // drop the hash
         this.enPassantTarget = h.enPassantTarget();
         this.check = h.check();
         this.castlingRights = h.castlingRights();
@@ -603,28 +627,40 @@ public class Game {
         decrementClock();
     }
 
-    private void removeEnPassantIfAttackingPieceIsPinned() {
-        // get each move by a Pawn that can end up in the en passant position
-        var moves = getActivePlayerMoves().stream()
-            .filter(m -> m.getPiece().isPawn())
-            .filter(m -> m.getTo() == getEnPassantTargetAsInt())
-            .toArray();
+    private void removeEnPassantIfAttackingPieceIsPinned(Move move) {
+        // if the move doesn't trigger en passant, then exit
+        if(move.getEnPassantTarget().equals(PawnMoves.NO_EN_PASSANT))
+            return;
 
-        // if there are no valid attacking pawn moves for en passant, then remove the en passant and recaluclate the
-        // zobrist hash.
-        if (moves.length == 0) { // the pawns cannot use en passant to take the initial 2 square move
-            historyAsHashes.removeLast();
-            setEnPassantTarget(PawnMoves.NO_EN_PASSANT);
-            historyAsHashes.add(getZobristKey());
+        willEnPassantLeaveKingInCheck(move, move.getTo() - 1); // west
+        willEnPassantLeaveKingInCheck(move, move.getTo() + 1); // east
+    }
+
+    private void willEnPassantLeaveKingInCheck(Move move, int location) {
+        Move enPassantMove;
+        Piece enPassantPiece;
+        int enPassantLocation = Game.enPassantTargetToLocation(move.getEnPassantTarget());
+
+        if (location / 8 == move.getTo() / 8) { // same rank
+            enPassantPiece = getBoard().get(location);
+
+            if(enPassantPiece.isPawn() &&
+                enPassantPiece.getColor() != move.getPiece().getColor()) {
+                enPassantMove = new Move(enPassantPiece, location, enPassantLocation, true);
+                // enPassantMove.setEnPassant(move.getEnPassantTarget());
+
+                long[] boardsBackup = getBoard().getCopyOfBoards();
+                this.getBoard().update(enPassantMove);
+                if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
+                    move.clearEnPassant();
+                }
+                this.getBoard().setBoards(boardsBackup);
+            }
         }
     }
 
-    private void setPlayerNotInCheck() {
-        this.check = false;
-    }
-
-    private void setPlayerInCheck() {
-        this.check = true;
+    private void setPlayerInCheck(boolean inCheck) {
+        this.check = inCheck;
     }
 
     private void incrementClock() {
@@ -762,7 +798,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmated(this.activePlayerColor) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition();
+        return isCheckmated(getActivePlayerColor()) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition();
     }
 
     public boolean exceededMoves() {
@@ -786,16 +822,25 @@ public class Game {
     }
 
     public boolean isStalemate() {
-        return isChecked(this.getActivePlayerColor()) && this.getActivePlayerMoves().isEmpty();
+        return getChecked() && generateMoves().isEmpty();
     }
 
     public boolean hasResigned() {
         return false;
     }
 
+    public boolean getChecked() {
+        return check;
+    }
+
+    // TODO: Can isChecked be removed?
     public boolean isChecked(PlayerColor playerColor) {
+        return isChecked(generateMoves(), playerColor);
+    }
+
+    // TODO: Can isChecked be removed?
+    public boolean isChecked(MoveList<Move> moves, PlayerColor playerColor) {
         int kingLocation = getBoard().getKingLocation(playerColor);
-        var moves = this.activePlayerColor == playerColor ? this.otherPlayerMoves : this.activePlayerMoves;
 
         for (Move move : moves) {
             // skip this move if it isn't trying to capture the king.
@@ -816,7 +861,7 @@ public class Game {
     }
 
     public boolean isCheckmated(PlayerColor playerColor) {
-        return this.activePlayerMoves.isEmpty();
+        return getChecked() && generateMoves().isEmpty();
     }
 
     public void disable50MovesRule() {
@@ -826,12 +871,17 @@ public class Game {
     public SortedMap<String, Integer> perftAtRoot(int depth) {
         SortedMap<String, Integer> perftResults = new TreeMap<>();
 
-        MoveList<Move> moves = getActivePlayerMoves();
+        MoveList<Move> moves = this.generateMoves();
+        setPlayerInCheck(isChecked(moves, activePlayerColor.otherColor()));
+
         int moveCounter = 0;
 
         for (var move : moves) {
+            LOGGER.info("root move: {}", move);
+
             move(move);
             moveCounter = perft(depth - 1);
+            LOGGER.info("perft: {} {}", move, moveCounter);
             undo();
             perftResults.put(move.toLongSan(), moveCounter);
         }
@@ -845,10 +895,14 @@ public class Game {
         if (depth == 0)
             return 1;
 
-        MoveList<Move> moves = getActivePlayerMoves();
+//        LOGGER.info("perft FEN: {}", this.asFen());
+        MoveList<Move> moves = this.generateMoves();
+        setPlayerInCheck(isChecked(moves, activePlayerColor.otherColor()));
+
         int moveCounter = 0;
 
         for (var move : moves) {
+//            LOGGER.info("move: {}", move);
             move(move);
             moveCounter += perft(depth - 1);
             undo();
@@ -860,10 +914,11 @@ public class Game {
     public void printPerft(SortedMap<String, Integer> perftResults) {
         LOGGER.info("Perft Results");
         LOGGER.info("-------------");
-        LOGGER.info("Game {}", this.asFen());
         for(var r : perftResults.keySet()) {
             LOGGER.info("{} {}", r, perftResults.get(r));
         }
+
+        LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0, Integer::sum));
     }
 
     /*
@@ -981,6 +1036,7 @@ public class Game {
     }
 
     public long getZobristKey(PlayerColor color) {
+//        LOGGER.info("zobrist: {}, {}, {}, {}", asFen(), castlingRights, color, getEnPassantTargetAsInt());
         long hash = 0;
         for(char c : castlingRights.toCharArray()) {
             switch(c) {

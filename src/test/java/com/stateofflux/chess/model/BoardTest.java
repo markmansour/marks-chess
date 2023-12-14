@@ -88,12 +88,12 @@ public class BoardTest {
   public void moveQueen() {
     Game game = new Game();
     game.moveLongNotation("c2c3");
-    game.moveLongNotation("c7e5");
+    game.moveLongNotation("c7c5");
     game.moveLongNotation("d1a4");
 
     assertThat(game.asFen())
         .as("Initial board setup")
-        .isEqualTo("rnbqkbnr/pp1ppppp/8/4p3/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
+        .isEqualTo("rnbqkbnr/pp1ppppp/8/2p5/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
   }
 
   @Test

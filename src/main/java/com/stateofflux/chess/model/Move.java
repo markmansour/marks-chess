@@ -78,11 +78,11 @@ public class Move {
         if (location >= 8 && location <= 15 && destination - location == 16) { // two moves away
 
             if (destination < 31 &&
-                (((1L << (destination + 1)) & blackPawns) != 0))
+                (((1L << (destination + 1)) & blackPawns) != 0))  // black pawn on the east
                 setEnPassant(FenString.locationToSquare(location + 8));
 
             if (destination > 24 &&
-                (((1L << (destination - 1)) & blackPawns) != 0))
+                (((1L << (destination - 1)) & blackPawns) != 0))  // black pawn on the west
                 setEnPassant(FenString.locationToSquare(location + 8));
 
         } else if (location >= 48 && location <= 55 && destination - location == -16) {
@@ -98,12 +98,12 @@ public class Move {
 
         } else {
             // reset the en passant target
-            setEnPassant(PawnMoves.NO_EN_PASSANT);
+            clearEnPassant();
         }
     }
 
     // updateForEnPassant is the public method to set en passant
-    private void setEnPassant(String i) {
+    public void setEnPassant(String i) {
         enPassantTarget = i;
     }
 
@@ -149,5 +149,20 @@ public class Move {
             .append(" : ")
             .append(toLongSan());
         return sb.toString();
+    }
+
+    public void clearEnPassant() {
+        setEnPassant(PawnMoves.NO_EN_PASSANT);
+    }
+
+    public boolean isEnPassantCapture() {
+        return piece.isPawn() &&
+            (file(getFrom()) != file(getTo())) &&
+            !enPassantTarget.equals(PawnMoves.NO_EN_PASSANT)
+            ;
+    }
+
+    public static int file(int location) {
+        return location % 8;
     }
 }

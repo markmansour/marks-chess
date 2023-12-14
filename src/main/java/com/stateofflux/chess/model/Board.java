@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class Board {
     }
 
     public void setBoards(long[] boards) {
-        this.boards = boards;
+        this.boards = Arrays.copyOf(boards, boards.length);
     }
 
     public long[] getBoards() {
@@ -202,12 +203,33 @@ public class Board {
             standardMove = false;
         }
 
-        // if en passant
         if(m.isEnPassant()) {
             int target = FenString.squareToLocation(m.getEnPassantTarget());
             // boardIndex doesn't change (pawn to pawn)
             removed = target;
             this.clearLocation(target);  // clear en passant target
+            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set new pawn location
+            standardMove = false;
+        }
+
+        // remove the piece that created the en passant scenario.
+
+        if(m.isEnPassantCapture()) {
+            int target = m.getTo();
+
+            int sourceFile, destFile;
+            sourceFile = m.getFrom() % 8;
+            destFile = target % 8;
+
+            assert(sourceFile != destFile);
+            if(sourceFile < destFile)
+                removed = m.getFrom() + 1;
+            else if(sourceFile > destFile)
+                removed = m.getFrom() - 1;
+
+            this.clearLocation(removed);  // clear en passant target
+
+            // boardIndex doesn't change (pawn to pawn)
             this.boards[fromBoardIndex] |= (1L << m.getTo()); // set new pawn location
             standardMove = false;
         }
@@ -582,5 +604,9 @@ public class Board {
             return true;
 
         return false;
+    }
+
+    public long[] getCopyOfBoards() {
+        return Arrays.copyOf(getBoards(), getBoards().length);
     }
 }

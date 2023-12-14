@@ -73,6 +73,46 @@ public class DepthTest {
 
     }
 
+    @Test public void debugPerft() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords = new ArrayList<>();
+        perftRecords.add(new PerftRecord(
+            "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq -",
+            20,
+            0,0,0,0, 0
+        ));
+        depthHelper(1);
+    }
+
+    @Test public void debugPerft2() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords = new ArrayList<>();
+        perftRecords.add(new PerftRecord(
+            "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq -",
+            0,
+            0,9345,0,0, 0
+        ));
+        depthHelper(3);
+    }
+
+    @Test public void debugPerft3() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords = new ArrayList<>();
+        perftRecords.add(new PerftRecord(
+            "rnbqkbnr/pppp1ppp/8/4p3/8/1P6/P1PPPPPP/RNBQKBNR w KQkq -",
+            0,
+            629,0,0,0, 0
+        ));
+        depthHelper(2);
+    }
+
+    @Test public void debugPerft4() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        perftRecords = new ArrayList<>();
+        perftRecords.add(new PerftRecord(
+            "rnbqkbnr/pppp1ppp/8/4p3/8/BP6/P1PPPPPP/RN1QKBNR b KQkq -",
+            29,
+            0,0,0,0, 0
+        ));
+        depthHelper(1);
+    }
+
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 208ms, 207ms, 20ms
@@ -96,6 +136,13 @@ public class DepthTest {
         perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
         depthHelper(3);
     }
+
+/*
+    @Test public void firstRecordDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
+        depthHelper(4);
+    }
+*/
 
 /*
     // 1.4 seconds

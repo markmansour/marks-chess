@@ -45,6 +45,6 @@ public class RookMovesTest {
     @Test void cantUseCastlingToGetOutOfCheck() {
         Game game = new Game("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
         game.generateMoves();
-        assertThat(game.getActivePlayerMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
+        assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 }
