@@ -153,13 +153,13 @@ public class Game {
         return this.halfmoveClock;
     }
 
-    private void setEnPassantTarget(String target) {
-        this.enPassantTarget = enPassantTargetToLocation(target);
-    }
-
     // TODO: Move to PawnMoves
     public static int enPassantTargetToLocation(String target) {
         return (target.equals(PawnMoves.NO_EN_PASSANT)) ? PawnMoves.NO_EN_PASSANT_VALUE : FenString.squareToLocation(target);
+    }
+
+    private void setEnPassantTarget(String target) {
+        this.enPassantTarget = enPassantTargetToLocation(target);
     }
 
     public String getEnPassantTarget() {
@@ -608,7 +608,7 @@ public class Game {
         History h = new History(
             move,
             boards,
-            enPassantTarget,
+            enPassantTargetToLocation(move.getEnPassantTarget()),
             check,
             castlingRights
         );
@@ -653,6 +653,7 @@ public class Game {
                 this.getBoard().update(enPassantMove);
                 if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
                     move.clearEnPassant();
+                    setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
                 }
                 this.getBoard().setBoards(boardsBackup);
             }

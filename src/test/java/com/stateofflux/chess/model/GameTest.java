@@ -255,7 +255,7 @@ public class GameTest {
         game.move("f4");  // initial position - two square pawn advance
         // move from g4 to f3 would be possible IF it didn't put the black king in check.
         // therefore this is NOT an en passant move.
-        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(21);
+        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
         assertThat(game.generateMoves().asLongSan()).doesNotContain("g4f3");
     }
 

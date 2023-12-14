@@ -73,68 +73,82 @@ public class DepthTest {
 
     }
 
+    private ArrayList<PerftRecord> perftRecordsSizeOne() {
+        return new ArrayList<>(perftRecords.subList(0, 1));
+    }
+
     @Test public void debugPerft() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        perftRecords = new ArrayList<>();
-        perftRecords.add(new PerftRecord(
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
             "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq -",
             20,
-            0,0,0,0, 0
+            0,0,0,0,0
         ));
-        depthHelper(1);
+        depthHelper(1, list);
     }
 
     @Test public void debugPerft2() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        perftRecords = new ArrayList<>();
-        perftRecords.add(new PerftRecord(
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
             "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq -",
             0,
-            0,9345,0,0, 0
+            0,9345,0,0,0
         ));
-        depthHelper(3);
+        depthHelper(3, list);
     }
 
     @Test public void debugPerft3() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        perftRecords = new ArrayList<>();
-        perftRecords.add(new PerftRecord(
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
             "rnbqkbnr/pppp1ppp/8/4p3/8/1P6/P1PPPPPP/RNBQKBNR w KQkq -",
             0,
-            629,0,0,0, 0
+            629,0,0,0,0
         ));
-        depthHelper(2);
+        depthHelper(2, list);
     }
 
     @Test public void debugPerft4() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        perftRecords = new ArrayList<>();
-        perftRecords.add(new PerftRecord(
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
             "rnbqkbnr/pppp1ppp/8/4p3/8/BP6/P1PPPPPP/RN1QKBNR b KQkq -",
             29,
             0,0,0,0, 0
         ));
-        depthHelper(1);
+        depthHelper(1, list);
     }
+
+/*    @Test public void debugPerft5() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
+            "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+            0,
+            568,0,0,0, 0
+        ));
+        depthHelper(2, list);
+    }*/
+
 
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 208ms, 207ms, 20ms
     @Test public void firstRecordDepthOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
-        depthHelper(1);
+        depthHelper(1, perftRecordsSizeOne());
+
     }
 
     // 3 runs from IntelliJ - 627ms, 592ms, 529ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 271ms, 207ms, 203ms
     @Test public void firstRecordDepthTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
-        depthHelper(2);
+        depthHelper(2, perftRecordsSizeOne());
     }
 
     // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
     @Test public void firstRecordDepthThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
-        depthHelper(3);
+        depthHelper(3, perftRecordsSizeOne());
+
     }
 
 /*
@@ -144,24 +158,23 @@ public class DepthTest {
     }
 */
 
-/*
     // 1.4 seconds
-    @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        depthHelper(1);
+    @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(1, perftRecords);
     }
 
     // 11 seconds
-    @Test public void depthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        depthHelper(2);
+    @Test public void depthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(2, perftRecords);
     }
 
     // 3 mins 41 seconds
-    @Test public void depthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        depthHelper(3);
+    @Test public void depthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(3, perftRecords);
     }
-*/
 
-    private void depthHelper(int depth) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+
+    private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;
         int counter = 1;
         String profile = "EMPTY";
@@ -182,7 +195,7 @@ public class DepthTest {
 
                 Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
                 Integer expected = (Integer) expectedDepthMethod.invoke(pr, null);
-
+                LOGGER.info("pulling expected out of {}", pr);
                 if(perftCount != expected) {
                     game.printPerft(actual);
 
