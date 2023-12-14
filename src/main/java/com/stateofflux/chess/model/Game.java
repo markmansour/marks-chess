@@ -235,7 +235,6 @@ public class Game {
 
             PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
             pieceChar = piece.getPieceChar();
-            // list = piece.getColor() == getActivePlayerColor() ? this.activePlayerMoves : this.otherPlayerMoves;
 
             // TODO: There has to be a better way to do this.
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
@@ -331,6 +330,7 @@ public class Game {
 
         // if in check, make sure any move takes the player out of check.
         MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
+        boolean playerIsChecked = getChecked();
 
         for (var move : playerMoves) {
            // can't use castling to get out of check
@@ -342,7 +342,9 @@ public class Game {
             move(move);
 
             // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            if(getChecked())
+            // isPlayerInCheck(activePlayer) looks at the current players check state, whereas getChecked looks at the
+            // checked state as if the turn was over so it looks at the opponents check state.
+            if(isPlayerInCheck(getActivePlayerColor().otherColor()))  // move() changes the color of the player, so check to see if the previous move was valid
                 toRemove.add(move);
 
             undo();
@@ -375,7 +377,7 @@ public class Game {
             // find the opponent pieces
             Piece piece = this.getBoard().get(i);
 
-            // only continue if we're examining the opponent's piece
+            // check if the opponents pieces can capture the king
             if (piece == Piece.EMPTY || piece.getColor() == playerColor)
                 continue;
 
@@ -598,9 +600,9 @@ public class Game {
 
     private void postMoveAccounting(Move move, int removedLocation) {
         removeCastlingRightsFor(move.getFrom(), removedLocation);
-        setActivePlayerIsInCheck();
         historyAsHashes.add(getZobristKey());
         switchActivePlayer();
+        setActivePlayerIsInCheck();
         incrementClock();
     }
 
@@ -834,7 +836,7 @@ public class Game {
         return check;
     }
 
-    // TODO: Can isChecked be removed?
+    // TODO: Can isChecked be removed and replaced with isPlayerInCheck?
     public boolean isChecked(PlayerColor playerColor) {
         return isChecked(generateMoves(), playerColor);
     }
@@ -878,11 +880,11 @@ public class Game {
         int moveCounter = 0;
 
         for (var move : moves) {
-            LOGGER.info("root move: {}", move);
+//            LOGGER.info("root move: {}", move);
 
             move(move);
             moveCounter = perft(depth - 1);
-            LOGGER.info("perft: {} {}", move, moveCounter);
+//            LOGGER.info("perft: {} {}", move, moveCounter);
             undo();
             perftResults.put(move.toLongSan(), moveCounter);
         }

@@ -1,5 +1,6 @@
 package com.stateofflux.chess.perft;
 
+import com.stateofflux.chess.model.FenString;
 import one.profiler.AsyncProfiler;
 import one.profiler.Events;
 
@@ -77,6 +78,17 @@ public class DepthTest {
         return new ArrayList<>(perftRecords.subList(0, 1));
     }
 
+    private ArrayList<PerftRecord> defaultBoard() {
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
+            FenString.INITIAL_BOARD,
+            20,
+            400,8902,197281,4865609,119060324
+        ));
+
+        return list;
+    }
+
     @Test public void debugPerft() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         ArrayList<PerftRecord> list = new ArrayList<>();
         list.add(new PerftRecord(
@@ -117,7 +129,7 @@ public class DepthTest {
         depthHelper(1, list);
     }
 
-/*    @Test public void debugPerft5() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    @Test public void debugPerft5() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         ArrayList<PerftRecord> list = new ArrayList<>();
         list.add(new PerftRecord(
             "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
@@ -125,8 +137,7 @@ public class DepthTest {
             568,0,0,0, 0
         ));
         depthHelper(2, list);
-    }*/
-
+    }
 
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
@@ -139,6 +150,7 @@ public class DepthTest {
     // 3 runs from IntelliJ - 627ms, 592ms, 529ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 271ms, 207ms, 203ms
+    // with undo: 56 ms (2 invalid moves)
     @Test public void firstRecordDepthTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(2, perftRecordsSizeOne());
     }
@@ -146,10 +158,25 @@ public class DepthTest {
     // 3 runs from IntelliJ - 15s 527ms, 14s 179ms, 13s 594ms.
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
     // 6 sec 311 ms, 5 sec 464 ms, 4 sec 809ms
+    // with undo: 336 ms (50 invalid moves)
     @Test public void firstRecordDepthThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(3, perftRecordsSizeOne());
 
     }
+
+    // using undo: 2 seconds
+    @Test public void firstRecordDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(4, perftRecordsSizeOne());
+
+    }
+
+/*
+    // 33 seconds => 4867157 nodes ~= 146 nodes per ms
+    @Test public void firstRecordDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(5, perftRecordsSizeOne());
+
+    }
+*/
 
 /*
     @Test public void firstRecordDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -173,6 +200,15 @@ public class DepthTest {
         depthHelper(3, perftRecords);
     }
 
+    // about 2 seconds
+    @Test public void startingPositionDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(4, defaultBoard());
+    }
+
+    // about 43 seconds
+    @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(5, defaultBoard());
+    }
 
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;

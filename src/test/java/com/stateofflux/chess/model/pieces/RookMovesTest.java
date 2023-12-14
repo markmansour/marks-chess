@@ -38,13 +38,16 @@ public class RookMovesTest {
 
     @Test void castleTakeCastleAffectsCastlingRights() {
         Game game = new Game("r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
-        game.move("Ra8");
-        assertThat(game.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'k', 'K'});
+        game.move("Rxa8+");
+        // assertThat(game.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'k', 'K'});
+        assertThat(game.asFen()).startsWith("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
+        assertThat(game.getChecked()).isTrue();
+        assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 
     @Test void cantUseCastlingToGetOutOfCheck() {
         Game game = new Game("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
-        game.generateMoves();
+        assertThat(game.getChecked()).isTrue();
         assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 }

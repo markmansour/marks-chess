@@ -35,13 +35,13 @@ public class Move {
 
     void updateMoveForCastling(boolean check, String castlingRights) {
         // if it is a castling
-        if (!check && getFrom() == 4) { // e1 -> 4
+        if (getFrom() == 4) { // e1 -> 4
             if (getTo() == 6 && castlingRights.contains("K")) { // g1
                 setCastling(7, 5);
             } else if (getTo() == 2 && castlingRights.contains("Q")) { // b1
                 setCastling(0, 3);
             }
-        } else if (!check && getFrom() == 60) { // g8 || b8
+        } else if (getFrom() == 60) { // g8 || b8
             if (getTo() == 62 && castlingRights.contains("k")) {
                 setCastling(63, 61);
             } else if (getTo() == 58 && castlingRights.contains("q")) {
