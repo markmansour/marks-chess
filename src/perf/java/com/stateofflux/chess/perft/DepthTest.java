@@ -88,6 +88,7 @@ public class DepthTest {
 
         return list;
     }
+/*
 
     @Test public void debugPerft() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         ArrayList<PerftRecord> list = new ArrayList<>();
@@ -138,6 +139,7 @@ public class DepthTest {
         ));
         depthHelper(2, list);
     }
+*/
 
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
@@ -171,6 +173,7 @@ public class DepthTest {
     }
 
 /*
+    // TAKES A LONG TIME TO RUN
     // 33 seconds => 4867157 nodes ~= 146 nodes per ms
     @Test public void firstRecordDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(5, perftRecordsSizeOne());
@@ -178,12 +181,6 @@ public class DepthTest {
     }
 */
 
-/*
-    @Test public void firstRecordDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        perftRecords.subList(1,perftRecords.size()).clear();  // keep only the first item.
-        depthHelper(4);
-    }
-*/
 
     // 1.4 seconds
     @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -206,8 +203,109 @@ public class DepthTest {
     }
 
     // about 43 seconds
+    // about 30 seconds with Board.get caching
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(5, defaultBoard());
+    }
+
+    // Nodes searched: 119060324
+    // 11 mins 41 seconds (about 170 nodes per second)
+    @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(6, defaultBoard());
+    }
+
+
+    /*@Test public void debugPerft6() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        ArrayList<PerftRecord> list = new ArrayList<>();
+        list.add(new PerftRecord(
+            "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -",
+            0,
+            568,0,0,0, 0
+        ));
+        depthHelper(2, list);
+    }*/
+
+    @Test public void testContextBetweenGames() {
+        SortedMap<String, Integer> actual;
+
+        // uci
+        // position startpos
+        // go perft 5
+        Game depth0 = new Game();
+        assertThat(depth0.perftAtRoot(5).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(4865609);
+
+        // ucinewgame
+        // position fen "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -" moves b7b5
+        // go perft 1
+        Game depth4 = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
+        assertThat(depth4.perftAtRoot(1).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(22);
+
+
+        // ucinewgame
+        // position fen "rnbqkbnr/1ppppppp/p7/8/P7/8/1PPPPPPP/RNBQKBNR w KQkq -" moves a4a5
+        // go perft 2
+        Game depth3 = new Game("rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -");
+        actual = depth3.perftAtRoot(2);
+        assertThat(actual.get("b7b5")).isEqualTo(22);  // stockfish reports 22
+        assertThat(actual.values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(380);
+
+        // ucinewgame
+        // position fen "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq -" moves a7a6
+        // go perft 3
+        Game depth2 = new Game("rnbqkbnr/1ppppppp/p7/8/P7/8/1PPPPPPP/RNBQKBNR w KQkq -");
+        assertThat(depth2.perftAtRoot(3).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(9312);
+
+        Game temp2 = new Game("rnbqkbnr/2pppppp/pP6/8/8/8/1PPPPPPP/RNBQKBNR b KQkq -");
+        assertThat(temp2.perftAtRoot(1).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(19);
+
+        // ucinewgame
+        // position fen rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1 moves b7b5 a5b6
+        // go perft 1
+        Game temp = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
+        assertThat(temp.perftAtRoot(1).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(22);
+        assertThat(temp.perftAtRoot(2).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(398);  // a5b6 for me is 20, for stockfish it is 19
+        assertThat(temp.perftAtRoot(3).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(9432);
+
+        // ucinewgame
+        // position fen "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -" moves a2a4
+        // go perft 4
+        Game depth1 = new Game("rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1");
+        actual = depth1.perftAtRoot(4);
+        assertThat(actual.get("b7b5")).isEqualTo(9432);  // stockfish reports 9432, my engine 9456
+        assertThat(actual.values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(186257);
+
+
+    }
+
+    @Test void returnSameResultsWhenRunTwiceInARow() {
+        // ucinewgame
+        // position fen rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1 moves b7b5 a5b6
+        // go perft 1
+        Game temp = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
+        assertThat(temp.perftAtRoot(1).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(22);
+        assertThat(temp.perftAtRoot(1).values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(22);
     }
 
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {

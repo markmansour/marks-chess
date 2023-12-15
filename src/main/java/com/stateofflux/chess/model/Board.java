@@ -209,7 +209,7 @@ public class Board {
      * Move a piece on the board, but do not perform validation.
      * return the removed location
      */
-    public int update(Move m) {
+    public int update(Move m, int gameEnPassantState) {
         boolean standardMove = true;
         int removed = -1;
 
@@ -236,7 +236,7 @@ public class Board {
 
         // remove the piece that created the en passant scenario.
 
-        if(m.isEnPassantCapture()) {
+        if(m.isEnPassantCapture(gameEnPassantState)) {
             int target = m.getTo();
 
             int sourceFile, destFile;

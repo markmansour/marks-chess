@@ -145,10 +145,9 @@ public class PawnMovesTest {
         // not en passant even thought the board is set up for it.
         Game game = new Game("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR w KQkq c6");
         game.move("gxh3");
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4P/P3PP1P/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4P/P3PP1P/RNBQKBNR b KQkq - 1 1");
         game.move("g6");
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1ppp2/6p1/1PpP4/8/2P4P/P3PP1P/RNBQKBNR");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pp1ppp2/6p1/1PpP4/8/2P4P/P3PP1P/RNBQKBNR w KQkq - 0 2");
     }
 
     // history commands

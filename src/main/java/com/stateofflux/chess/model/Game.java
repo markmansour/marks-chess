@@ -407,29 +407,6 @@ public class Game {
      * - c2c3  <-- move pawn one space
      * - b7b8Q <-- queen promotion
      */
-    public void moveLongNotation(String action) {
-        String from, to;
-        from = action.substring(0,2);
-        to = action.substring(2, 4);
-        Piece promotion = (action.length() == 5) ? Piece.getPieceByPieceChar(action.substring(4,5)) : null;
-
-        int fromSquare = FenString.squareToLocation(from);
-        int toSquare = FenString.squareToLocation(to);
-        Piece piece = board.get(fromSquare);
-
-        Move m = new Move(piece, fromSquare, toSquare, false);
-
-        if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
-            m.setPromotion(promotion);
-        else {
-            m.updateMoveForCastling(check, castlingRights);
-            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-            removeEnPassantIfAttackingPieceIsPinned(m);
-        }
-
-        move(m);
-    }
-
     // using chess algebraic notation
     // this method executes most moves sent to it.  It isn't checking for correctness.
     // TODO: Instead of setting sourceLocation and destinationLocation, make an object to hold the move data.  Why am
@@ -465,6 +442,29 @@ public class Game {
      *    3. the complete origin square coordinate otherwise
      *
      */
+    public void moveLongNotation(String action) {
+        String from, to;
+        from = action.substring(0,2);
+        to = action.substring(2, 4);
+        Piece promotion = (action.length() == 5) ? Piece.getPieceByPieceChar(action.substring(4,5)) : null;
+
+        int fromSquare = FenString.squareToLocation(from);
+        int toSquare = FenString.squareToLocation(to);
+        Piece piece = board.get(fromSquare);
+
+        Move m = new Move(piece, fromSquare, toSquare, false);
+
+        if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
+            m.setPromotion(promotion);
+        else {
+            m.updateMoveForCastling(check, castlingRights);
+            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            removeEnPassantIfAttackingPieceIsPinned(m);
+        }
+
+        move(m);
+    }
+
     public void move(String action) {
         LOGGER.info("action ({}): {}", getActivePlayerColor(), action);
         Piece promotionPiece = null;
@@ -484,15 +484,22 @@ public class Game {
             move = extractMoveFromAlgebraicNotation(action);
             move.setPromotion(promotionPiece);  // ok to set to null
             move.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-            setEnPassantTarget(move.getEnPassantTarget());
         }
 
         move(move);
     }
 
+    /*
+     * expects en passant, castling, and promotion to be set in the move object.
+     */
+    public void move(Move move) {
+        int removed = updateBoard(move);
+        postMoveAccounting(move, removed);
+    }
+
     private int updateBoard(Move move) {
         long[] boardsBeforeUpdate = getBoard().getCopyOfBoards();
-        int removed = this.getBoard().update(move);
+        int removed = this.getBoard().update(move, getEnPassantTargetAsInt());
 
         removeEnPassantIfAttackingPieceIsPinned(move);
         recordMove(move, boardsBeforeUpdate);
@@ -586,19 +593,12 @@ public class Game {
         return new Move(piece, source, destination, capture);
     }
 
-    /*
-     * expects en passant, castling, and promotion to be set in the move object.
-     */
-    public void move(Move move) {
-        int removed = updateBoard(move);
-        postMoveAccounting(move, removed);
-    }
-
     public LinkedList<Long> getHistory() {
         return historyAsHashes;
     }
 
     private void postMoveAccounting(Move move, int removedLocation) {
+        setEnPassantTarget(move.getEnPassantTarget());
         removeCastlingRightsFor(move.getFrom(), removedLocation);
         historyAsHashes.add(getZobristKey());
         switchActivePlayer();
@@ -610,7 +610,7 @@ public class Game {
         History h = new History(
             move,
             boards,
-            enPassantTargetToLocation(move.getEnPassantTarget()),
+            getEnPassantTargetAsInt(),
             check,
             castlingRights
         );
@@ -652,7 +652,7 @@ public class Game {
                 // enPassantMove.setEnPassant(move.getEnPassantTarget());
 
                 long[] boardsBackup = getBoard().getCopyOfBoards();
-                this.getBoard().update(enPassantMove);
+                this.getBoard().update(enPassantMove, getEnPassantTargetAsInt());
                 if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
                     move.clearEnPassant();
                     setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
@@ -825,7 +825,7 @@ public class Game {
     }
 
     public boolean isStalemate() {
-        return getChecked() && generateMoves().isEmpty();
+        return !getChecked() && generateMoves().isEmpty();
     }
 
     public boolean hasResigned() {
@@ -875,8 +875,6 @@ public class Game {
         SortedMap<String, Integer> perftResults = new TreeMap<>();
 
         MoveList<Move> moves = this.generateMoves();
-        setPlayerInCheck(isChecked(moves, activePlayerColor.otherColor()));
-
         int moveCounter = 0;
 
         for (var move : moves) {
@@ -900,7 +898,6 @@ public class Game {
 
 //        LOGGER.info("perft FEN: {}", this.asFen());
         MoveList<Move> moves = this.generateMoves();
-        setPlayerInCheck(isChecked(moves, activePlayerColor.otherColor()));
 
         int moveCounter = 0;
 

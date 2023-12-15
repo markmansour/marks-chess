@@ -155,11 +155,11 @@ public class Move {
         setEnPassant(PawnMoves.NO_EN_PASSANT);
     }
 
-    public boolean isEnPassantCapture() {
+    public boolean isEnPassantCapture(int gameEnPassantState) {
         return piece.isPawn() &&
             (file(getFrom()) != file(getTo())) &&
-            !enPassantTarget.equals(PawnMoves.NO_EN_PASSANT)
-            ;
+            gameEnPassantState != PawnMoves.NO_EN_PASSANT_VALUE &&
+            getTo() == gameEnPassantState;
     }
 
     public static int file(int location) {

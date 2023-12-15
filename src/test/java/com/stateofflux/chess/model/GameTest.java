@@ -249,6 +249,12 @@ public class GameTest {
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
     }
 
+    @Test public void enPassantBlack() {
+        Game game = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
+        assertThat(game.generateMoves().asLongSan()).containsOnly("a1a2", "a1a3", "a1a4", "a5b6", "b1a3", "b1c3", "b2b3", "b2b4", "c2c3", "c2c4", "d2d3", "d2d4", "e2e3", "e2e4", "f2f3", "f2f4", "g1f3", "g1h3", "g2g3", "g2g4", "h2h3", "h2h4");
+    }
+
+
     @Test public void initialTwoSquareOpeningNextToPawnButNoEnPassant() {
         Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
         // 1. f4 Kf7 2. Kf2 Kg8 3. Kg1 Kh7 4. Kh2 Kg8 5. Kg1
@@ -508,6 +514,12 @@ public class GameTest {
             }
         }
 
+        @Test public void kingCantTakeKingAndCantMove() {
+            Game g = new Game("K7/2b5/7p/1k5P/8/8/8/8 b - -");
+            g.move("Kb6");
+            assertThat(g.isStalemate()).isTrue();
+            assertThat(g.isDraw()).isTrue();
+        }
     }
 
     public static class CheckTest {

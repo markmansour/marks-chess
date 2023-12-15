@@ -1,10 +1,10 @@
 package com.stateofflux.chess.model.pieces;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
-import com.stateofflux.chess.model.FenString;
 
 public class PawnMoves extends StraightLineMoves {
     public static final List<String> VALID_EN_PASSANT_POSITIONS = List.of(
@@ -92,13 +92,22 @@ public class PawnMoves extends StraightLineMoves {
         }
     }
 
-    // assumes the passed in en passant target is a valid move. validation should
-    // happen elsewhere.
     private void findEnPassantCaptures() {
         // if there is n en passant target, then exit
         if (this.enPassantTarget == -1) {
             return;
         }
+
+        boolean found = false;
+        for(Direction d : captureDirections) {
+            if (d.getDistance() + location == enPassantTarget) {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+            return;
 
         this.captureMoves |= (1L << this.enPassantTarget);
     }
