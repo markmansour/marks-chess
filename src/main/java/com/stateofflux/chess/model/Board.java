@@ -99,13 +99,11 @@ public class Board {
     }
 
     public static int rank(int location) {
-//        return location >> 4;
-        return location / 8;
+        return location >> 3;   // div 8
     }
 
     public static int file(int location) {
-//        return location & 0xf;
-        return location % 8;
+        return location & 0x7;  // modulo 8
     }
 
     public void setBoards(long[] boards) {
