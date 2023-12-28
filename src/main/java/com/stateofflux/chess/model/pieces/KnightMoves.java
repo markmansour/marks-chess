@@ -15,8 +15,8 @@ public class KnightMoves extends PieceMoves {
 
     @Override
     void findCaptureAndNonCaptureMoves() {
-        int rank = this.location / 8 + 1;  // one offset
-        int file = this.location % 8;      // zero offset
+        int rank = Board.rank(this.location) + 1;  // one offset
+        int file = Board.file(this.location);      // zero offset
 
         if (rank <= 7 && file >= 2) { checkKnightMove(6); } // 10 oclock
         if (rank <= 6 && file >= 1) { checkKnightMove(15); } // 11 oclock

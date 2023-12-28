@@ -98,6 +98,16 @@ public class Board {
 */
     }
 
+    public static int rank(int location) {
+//        return location >> 4;
+        return location / 8;
+    }
+
+    public static int file(int location) {
+//        return location & 0xf;
+        return location % 8;
+    }
+
     public void setBoards(long[] boards) {
         this.boards = Arrays.copyOf(boards, boards.length);
     }
@@ -113,7 +123,7 @@ public class Board {
 
         for (char element : fenCh) {
             if (element == '/') {
-                if (location % 8 != 0)
+                if (Board.file(location) != 0)
                     throw new IllegalArgumentException("Invalid FEN: " + fen);
 
                 location = --rank * 8;
@@ -165,6 +175,8 @@ public class Board {
     public Piece get(int location) {
         long bitLocation = 1L << location;
         Piece cachedPiece = pieceByLocationCache[location];
+
+        // TODO: check for empty first so we don't need to iterate over the boards!
 
         // cache hit
         if(cachedPiece != null && (this.boards[cachedPiece.getIndex()] & bitLocation) != 0)
@@ -240,8 +252,8 @@ public class Board {
             int target = m.getTo();
 
             int sourceFile, destFile;
-            sourceFile = m.getFrom() % 8;
-            destFile = target % 8;
+            sourceFile = Board.file(m.getFrom());
+            destFile = Board.file(target);
 
             assert(sourceFile != destFile);
             if(sourceFile < destFile)
@@ -414,7 +426,7 @@ public class Board {
             p = get(location);
 
             if (p == Piece.EMPTY) {
-                max = 8 - (location % 8);
+                max = 8 - file(location);
                 n = this.nextPiece(location, max);
                 f.append(n - location); // use a number to show how many spaces are left
             } else {
@@ -424,7 +436,7 @@ public class Board {
 
             location = n;
 
-            if (location % 8 == 0) {
+            if (file(location) == 0) {
                 if (rank > 0) {
                     f.append('/');
                 }

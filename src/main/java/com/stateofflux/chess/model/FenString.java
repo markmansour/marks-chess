@@ -53,8 +53,8 @@ public class FenString {
         if (location < 0 || location > 63) // can be done with boolean math
             throw new IllegalArgumentException("Invalid location");
 
-        int rank = location / 8;
-        int file = location % 8;
+        int rank = Board.rank(location);
+        int file = Board.file(location);
 
         return String.format("%c%d", 'a' + file, rank + 1);
     }

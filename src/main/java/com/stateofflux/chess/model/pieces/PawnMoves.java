@@ -33,7 +33,7 @@ public class PawnMoves extends StraightLineMoves {
                 this.max = 1;
             }
 
-            this.captureDirections = switch (this.location % 8) {
+            this.captureDirections = switch (Board.file(this.location)) {
                 case 7 -> {
                     yield new Direction[] { Direction.DOWN_LEFT };
                 }
@@ -50,7 +50,7 @@ public class PawnMoves extends StraightLineMoves {
                 this.max = 1;
             }
 
-            this.captureDirections = switch (this.location % 8) {
+            this.captureDirections = switch (Board.file(this.location)) {
                 case 7 -> {
                     yield new Direction[] { Direction.UP_LEFT };
                 }
