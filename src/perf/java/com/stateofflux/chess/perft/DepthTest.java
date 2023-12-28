@@ -40,7 +40,11 @@ public class DepthTest {
 
     @BeforeSuite
     public void setUp() {
+        // from http://www.rocechess.ch/perft.html
+        // see Perft-testsuite - http://www.rocechess.ch/perftsuite.zip
+        // 126 test cases
         String resourceName = "./perftsuite.epd";
+
         perftRecords = new ArrayList<>();
         asyncProfiler = AsyncProfiler.getInstance();
 
@@ -183,18 +187,24 @@ public class DepthTest {
 
 
     // 1.4 seconds
-    @Test public void depthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    @Test public void allEpdExamplesToDepthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(1, perftRecords);
     }
 
     // 11 seconds
-    @Test public void depthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    @Test public void allEpdExamplesToDepthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(2, perftRecords);
     }
 
     // 3 mins 41 seconds
-    @Test public void depthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    @Test public void allEpdExamplesToDepthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        fail("too long");
         depthHelper(3, perftRecords);
+    }
+
+    @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+//        depthHelper(4, perftRecords);
+        fail("too long");
     }
 
     // about 2 seconds
@@ -205,12 +215,14 @@ public class DepthTest {
     // about 43 seconds
     // about 30 seconds with Board.get caching
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        fail("too long");
         depthHelper(5, defaultBoard());
     }
 
     // Nodes searched: 119060324
     // 11 mins 41 seconds (about 170 nodes per second)
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        fail("too long");
         depthHelper(6, defaultBoard());
     }
 
@@ -226,6 +238,7 @@ public class DepthTest {
     }*/
 
     @Test public void testContextBetweenGames() {
+        fail("too long");
         SortedMap<String, Integer> actual;
 
         // uci
@@ -291,8 +304,6 @@ public class DepthTest {
         assertThat(actual.values()
             .stream()
             .reduce(0, Integer::sum)).isEqualTo(186257);
-
-
     }
 
     @Test void returnSameResultsWhenRunTwiceInARow() {
