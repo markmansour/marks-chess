@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public class Game {
     // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
-    record History(Move move, long[] boards, int enPassantTarget, boolean check, String castlingRights) {};
+    record History(Move move, long[] boards, int enPassantTarget, boolean check, String castlingRights, Piece[] pieceCache) {};
 
     protected Player white;
     protected Player black;
@@ -501,10 +501,12 @@ public class Game {
 
     private int updateBoard(Move move) {
         long[] boardsBeforeUpdate = getBoard().getCopyOfBoards();
+        Piece[] copyOfPieceCache = Arrays.copyOf(getBoard().getPieceCache(), getBoard().getPieceCache().length);
+
         int removed = this.getBoard().update(move, getEnPassantTargetAsInt());
 
         removeEnPassantIfAttackingPieceIsPinned(move);
-        recordMove(move, boardsBeforeUpdate);
+        recordMove(move, boardsBeforeUpdate, copyOfPieceCache);
 
         return removed;
     }
@@ -608,20 +610,22 @@ public class Game {
         incrementClock();
     }
 
-    private void recordMove(Move move, long[] boards) {
+    private void recordMove(Move move, long[] boards, Piece[] pieceCache) {
         History h = new History(
             move,
             boards,
             getEnPassantTargetAsInt(),
             check,
-            castlingRights
+            castlingRights,
+            pieceCache
         );
         history.add(h);
     }
 
     public void undo() {
         History h = history.pollLast();
-        getBoard().setBoards(h.boards());
+        getBoard().setBoards(h.boards);
+        getBoard().setPieceCache(h.pieceCache);
         historyAsHashes.pollLast();  // drop the hash
         this.enPassantTarget = h.enPassantTarget();
         this.check = h.check();
@@ -654,12 +658,15 @@ public class Game {
                 // enPassantMove.setEnPassant(move.getEnPassantTarget());
 
                 long[] boardsBackup = getBoard().getCopyOfBoards();
+                Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
+
                 this.getBoard().update(enPassantMove, getEnPassantTargetAsInt());
                 if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
                     move.clearEnPassant();
                     setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
                 }
                 this.getBoard().setBoards(boardsBackup);
+                this.getBoard().setPieceCache(piecesBackup);
             }
         }
     }

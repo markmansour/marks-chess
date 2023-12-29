@@ -41,6 +41,7 @@ public class Board {
     private long whiteBoard;
     private long blackBoardWithoutKing;
     private long whiteBoardWithoutKing;
+    private Piece[] pieceCache = new Piece[64];
 
     /**
      * RANKS:
@@ -85,6 +86,7 @@ public class Board {
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
 
         preWarmCache();
+        populatePieceCache();
         calculateAllCacheBoards();
     }
 
@@ -94,8 +96,27 @@ public class Board {
      */
     public Board(String fen) {
         this.populate(fen);
+        populatePieceCache();
         preWarmCache();
         calculateAllCacheBoards();
+    }
+
+    private void populatePieceCache() {
+        Arrays.fill(pieceCache, null);
+
+        for(int i = 0; i < this.boards.length; i++) {
+            int[] locations = Board.bitboardToArray(this.boards[i]);
+            Piece p = Piece.getPieceByIndex(i);
+
+            for (int location : locations) {
+                pieceCache[location] = p;
+            }
+        }
+
+        for(int k = 0; k < pieceCache.length; k++) {
+            if(pieceCache[k] == null)
+                pieceCache[k] = Piece.EMPTY;
+        }
     }
 
     public void calculateAllCacheBoards() {
@@ -123,7 +144,7 @@ public class Board {
         return boards;
     }
 
-    public void populate(String fen) {
+    private void populate(String fen) {
         char[] fenCh = fen.toCharArray();
         int rank = 7;
         int location = 56;
@@ -151,11 +172,13 @@ public class Board {
     // --------------------------- Instance Methods ---------------------------
     public long setByBoard(int boardIndex, int location) {
         long temp = this.boards[boardIndex] |= (1L << location);
+        pieceCache[location] = Piece.getPieceByIndex(boardIndex);
         return temp;
     }
 
     public void clearByBoard(int boardIndex, int location) {
         this.boards[boardIndex] ^= (1L << location);
+        pieceCache[location] = Piece.EMPTY;
 
         if(boardIndex <= 5) { // white
             calculateWhiteBoard();
@@ -174,6 +197,7 @@ public class Board {
             // clear the bit at the location on all boards
             this.boards[i] &= ~(1L << location);
         }
+//        pieceCache[location] = Piece.EMPTY;
     }
 
     public int set(char element, int location) {
@@ -207,6 +231,8 @@ public class Board {
      * return the character representing a piece
      */
     public Piece get(int location) {
+        return pieceCache[location];
+/*
         long bitLocation = 1L << location;
         Piece cachedPiece = pieceByLocationCache[location];
 
@@ -224,12 +250,13 @@ public class Board {
         }
 
         return Piece.EMPTY;
+*/
     }
 
-    protected int getBitSetIndex(int location) {
-        for (int boardCount = 0; boardCount < this.boards.length; boardCount++) {
-            if ((this.boards[boardCount] & (1L << location)) != 0)
-                return boardCount;
+    protected int getBoardIndex(int location) {
+        for (int index = 0; index < this.boards.length; index++) {
+            if ((this.boards[index] & (1L << location)) != 0)
+                return index;
         }
 
         throw new AssertionError("Location not found: " + this);
@@ -257,9 +284,9 @@ public class Board {
         boolean standardMove = true;
         int removed = -1;
 
-        int fromBoardIndex = this.getBitSetIndex(m.getFrom());
+        int fromBoardIndex = this.getBoardIndex(m.getFrom());  // TODO: replace fromBoardIndex = m.getPiece().getIndex();
         clearByBoard(fromBoardIndex, m.getFrom()); // clear
-        removed = m.getTo();
+        removed = m.getTo();  // TODO: replace with pieceCache[m.getTo()].getIndex();
         this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
 
         // if promotion
@@ -273,7 +300,7 @@ public class Board {
             int target = FenString.squareToLocation(m.getEnPassantTarget());
             // boardIndex doesn't change (pawn to pawn)
             removed = target;
-            this.clearLocation(target);  // clear en passant target
+            this.clearLocation(target);  // clear en passant target - TODO: this is not the right time to do this so delete this line.
             setByBoard(fromBoardIndex, m.getTo()); // set new pawn location
             standardMove = false;
         }
@@ -304,7 +331,7 @@ public class Board {
         if(m.isCastling()) {
             setByBoard(fromBoardIndex, m.getTo()); // set king location
 
-            int toBoardIndex = this.getBitSetIndex(m.getSecondaryFrom());
+            int toBoardIndex = this.getBoardIndex(m.getSecondaryFrom());
             clearByBoard(toBoardIndex, m.getSecondaryFrom()); // clear
             setByBoard(toBoardIndex, m.getSecondaryTo()); // set rook location
 
@@ -596,14 +623,6 @@ public class Board {
         return Board.bitboardToArray(getPieceLocations(activePlayerColor == PlayerColor.WHITE ? one : two ));
 	}
 
-    public int getWhiteKingLocation() {
-        return bitboardToArray(this.boards[Piece.WHITE_KING.getIndex()])[0];
-    }
-
-    public int getBlackKingLocation() {
-        return bitboardToArray(this.boards[Piece.BLACK_KING.getIndex()])[0];
-    }
-
     // TODO - still buggy
     // TEST DATA:
     // * FEN: r3Q1N1/2B3r1/P3b1p1/1pp4p/1R5P/1kR5/7N/4K3 w - - 0 97
@@ -685,4 +704,18 @@ public class Board {
     public long[] getCopyOfBoards() {
         return Arrays.copyOf(getBoards(), getBoards().length);
     }
+
+    public Piece[] getCopyOfPieceCache() {
+        return Arrays.copyOf(pieceCache, pieceCache.length);
+    }
+
+    public Piece[] getPieceCache() {
+        return pieceCache;
+    }
+
+    public void setPieceCache(Piece[] pieceCache) {
+        this.pieceCache = pieceCache;
+    }
+
+
 }
