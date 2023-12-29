@@ -87,10 +87,10 @@ public abstract class PieceMoves {
 
     public static int maxStepsToBoundaryHoriztonalOrVertical(int location, Direction direction) {
         return switch (direction) {
-            case RIGHT -> 7 - (location % 8);
-            case LEFT -> location % 8;
-            case DOWN -> location / 8;
-            case UP -> 7 - (location / 8);
+            case RIGHT -> 7 - Board.file(location);
+            case LEFT -> Board.file(location);
+            case DOWN -> Board.rank(location);
+            case UP -> 7 - Board.rank(location);
             default -> throw new IllegalArgumentException("Unexpected value: " + direction);
         };
         // check to see we're not going off the board.

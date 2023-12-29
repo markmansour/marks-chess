@@ -238,7 +238,7 @@ public class Game {
 
             // TODO: There has to be a better way to do this.
             for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
+                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && Board.rank(dest) == 7) {  // white is promoting
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.WHITE_QUEEN);
                     playerMoves.add(m);
@@ -255,7 +255,7 @@ public class Game {
                     m.setPromotion(Piece.WHITE_ROOK);
                     playerMoves.add(m);
 
-                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
+                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && Board.rank(dest) == 0) {  // black is promoting
                     m = new Move(piece, i, dest, Move.NON_CAPTURE);
                     m.setPromotion(Piece.BLACK_QUEEN);
                     playerMoves.add(m);
@@ -282,7 +282,7 @@ public class Game {
             }
 
             for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && dest / 8 == 7) {  // white is promoting
+                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && Board.rank(dest) == 7) {  // white is promoting
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.WHITE_QUEEN);
                     playerMoves.add(m);
@@ -299,7 +299,7 @@ public class Game {
                     m.setPromotion(Piece.WHITE_ROOK);
                     playerMoves.add(m);
 
-                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && dest / 8 == 0) {  // black is promoting
+                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && Board.rank(dest) == 0) {  // black is promoting
                     m = new Move(piece, i, dest, Move.CAPTURE);
                     m.setPromotion(Piece.BLACK_QUEEN);
                     playerMoves.add(m);
@@ -571,12 +571,12 @@ public class Game {
             PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
 
             // if the piece being reviewed isn't in the rank specified then skip over it
-            if (rankSpecified != 0 && (('1' + (tempLocation / 8)) != rankSpecified)) {
+            if (rankSpecified != 0 && (('1' + (Board.rank(tempLocation))) != rankSpecified)) {
                 continue;
             }
 
             // if the piece being reviewed isn't in the file specified then skip over it
-            if (fileSpecified != 0 && (('a' + (tempLocation % 8)) != fileSpecified)) {
+            if (fileSpecified != 0 && (('a' + Board.file(tempLocation)) != fileSpecified)) {
                 continue;
             }
 
@@ -649,7 +649,7 @@ public class Game {
         Piece enPassantPiece;
         int enPassantLocation = Game.enPassantTargetToLocation(move.getEnPassantTarget());
 
-        if (location / 8 == move.getTo() / 8) { // same rank
+        if (Board.rank(location) == Board.rank(move.getTo())) { // same rank
             enPassantPiece = getBoard().get(location);
 
             if(enPassantPiece.isPawn() &&

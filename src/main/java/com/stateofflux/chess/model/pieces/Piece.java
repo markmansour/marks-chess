@@ -46,6 +46,7 @@ public enum Piece {
     public char getPieceChar() { return this.pieceChar; }
 
     public static Piece getPieceByIndex(int index) {
+        // TODO: pregenerate the lookup.
         for (Piece piece : Piece.values()) {
             if (piece.getIndex() == index) {
                 return piece;
