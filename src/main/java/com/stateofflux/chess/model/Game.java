@@ -370,6 +370,8 @@ public class Game {
 
     private boolean isPlayerInCheck(PlayerColor playerColor) {
         int kingLocation = board.getKingLocation(playerColor);
+        if(kingLocation == -1) return true;
+
         boolean check = false;
 
         // for every square
@@ -844,6 +846,7 @@ public class Game {
     // TODO: Can isChecked be removed?
     public boolean isChecked(MoveList<Move> moves, PlayerColor playerColor) {
         int kingLocation = getBoard().getKingLocation(playerColor);
+        if(kingLocation == -1) return true;
 
         for (Move move : moves) {
             // skip this move if it isn't trying to capture the king.

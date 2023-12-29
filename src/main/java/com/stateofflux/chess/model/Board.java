@@ -31,9 +31,16 @@ import com.stateofflux.chess.model.pieces.Piece;
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
-    protected long[] boards = new long[Piece.SIZE];
+    private long[] boards = new long[Piece.SIZE];
     private Game game;
     private final Piece[] pieceByLocationCache = new Piece[64];
+
+    // cached state
+    private long occupiedBoard;
+    private long blackBoard;
+    private long whiteBoard;
+    private long blackBoardWithoutKing;
+    private long whiteBoardWithoutKing;
 
     /**
      * RANKS:
@@ -78,6 +85,7 @@ public class Board {
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
 
         preWarmCache();
+        calculateAllCacheBoards();
     }
 
     // --------------------------- Constructors ---------------------------
@@ -87,8 +95,16 @@ public class Board {
     public Board(String fen) {
         this.populate(fen);
         preWarmCache();
+        calculateAllCacheBoards();
     }
 
+    public void calculateAllCacheBoards() {
+        calculateWhiteBoardWithoutKing();
+        calculateWhiteBoard();
+        calculateBlackBoardWithoutKing();
+        calculateBlackBoard();
+        calculateOccupied();
+    }
     private void preWarmCache() {
         // warming of the cache doesn't have a measurable impact on speed
 /*
@@ -100,6 +116,7 @@ public class Board {
 
     public void setBoards(long[] boards) {
         this.boards = Arrays.copyOf(boards, boards.length);
+        calculateAllCacheBoards();
     }
 
     public long[] getBoards() {
@@ -132,6 +149,33 @@ public class Board {
     }
 
     // --------------------------- Instance Methods ---------------------------
+    public long setByBoard(int boardIndex, int location) {
+        long temp = this.boards[boardIndex] |= (1L << location);
+        return temp;
+    }
+
+    public void clearByBoard(int boardIndex, int location) {
+        this.boards[boardIndex] ^= (1L << location);
+
+        if(boardIndex <= 5) { // white
+            calculateWhiteBoard();
+            calculateWhiteBoardWithoutKing();
+        } else if(boardIndex <= 11) { // black
+            calculateBlackBoard();
+            calculateBlackBoardWithoutKing();
+        }
+
+        calculateOccupied();
+    }
+
+    // TODO: Can I remove this method to make it more efficient?
+    protected void clearLocation(int location) {
+        for(int i = 0; i < this.boards.length; i++) {
+            // clear the bit at the location on all boards
+            this.boards[i] &= ~(1L << location);
+        }
+    }
+
     public int set(char element, int location) {
         for (Piece piece : Piece.values()) {
             if (element == piece.getPieceChar()) {
@@ -147,7 +191,7 @@ public class Board {
         if (piece == Piece.EMPTY)
             throw new IllegalArgumentException("Cannot place empty piece");
 
-        return this.boards[piece.getIndex()] |= 1L << location;
+        return setByBoard(piece.getIndex(), location);
     }
 
     public void remove(int location) {
@@ -155,7 +199,7 @@ public class Board {
 
         for (int i = 0; i < this.boards.length; i++) {
             if ((this.boards[i] & bitLocation) != 0)
-                this.boards[i] ^= bitLocation;
+                clearByBoard(i, location);
         }
     }
 
@@ -214,14 +258,14 @@ public class Board {
         int removed = -1;
 
         int fromBoardIndex = this.getBitSetIndex(m.getFrom());
-        this.boards[fromBoardIndex] ^= (1L << m.getFrom()); // clear
+        clearByBoard(fromBoardIndex, m.getFrom()); // clear
         removed = m.getTo();
         this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
 
         // if promotion
         if(m.isPromoting()) {
             fromBoardIndex = m.getPromotionPiece().getIndex();
-            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set promoted piece
+            setByBoard(fromBoardIndex, m.getTo()); // set promoted piece
             standardMove = false;
         }
 
@@ -230,7 +274,7 @@ public class Board {
             // boardIndex doesn't change (pawn to pawn)
             removed = target;
             this.clearLocation(target);  // clear en passant target
-            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set new pawn location
+            setByBoard(fromBoardIndex, m.getTo()); // set new pawn location
             standardMove = false;
         }
 
@@ -252,24 +296,26 @@ public class Board {
             this.clearLocation(removed);  // clear en passant target
 
             // boardIndex doesn't change (pawn to pawn)
-            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set new pawn location
+            setByBoard(fromBoardIndex, m.getTo()); // set new pawn location
             standardMove = false;
         }
 
         // if castling - king already moved
         if(m.isCastling()) {
-            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set king location
+            setByBoard(fromBoardIndex, m.getTo()); // set king location
 
             int toBoardIndex = this.getBitSetIndex(m.getSecondaryFrom());
-            this.boards[toBoardIndex] ^= (1L << m.getSecondaryFrom()); // clear
-            this.boards[toBoardIndex] |= (1L << m.getSecondaryTo()); // set rook location
+            clearByBoard(toBoardIndex, m.getSecondaryFrom()); // clear
+            setByBoard(toBoardIndex, m.getSecondaryTo()); // set rook location
 
             standardMove = false;
         }
 
         if(standardMove) {
-            this.boards[fromBoardIndex] |= (1L << m.getTo()); // set
+            setByBoard(fromBoardIndex, m.getTo()); // set
         }
+
+        calculateAllCacheBoards();
 
         return removed;
     }
@@ -280,26 +326,34 @@ public class Board {
 
     // this can be optimized.
     public long getOccupied() {
+        return this.occupiedBoard;
+    }
+
+    public long calculateOccupied() {
         long usedBoard = 0L;
 
         for (long board : boards) {
             usedBoard |= board;
         }
 
-        return usedBoard;
+        return this.occupiedBoard = usedBoard;
     }
 
     public long getBlack() {
-        return this.boards[Piece.BLACK_PAWN.getIndex()] |
-                this.boards[Piece.BLACK_KNIGHT.getIndex()] |
-                this.boards[Piece.BLACK_BISHOP.getIndex()] |
-                this.boards[Piece.BLACK_ROOK.getIndex()] |
-                this.boards[Piece.BLACK_QUEEN.getIndex()] |
-                this.boards[Piece.BLACK_KING.getIndex()];
+        return this.blackBoard;
+    }
+
+    private long calculateBlackBoard() {
+        return this.blackBoard = this.blackBoardWithoutKing |
+            this.boards[Piece.BLACK_KING.getIndex()];
     }
 
     public long getBlackWithoutKing() {
-        return this.boards[Piece.BLACK_PAWN.getIndex()] |
+        return this.blackBoardWithoutKing;
+    }
+
+    private void calculateBlackBoardWithoutKing() {
+        this.blackBoardWithoutKing = this.boards[Piece.BLACK_PAWN.getIndex()] |
             this.boards[Piece.BLACK_KNIGHT.getIndex()] |
             this.boards[Piece.BLACK_BISHOP.getIndex()] |
             this.boards[Piece.BLACK_ROOK.getIndex()] |
@@ -341,16 +395,20 @@ public class Board {
     }
 
     public long getWhite() {
-        return this.boards[Piece.WHITE_PAWN.getIndex()] |
-            this.boards[Piece.WHITE_KNIGHT.getIndex()] |
-            this.boards[Piece.WHITE_BISHOP.getIndex()] |
-            this.boards[Piece.WHITE_ROOK.getIndex()] |
-            this.boards[Piece.WHITE_QUEEN.getIndex()] |
+        return this.whiteBoard;
+    }
+
+    public long calculateWhiteBoard() {
+        return this.whiteBoard = this.whiteBoardWithoutKing |
             this.boards[Piece.WHITE_KING.getIndex()];
     }
 
     public long getWhiteWithoutKing() {
-        return this.boards[Piece.WHITE_PAWN.getIndex()] |
+        return this.whiteBoardWithoutKing;
+    }
+
+    public long calculateWhiteBoardWithoutKing() {
+        return this.whiteBoardWithoutKing = this.boards[Piece.WHITE_PAWN.getIndex()] |
             this.boards[Piece.WHITE_KNIGHT.getIndex()] |
             this.boards[Piece.WHITE_BISHOP.getIndex()] |
             this.boards[Piece.WHITE_ROOK.getIndex()] |
@@ -475,7 +533,7 @@ public class Board {
         for (int rank = 8; rank > 0; rank--) {
             rankString = new StringBuilder(8);
             for (int location = (rank - 1) * 8; location < rank * 8; location++) {
-                rankString.append((board & (1L << location)) == 0 ? '0' : '1');
+                rankString.append((board & (1L << location)) == 0 ? '.' : '1');
             }
 
             ranks.add(rankString.toString());
@@ -496,7 +554,7 @@ public class Board {
         for (int rank = 7; rank >= 0; rank--) {
             LOGGER.info("{}: {}",
                     rank + 1,
-                    reversedLong.substring(rank * 8, (rank + 1) * 8));
+                    reversedLong.substring(rank * 8, (rank + 1) * 8).replace('0', '.'));
         }
 
         LOGGER.info("   abcdefgh");
@@ -553,18 +611,14 @@ public class Board {
     // results in a 0 length array.
     public int getKingLocation(PlayerColor color) {
         int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
+        if(this.boards[index] == 0) // the king has been removed from the board.  This can happen when looking for check
+            return -1;
+
         return bitboardToArray(this.boards[index])[0];
     }
 
     public long getPieceLocations(Piece p) {
         return this.boards[p.getIndex()];
-    }
-
-    protected void clearLocation(int location) {
-        for(int i = 0; i < this.boards.length; i++) {
-            // clear the bit at the location on all boards
-            this.boards[i] &= ~(1L << location);
-        }
     }
 
     public static int countSetBits(long n) {

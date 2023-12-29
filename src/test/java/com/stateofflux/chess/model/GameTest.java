@@ -359,12 +359,10 @@ public class GameTest {
         @Test
         public void kingDoesNotPassThroughCheckFromKnight() {
             Game game = new Game("rnbqkb1r/pppppppp/8/8/6P1/5NnB/PPPPPP1P/RNBQK2R w KQkq -");
-            game.generateMoves();
             MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p3pppp/bNnq4/2pP4/8/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
-            game.generateMoves();
             generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
@@ -372,12 +370,10 @@ public class GameTest {
         @Test
         public void kingDoesNotPassThroughCheckFromRook() {
             Game game = new Game("1nbqkbnr/1pp3Pp/4N3/8/4pr1P/p7/PPPP2B1/RNBQK2R w KQk -");
-            game.generateMoves();
             MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/7q/3p2Q1/N1R1P3/PP3PPP/4KBNR b Kkq -");
-            game.generateMoves();
             generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
@@ -385,12 +381,10 @@ public class GameTest {
         @Test
         public void kingDoesNotPassThroughCheckFromQueen() {
             Game game = new Game("rnb1kbnr/1pp3pp/5p2/p3p3/3qP1PP/7N/PPPP2B1/RNBQK2R w KQkq -");
-            game.generateMoves();
             MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n6B/2pq4/3p2Q1/4P3/PP3PPP/RN2KBNR b KQkq -");
-            game.generateMoves();
             generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
@@ -398,12 +392,10 @@ public class GameTest {
         @Test
         public void kingDoesNotPassThroughCheckFromKing() {
             Game game = new Game("rnB2b1r/ppp2p1p/5p2/8/8/8/P5kP/R1B1K2R w KQ -");
-            game.generateMoves();
             MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3k1nr/p1K3pp/N7/5p2/2P1p2q/4PPP1/PP6/R1BQ1BNR b kq -");
-            game.generateMoves();
             generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
@@ -412,12 +404,10 @@ public class GameTest {
 
         public void kingDoesNotPassThroughCheckFromPawn() {
             Game game = new Game("rn1k1b1r/ppp1pp1p/8/3N1b2/8/7P/P5p1/R1B1K2R w KQ -");
-            game.generateMoves();
             MoveList<Move> generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/p1P1pppp/b7/8/N1p3q1/4P3/PP1P1PPP/R1BQKBNR b KQkq -");
-            game.generateMoves();
             generatedMoves = game.generateMoves();
             assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
         }
@@ -550,9 +540,9 @@ public class GameTest {
 
         @Test public void cannotMoveIntoCheck() {
             Game game = new Game("r2q1k2/7n/p2N2nb/1ppp1b1p/1P5P/P1PP1P1B/3NP3/R1RK4 b - -");
-            game.generateMoves();
+            MoveList<Move> moves = game.generateMoves();
             // LOGGER.info(game.getActivePlayerMoves().asLongSan().toString());
-            assertThat(game.generateMoves().asLongSan()).doesNotContain("f8e8");  // d6 knight can take king in e8
+            assertThat(moves.asLongSan()).doesNotContain("f8e8");  // d6 knight can take king in e8
         }
 
         @Test public void fromFISCGamesDB() {
@@ -659,13 +649,13 @@ public class GameTest {
     }
 
     @Test public void canPlayAFullGame() {
+        fail("too long");
         Game game = new Game();
         game.disable50MovesRule();
         int counter = 0;
 //        while(!game.isOver() && counter++ < 55) {
         while(!game.isOver() && counter++ < 1055) {
             LOGGER.info("--------------------------");
-            game.generateMoves();
             MoveList<Move> moves = game.generateMoves();
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             LOGGER.info("move: " + move);
