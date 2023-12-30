@@ -31,6 +31,24 @@ import com.stateofflux.chess.model.pieces.Piece;
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
+    public static long RANK_1 = 0xffL;
+    public static long RANK_2 = 0xff00L;
+    public static long RANK_3 = 0xff0000L;
+    public static long RANK_4 = 0xff000000L;
+    public static long RANK_5 = 0xff00000000L;
+    public static long RANK_6 = 0xff0000000000L;
+    public static long RANK_7 = 0xff000000000000L;
+    public static long RANK_8 = 0xff00000000000000L;
+
+    public static long FILE_H = 0x8080808080808080L;
+    public static long FILE_G = 0x4040404040404040L;
+    public static long FILE_F = 0x2020202020202020L;
+    public static long FILE_E = 0x1010101010101010L;
+    public static long FILE_D = 0x808080808080808L;
+    public static long FILE_C = 0x404040404040404L;
+    public static long FILE_B = 0x202020202020202L;
+    public static long FILE_A = 0x101010101010101L;
+
     private long[] boards = new long[Piece.SIZE];
     private Game game;
     private final Piece[] pieceByLocationCache = new Piece[64];

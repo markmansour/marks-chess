@@ -27,6 +27,103 @@ public abstract class PieceMoves {
         findCaptureAndNonCaptureMoves();
     }
 
+    /**
+     * @brief Returns the index of the MSB in the given bitboard or -1 if
+     * the bitboard is empty.
+     *
+     * @param  l Bitboard to get MSB of
+     * @return The index of the MSB in the given bitboard.
+
+        inline int _bitscanReverse(U64 board) {
+            if (board == ZERO) {
+                return -1;
+            }
+            return 63 - __builtin_clzll(board);
+        }
+
+        __builtin_clz(x):
+        This function returns number of leading 0-bits of x which starts from most significant bit position.
+        e.g. __builtin_clz(16) = 27 because 16 is ' ... 10000'. Number of bits in a unsigned int is 32. so function returns 32 — 5 = 27.
+
+    */
+    static int bitscanReverse(long l) {
+        if(l == 0L)
+            return -1;
+
+        return 63 - Long.numberOfLeadingZeros(l);
+    }
+
+    /**
+     * @brief Returns the index of the LSB in the given bitboard or -1 if
+     * the bitboard is empty.
+     *
+     * @param  l Bitboard to get LSB of
+     * @return The index of the LSB in the given bitboard.
+     *
+     * note: original version uses __builtin_ffs
+     *   => Returns one plus the index of the least significant 1-bit of x, or if x is zero, returns zero
+     *   => e.g. __builtin_ffs(10) = 2 because 10 is '...1 0 1 0' in base 2 and first 1-bit from right is at index 1 (0-based) and function returns 1 + index.
+     *   see: https://codeforces.com/blog/entry/15643?locale=en
+     */
+    static int bitscanForward(long l) {
+        if(l == 0L)
+            return -1;
+
+        return Long.numberOfTrailingZeros(l);
+    }
+
+    // Java implementation of __builtin_popcount - see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+    // - count the number of set bits
+    private static int popCount(long board) {
+        return Long.bitCount(board);  // Returns the number of 1-bits in x
+    }
+
+    /*
+            U64 Attacks::detail::_getBlockersFromIndex(int index, U64 mask) {
+                U64 blockers = ZERO;
+                int bits = _popCount(mask);
+                for (int i = 0; i < bits; i++) {
+                    int bitPos = _popLsb(mask);
+                    if (index & (1 << i)) {
+                        blockers |= (ONE << bitPos);
+                    }
+                }
+                return blockers;
+            }
+        */
+    static long getBlockersFromIndex(int index, long mask) {
+        long blockers = 0L;
+        int bits = popCount(mask);  // verified - I think this is right.
+
+        for (int i = 0; i < bits; i++) {
+            // int bitPos = _popLsb(mask); // replaced with the following two lines.
+            // Returns one plus the index of the least significant 1-bit of x, or if x is zero, returns zero
+            int bitPos = Long.numberOfTrailingZeros(mask);  //
+            mask &= (mask - 1L);
+
+            if ((index & (1L << i)) != 0) {
+                blockers |= (1L << bitPos);
+            }
+        }
+        return blockers;
+    }
+
+    /**
+     * @brief Sets the LSB of the given bitboard to 0 and returns its index.
+     *
+     * @param  mask Value to reset LSB of
+     * @return Index of reset LSB
+     */
+    /*    private static int _popLsb(long mask) {
+     *//*
+     *   int lsbIndex = __builtin_ffsll(board) - 1;  // __builtin_ffsll - Returns one plus the index of the least significant 1-bit of x, or if x is zero, returns zero
+     * board &= board - 1;  // LS-Bit-Reset - https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#LS-Bit-Reset
+     * return lsbIndex;
+     *//*
+        // long lsbIndex = Long.lowestOneBit(mask) - 1;
+        return Long.numberOfLeadingZeros(mask);
+    }*/
+
     abstract void setupPaths();
 
     abstract void findCaptureAndNonCaptureMoves();
