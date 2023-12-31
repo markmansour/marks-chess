@@ -2,6 +2,7 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
+import com.stateofflux.chess.model.PlayerColor;
 
 public abstract class PieceMoves {
     protected final Board board;
@@ -19,11 +20,10 @@ public abstract class PieceMoves {
         this.piece = board.get(location);
 
         // are these always needed? Can we late bind them?
-        this.opponentBoard = getOpponentBoard(); // calculation
-        this.currentPlayerBoard = getCurrentPlayerBoard();
         this.occupiedBoard = this.board.getOccupied();  // the union of current and occupied boards
 
         setupPaths();
+        setBoards();
         findCaptureAndNonCaptureMoves();
     }
 
@@ -78,19 +78,6 @@ public abstract class PieceMoves {
         return Long.bitCount(board);  // Returns the number of 1-bits in x
     }
 
-    /*
-            U64 Attacks::detail::_getBlockersFromIndex(int index, U64 mask) {
-                U64 blockers = ZERO;
-                int bits = _popCount(mask);
-                for (int i = 0; i < bits; i++) {
-                    int bitPos = _popLsb(mask);
-                    if (index & (1 << i)) {
-                        blockers |= (ONE << bitPos);
-                    }
-                }
-                return blockers;
-            }
-        */
     static long getBlockersFromIndex(int index, long mask) {
         long blockers = 0L;
         int bits = popCount(mask);  // verified - I think this is right.
@@ -129,21 +116,22 @@ public abstract class PieceMoves {
     abstract void findCaptureAndNonCaptureMoves();
 
     // TODO: can this be set at instantiation?
-    protected long getOpponentBoard() {
-        return switch (this.piece.getColor()) {
-            case WHITE -> this.board.getBlack();
-            case BLACK -> this.board.getWhite();
-            default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
+    protected void setBoards() {
+        if(this.piece.getColor() == PlayerColor.WHITE) {
+            this.currentPlayerBoard = board.getWhite();
+            this.opponentBoard = board.getBlack();
+        } else {
+            this.currentPlayerBoard = board.getBlack();
+            this.opponentBoard = board.getWhite();
         };
     }
 
-    // TODO: can this be set at instantiation?
+    protected long getOpponentBoard() {
+        return this.opponentBoard;
+    }
+
     protected long getCurrentPlayerBoard() {
-        return switch (this.piece.getColor()) {
-            case WHITE -> this.board.getWhite();
-            case BLACK -> this.board.getBlack();
-            default -> throw new IllegalArgumentException("Unexpected value: " + this.piece.getColor());
-        };
+        return this.currentPlayerBoard;
     }
 
     public Board getBoard() {
