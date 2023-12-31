@@ -1,21 +1,10 @@
 package com.stateofflux.chess.model.pieces;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.stateofflux.chess.model.Board;
-import com.stateofflux.chess.model.Direction;
 
 public class PawnMoves extends StraightLineMoves {
-    public static final List<String> VALID_EN_PASSANT_POSITIONS = List.of(
-            "-",
-            "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-            "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6");
-
     public static final String NO_EN_PASSANT = "-";
     public static final int NO_EN_PASSANT_VALUE = -1;
-
-    protected Direction[] captureDirections;
 
     private final int enPassantTarget;
 
@@ -26,44 +15,6 @@ public class PawnMoves extends StraightLineMoves {
     }
 
     protected void setupPaths() {
-        this.max = 2;
-        if (this.piece.isBlack()) {
-            this.directions = new Direction[] { Direction.DOWN };
-            if (this.location < 48) { // no longer on rank 7
-                this.max = 1;
-            }
-
-            this.captureDirections = switch (Board.file(this.location)) {
-                case 7 -> {
-                    yield new Direction[] { Direction.DOWN_LEFT };
-                }
-                case 0 -> {
-                    yield new Direction[] { Direction.DOWN_RIGHT };
-                }
-                default -> {
-                    yield new Direction[] { Direction.DOWN_LEFT, Direction.DOWN_RIGHT };
-                }
-            };
-        } else if (this.piece.isWhite()) {
-            this.directions = new Direction[] { Direction.UP };
-            if (this.location >= 16) { // no longer on rank 2
-                this.max = 1;
-            }
-
-            this.captureDirections = switch (Board.file(this.location)) {
-                case 7 -> {
-                    yield new Direction[] { Direction.UP_LEFT };
-                }
-                case 0 -> {
-                    yield new Direction[] { Direction.UP_RIGHT };
-                }
-                default -> {
-                    yield new Direction[] { Direction.UP_LEFT, Direction.UP_RIGHT };
-                }
-            };
-        } else {
-            throw new IllegalArgumentException("Piece must be black or white");
-        }
     }
 
     @Override
@@ -71,24 +22,54 @@ public class PawnMoves extends StraightLineMoves {
         return false;
     }
 
-    // calculate the non capture moves for a pawn
-    @Override
-    public void findCaptureAndNonCaptureMoves() {
-        findCaptureAndNonCaptureMovesInStraightLines();
-        findStandardPawnCaptures();
+    private static final long[][] PAWN_ATTACKS = new long[2][64];
+
+    static {
+        initializePawnAttacks();
     }
 
-    private void findStandardPawnCaptures() {
-        int nextPosition;
-        long nextPositionBit;
+    private static void initializePawnAttacks() {
+        for(int location = 0; location < 64; location++) {
+            long start = 1L << location;
 
-        for (Direction d : this.captureDirections) {
-            nextPosition = this.location + d.getDistance();
-            nextPositionBit = 1L << nextPosition;
+            long white = ((start << 9L) & ~Board.FILE_A) | ((start << 7) & ~Board.FILE_H);
+            long black = ((start >> 9L) & ~Board.FILE_H) | ((start >> 7) & ~Board.FILE_A);
 
-            if ((this.opponentBoard & nextPositionBit) != 0) {
-                this.captureMoves |= nextPositionBit;
-            }
+            PAWN_ATTACKS[0][location] = white;
+            PAWN_ATTACKS[1][location] = black;
+        }
+
+    }
+
+    @Override
+    public void findCaptureAndNonCaptureMoves() {
+        long pawns;
+        boolean isWhite = piece.isWhite();
+        long oneStep, twoStep;
+
+        // one step forward
+        if(isWhite) {
+            pawns = board.getWhitePawns() & (1L << this.location);
+            oneStep = (pawns << 8L) & ~occupiedBoard;
+        } else {
+            pawns = board.getBlackPawns() & (1L << this.location);
+            oneStep = (pawns >> 8L) & ~occupiedBoard;
+        }
+
+        // two steps forward
+        if(isWhite) {
+            twoStep = ((oneStep & Board.RANK_3) << 8L) & ~occupiedBoard;
+        } else {
+            twoStep = ((oneStep & Board.RANK_6) >> 8L) & ~occupiedBoard;
+        }
+
+        this.nonCaptureMoves = oneStep | twoStep;
+
+        // capture
+        if(isWhite) {
+            this.captureMoves |= PAWN_ATTACKS[0][this.location] & opponentBoard;
+        } else {
+            this.captureMoves |= PAWN_ATTACKS[1][this.location] & opponentBoard;
         }
     }
 
@@ -98,17 +79,19 @@ public class PawnMoves extends StraightLineMoves {
             return;
         }
 
-        boolean found = false;
-        for(Direction d : captureDirections) {
-            if (d.getDistance() + location == enPassantTarget) {
-                found = true;
-                break;
-            }
+        boolean isWhite = piece.isWhite();
+        int file = Board.file(this.enPassantTarget);
+
+        if(isWhite) {
+            if (file > 0 && this.enPassantTarget == (this.location + 9))  // white left
+                this.captureMoves |= (1L << this.enPassantTarget);
+            else if (file < 7 && this.enPassantTarget == (this.location + 7))  // white right
+                this.captureMoves |= (1L << this.enPassantTarget);
+        } else {
+            if (file > 0 && this.enPassantTarget == (this.location - 9))  // black left
+                this.captureMoves |= (1L << this.enPassantTarget);
+            else if (file < 7 && this.enPassantTarget == (this.location - 7))  // black right
+                this.captureMoves |= (1L << this.enPassantTarget);
         }
-
-        if(!found)
-            return;
-
-        this.captureMoves |= (1L << this.enPassantTarget);
     }
 }

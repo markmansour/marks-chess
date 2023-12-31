@@ -83,6 +83,7 @@ public class PawnMovesTest {
 
     @Test
     public void doesNotWrapAroundDuringCapture() {
+        // rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR w KQkq -
         Board b = new Board("rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR");
 
         // black pawn at A5 (32)
@@ -112,6 +113,7 @@ public class PawnMovesTest {
 
     @Test
     public void captureFromOriginalPosition() {
+        // rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR w KQkq -
         Board b = new Board("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR");
 
         // black pawn at A3 (16)
