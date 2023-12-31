@@ -58,7 +58,7 @@ public class DepthTest {
                 if(m.matches()) {
                     perftRecords.add(
                         new PerftRecord(
-                            m.group(1),
+                            m.group(1).strip(),
                             Integer.parseInt(m.group(2)),
                             Integer.parseInt(m.group(3)),
                             Integer.parseInt(m.group(4)),
@@ -192,19 +192,21 @@ public class DepthTest {
     }
 
     // 11 seconds
+    // 600 ms
     @Test public void allEpdExamplesToDepthOfTwo() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(2, perftRecords);
     }
 
     // 3 mins 41 seconds
+    // 2 seconds
     @Test public void allEpdExamplesToDepthOfThree() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        fail("too long");
         depthHelper(3, perftRecords);
     }
 
+    // after magic bitboards - 20 seconds.
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-//        depthHelper(4, perftRecords);
         fail("too long");
+        depthHelper(4, perftRecords);
     }
 
     // about 2 seconds
@@ -214,8 +216,11 @@ public class DepthTest {
 
     // about 43 seconds
     // about 30 seconds with Board.get caching
+    // about 16 seconds with Piece Cache
+    // about 14.5 seconds with new Rook moves.
+    // about 12.5 seconds with all pieces using more bit friendly calcs.
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        fail("too long");
+        // fail("too long");
         depthHelper(5, defaultBoard());
     }
 
@@ -319,6 +324,35 @@ public class DepthTest {
             .reduce(0, Integer::sum)).isEqualTo(22);
     }
 
+    @Test void harness() {
+        int depth = 5;
+        Game game = new Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        int expected = 217832;
+        game.moveLongNotation("a2a4");  // white move - 217832 - depth 4
+        depth--;
+        game.moveLongNotation("a7a6");  // black move - 9312 - depth 3
+        depth--;
+        game.moveLongNotation("a4a5");  // white move - 379 (should be 380) - depth 2
+        expected = 380;
+        depth--;
+//        game.moveLongNotation("b7b5");  // black move - 22 - depth 1 - en passant!  <-- this works!!!
+//        depth--;
+
+        SortedMap<String, Integer> actual = game.perftAtRoot(depth);
+
+        game.printPerft(actual);
+
+        LOGGER.info(
+            "\n" +
+                "uci\n" +
+                "position fen " + game.asFen() + "\n" +
+                "go perft " + depth + "\n" +
+                "d\n");
+
+        assertThat(actual.values()
+            .stream()
+            .reduce(0, Integer::sum)).isEqualTo(expected);
+    }
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;
         int counter = 1;
@@ -331,7 +365,7 @@ public class DepthTest {
             asyncProfiler.start(Events.CPU, 1_000_000);
 
             for(PerftRecord pr : perftRecords) {
-                LOGGER.info("{}: {}", counter++, pr.FenString());
+                // LOGGER.info("{}: {}", counter++, pr.FenString());
                 Game game = new Game(pr.FenString());
                 actual = game.perftAtRoot(depth);
                 int perftCount = actual.values()
@@ -340,7 +374,7 @@ public class DepthTest {
 
                 Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
                 Integer expected = (Integer) expectedDepthMethod.invoke(pr, null);
-                LOGGER.info("pulling expected out of {}", pr);
+                // LOGGER.info("pulling expected out of {}", pr);
                 if(perftCount != expected) {
                     game.printPerft(actual);
 
@@ -359,7 +393,7 @@ public class DepthTest {
             profile = asyncProfiler.dumpFlat(100);
         } finally {
             asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
-            LOGGER.info(profile);
+            // LOGGER.info(profile);
         }
 
         endTime = System.nanoTime();

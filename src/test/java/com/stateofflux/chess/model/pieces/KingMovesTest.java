@@ -68,5 +68,10 @@ public class KingMovesTest {
         assertThat(game.generateMoves()).hasSize(3);
     }
 
+    @Test void kingCantMoveIntoCheck() {
+        Game game = new Game("4k3/8/8/8/8/8/8/5RK1 b - -");
+        assertThat(game.generateMoves()).hasSize(3);
+    }
+
 
 }

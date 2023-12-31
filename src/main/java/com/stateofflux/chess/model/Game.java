@@ -262,10 +262,10 @@ public class Game {
 
             if(isWhite) {
                 enPassantMask &= Board.RANK_4;
-                enPassantDiff = 8;
+                enPassantDiff = -8;
             } else {
                 enPassantMask &= Board.RANK_5;
-                enPassantDiff = -8;
+                enPassantDiff = +8;
             }
 
             if(enPassantMask != 0) {
@@ -366,15 +366,57 @@ public class Game {
         locations = getBoard().getKingLocations(activePlayerColor);
         int kingLocation = locations[0];
         KingMoves rawMoves = new KingMoves(board, kingLocation);
-        // Queen: non capture
+        Piece king = board.get(kingLocation);
+        Move m;
+
+        // King: non capture
         for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-            playerMoves.add(new Move(board.get(kingLocation), kingLocation, dest, Move.NON_CAPTURE));
+            m = new Move(king, kingLocation, dest, Move.NON_CAPTURE);
+            addCastling(m);
+            playerMoves.add(m);
         }
 
-        // Queen: capture
+        // King: capture
         for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-            playerMoves.add(new Move(board.get(kingLocation), kingLocation, dest, Move.CAPTURE));
+            playerMoves.add(new Move(king, kingLocation, dest, Move.CAPTURE));
         }
+    }
+
+    private void addCastling(Move m) {
+        int from = m.getFrom();
+        int to = m.getTo();
+        String castlingRights = getCastlingRights();
+
+        // white king side
+        if(from == CastlingLocations.WHITE_INITIAL_KING_LOCATION.location() &&
+            to == CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location() &&
+            castlingRights.contains("K")) {
+            m.setCastling(
+                CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location(),
+                CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location());
+        } else if(from == CastlingLocations.WHITE_INITIAL_KING_LOCATION.location() &&
+            to == CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION.location() &&
+            castlingRights.contains("Q")) {
+            m.setCastling(
+                CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location(),
+                CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location());
+        } else if(from == CastlingLocations.BLACK_INITIAL_KING_LOCATION.location() &&
+            to == CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location() &&
+            castlingRights.contains("k")) {
+            m.setCastling(
+                CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location(),
+                CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location());
+        } else if(from == CastlingLocations.BLACK_INITIAL_KING_LOCATION.location() &&
+            to == CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION.location() &&
+            castlingRights.contains("q")) {
+            m.setCastling(
+                CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location(),
+                CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location());
+        }
+
+        // white queen side
+        // black king side
+        // black queen site
     }
 
     private void queenMoves(MoveList<Move> playerMoves) {
@@ -806,8 +848,8 @@ public class Game {
             default -> sourceHintWithoutPiece = sourceHint;
         }
 
-        char rankSpecified = 0;
-        char fileSpecified = 0;
+        char rankSpecified = 0;  // 1-8
+        char fileSpecified = 0;  // a-h
         char firstChar;
 
         switch(sourceHintWithoutPiece.length()) {
@@ -985,13 +1027,13 @@ public class Game {
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
                 castlingPiece = Piece.BLACK_KING;
                 sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.BLACK_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION.location();
                 secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
                 secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
                 castlingPiece = Piece.WHITE_KING;
                 sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.WHITE_QUEENS_SIDE_CASTLING_KING_LOCATION.location();
+                destinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION.location();
                 secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
                 secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
             }

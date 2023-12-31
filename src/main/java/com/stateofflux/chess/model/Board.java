@@ -287,7 +287,7 @@ public class Board {
                 return index;
         }
 
-        throw new AssertionError("Location not found: " + this);
+        throw new AssertionError("Location not found: " + location);
     }
 
     // starting from location, but not looking ahead more than max, find the next
