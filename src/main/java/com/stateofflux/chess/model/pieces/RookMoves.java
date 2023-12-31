@@ -47,7 +47,7 @@ public class RookMoves extends StraightLineMoves {
 
     static {
         initializeRookMasks();
-        initRookMagic();
+        initializeRookMagic();
     }
 
     private static void initializeRookMasks() {
@@ -74,13 +74,13 @@ public class RookMoves extends StraightLineMoves {
         }
     }
     */
-    private static void initRookMagic() {
-        for (int square = 0; square < 64; square++) {
+    private static void initializeRookMagic() {
+        for (int location = 0; location < 64; location++) {
             // For all possible blockers for this square
-            for (int blockerIndex = 0; blockerIndex < (1 << ROOK_INDEX_BITS[square]); blockerIndex++) {
-                long blockers = getBlockersFromIndex(blockerIndex, ROOK_MASKS[square]);
-                int key = (int) ((blockers * ROOK_MAGIC[square]) >>> (64 - ROOK_INDEX_BITS[square]));
-                ROOK_TABLE[square][key] = calculateRookMoves(square, blockers);
+            for (int blockerIndex = 0; blockerIndex < (1 << ROOK_INDEX_BITS[location]); blockerIndex++) {
+                long blockers = getBlockersFromIndex(blockerIndex, ROOK_MASKS[location]);
+                int key = (int) ((blockers * ROOK_MAGIC[location]) >>> (64 - ROOK_INDEX_BITS[location]));
+                ROOK_TABLE[location][key] = calculateRookMoves(location, blockers);
             }
         }
     }

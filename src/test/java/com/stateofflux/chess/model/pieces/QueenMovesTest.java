@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class QueenMovesTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLogicBoardMovesTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueenMovesTest.class);
 
     @Test
     public void attemptsToMoveWhenTrapped() {

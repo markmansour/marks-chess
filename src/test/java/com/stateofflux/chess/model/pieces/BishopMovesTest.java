@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BishopMovesTest extends NoPieceLogicBoardMovesTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoPieceLogicBoardMovesTest.class);
+public class BishopMovesTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BishopMovesTest.class);
 
     /*
      * @Test(expectedExceptions = IllegalArgumentException.class)
@@ -47,6 +47,7 @@ public class BishopMovesTest extends NoPieceLogicBoardMovesTest {
 
     @Test
     public void moveToEdgeOfBoard() {
+        // rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR b KQkq -
         Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR");
 
         PieceMoves bm = new BishopMoves(openingBoard, 26);
