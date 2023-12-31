@@ -24,4 +24,11 @@ public class QueenMoves extends StraightLineMoves {
         };
         this.max = QUEEN_DIRECTIONS_MAX;
     }
+
+    @Override
+    protected void findCaptureAndNonCaptureMoves() {
+        long queenAttacks = getBishopAttacks(location, occupiedBoard) | getRookAttacks(location, occupiedBoard);
+        this.nonCaptureMoves = queenAttacks & ~occupiedBoard;
+        this.captureMoves = queenAttacks & occupiedBoard & opponentBoard;
+    }
 }

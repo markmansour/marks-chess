@@ -162,10 +162,6 @@ public abstract class PieceMoves {
         return this.nonCaptureMoves;
     }
 
-    public int getMovesCount() {
-        return Long.bitCount(this.nonCaptureMoves) + Long.bitCount(this.captureMoves);
-    }
-
     // ---------------------------- static utilities ----------------------------
     public static int maxStepsToBoundary(int location, Direction direction) {
         return switch (direction) {
