@@ -22,7 +22,7 @@ public class PawnMoves extends StraightLineMoves {
         return false;
     }
 
-    private static final long[][] PAWN_ATTACKS = new long[2][64];
+    public static final long[][] PAWN_ATTACKS = new long[2][64];
 
     static {
         initializePawnAttacks();

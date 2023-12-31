@@ -26,6 +26,14 @@ public class Move {
         this.capture = capture;
     }
 
+    public Move(Piece piece, int from, int to, boolean capture, Piece promotionPiece) {
+        this.piece = piece;
+        this.from = from;
+        this.to = to;
+        this.capture = capture;
+        this.promotionPiece = promotionPiece;
+    }
+
     public Move(Piece piece, String from, String to, boolean capture) {
         this.piece = piece;
         this.from = FenString.squareToLocation(from);

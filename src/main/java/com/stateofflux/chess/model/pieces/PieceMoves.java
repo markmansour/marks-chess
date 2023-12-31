@@ -74,7 +74,7 @@ public abstract class PieceMoves {
 
     // Java implementation of __builtin_popcount - see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
     // - count the number of set bits
-    private static int popCount(long board) {
+    public static int popCount(long board) {
         return Long.bitCount(board);  // Returns the number of 1-bits in x
     }
 

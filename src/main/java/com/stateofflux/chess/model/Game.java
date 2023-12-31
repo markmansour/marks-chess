@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.stateofflux.chess.model.pieces.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,6 +175,8 @@ public class Game {
         return this.enPassantTarget;
     }
 
+    public boolean hasEnPassantTarget() { return this.enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE; }
+
     private void setCastlingRights(String castlingRights) {
         this.castlingRights = castlingRights;
     }
@@ -194,12 +197,284 @@ public class Game {
         return this.activePlayerColor.otherColor();
     }
 
-    public MoveList<Move> generateOpponentsMoves() {
-        return generateMovesFor(getActivePlayerColor().otherColor());
+    private void pawnMoves(MoveList<Move> playerMoves) {
+        long pawns;
+        boolean isWhite = getActivePlayerColor() == PlayerColor.WHITE;
+        long occupiedBoard = board.getOccupied();
+        long opponentBoard = isWhite ? board.getBlack() : board.getWhite();
+        long nonCaptureMoves = 0L, captureMoves = 0L;
+        long oneStep, twoStep;
+        long promotions;
+        Piece piece = isWhite ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
+        int diff;
+
+        // one step forward
+        if(isWhite) {
+            pawns = board.getWhitePawns();
+            oneStep = (pawns << 8L) & ~occupiedBoard;
+            diff = -8;
+        } else {
+            pawns = board.getBlackPawns();
+            oneStep = (pawns >> 8L) & ~occupiedBoard;
+            diff = 8;
+        }
+
+        // promotions
+        if(isWhite) {
+            promotions = oneStep & Board.RANK_8;
+            oneStep &= ~Board.RANK_8;
+        } else {
+            promotions = oneStep & Board.RANK_1;
+            oneStep &= ~Board.RANK_1;
+        }
+
+        for (int dest : Board.bitboardToArray(oneStep)) {
+            playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE));
+        }
+
+        for (int dest : Board.bitboardToArray(promotions)) {
+            if(isWhite) {
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.WHITE_QUEEN));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.WHITE_BISHOP));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.WHITE_KNIGHT));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.WHITE_ROOK));
+            } else {
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.BLACK_QUEEN));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.BLACK_BISHOP));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.BLACK_KNIGHT));
+                playerMoves.add(new Move(piece, dest + diff, dest, Move.NON_CAPTURE, Piece.BLACK_ROOK));
+            }
+        }
+
+        // two steps forward
+        if(isWhite) {
+            twoStep = ((oneStep & Board.RANK_3) << 8L) & ~occupiedBoard;
+            diff = -16;
+        } else {
+            twoStep = ((oneStep & Board.RANK_6) >> 8L) & ~occupiedBoard;
+            diff = 16;
+        }
+
+        for (int dest : Board.bitboardToArray(twoStep)) {
+            Move m = new Move(piece, dest + diff, dest, Move.NON_CAPTURE);
+            long enPassantMask = ((1L << (dest + 1)) | (1L << (dest - 1))) & opponentBoard;
+            int enPassantDiff;
+
+            if(isWhite) {
+                enPassantMask &= Board.RANK_4;
+                enPassantDiff = 8;
+            } else {
+                enPassantMask &= Board.RANK_5;
+                enPassantDiff = -8;
+            }
+
+            if(enPassantMask != 0) {
+                m.setEnPassant(FenString.locationToSquare(dest + enPassantDiff));
+            }
+
+            playerMoves.add(m);
+        }
+
+        long attackBoard;
+        int attackCount;
+        boolean hasEnPassantTarget = hasEnPassantTarget();
+
+        for(int i : Board.bitboardToArray(pawns)) {
+            // capture
+            if (isWhite) {
+                attackBoard = PawnMoves.PAWN_ATTACKS[0][i];
+
+                if(hasEnPassantTarget) {
+                    attackBoard &= (opponentBoard | (1L << getEnPassantTargetAsInt()));
+                } else {
+                    attackBoard &= opponentBoard;
+                }
+
+                attackCount = PieceMoves.popCount(attackBoard);
+
+                for(int j = 0; j < attackCount; j++) {
+                    int bitPos = Long.numberOfTrailingZeros(attackBoard);
+
+                    if((attackBoard & Board.RANK_8) != 0) {  // promoting
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.WHITE_QUEEN));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.WHITE_BISHOP));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.WHITE_KNIGHT));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.WHITE_ROOK));
+                    } else {
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE));
+                    }
+
+                    attackBoard &= (attackBoard - 1L);  // remove the bit
+                }
+            } else {
+                attackBoard = PawnMoves.PAWN_ATTACKS[1][i];
+
+                if(hasEnPassantTarget) {
+                    attackBoard &= (opponentBoard | (1L << getEnPassantTargetAsInt()));
+                } else {
+                    attackBoard &= opponentBoard;
+                }
+
+                attackCount = PieceMoves.popCount(attackBoard);
+
+                for(int j = 0; j < attackCount; j++) {
+                    int bitPos = Long.numberOfTrailingZeros(attackBoard);
+
+                    if((attackBoard & Board.RANK_1) != 0) {  // promoting
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.BLACK_QUEEN));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.BLACK_BISHOP));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.BLACK_KNIGHT));
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE, Piece.BLACK_ROOK));
+                    } else {
+                        playerMoves.add(new Move(piece, i, bitPos, Move.CAPTURE));
+                    }
+
+                    attackBoard &= (attackBoard - 1L);  // remove the bit
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private void cleanUpMoves(MoveList<Move> playerMoves) {
+        // if in check, make sure any move takes the player out of check.
+        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
+
+        for (var move : playerMoves) {
+            // can't use castling to get out of check
+            if(getChecked() && move.isCastling()) {
+                toRemove.add(move);
+                continue;
+            }
+
+            move(move);
+
+            // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
+            // isPlayerInCheck(activePlayer) looks at the current players check state, whereas getChecked looks at the
+            // checked state as if the turn was over so it looks at the opponents check state.
+            if(isPlayerInCheck(getActivePlayerColor().otherColor()))  // move() changes the color of the player, so check to see if the previous move was valid
+                toRemove.add(move);
+
+            undo();
+        }
+
+        playerMoves.removeAll(toRemove);
+    }
+
+    private void kingMoves(MoveList<Move> playerMoves) {
+        int[] locations;
+        locations = getBoard().getKingLocations(activePlayerColor);
+        int kingLocation = locations[0];
+        KingMoves rawMoves = new KingMoves(board, kingLocation);
+        // Queen: non capture
+        for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+            playerMoves.add(new Move(board.get(kingLocation), kingLocation, dest, Move.NON_CAPTURE));
+        }
+
+        // Queen: capture
+        for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+            playerMoves.add(new Move(board.get(kingLocation), kingLocation, dest, Move.CAPTURE));
+        }
+    }
+
+    private void queenMoves(MoveList<Move> playerMoves) {
+        int[] locations;
+        locations = getBoard().getQueenLocations(activePlayerColor);
+        for(int i : locations) {
+            QueenMoves rawMoves = new QueenMoves(board, i);
+            Piece piece = board.get(i);
+
+            // Queen: non capture
+            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.NON_CAPTURE));
+            }
+
+            // Queen: capture
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.CAPTURE));
+            }
+        }
+    }
+
+    private void bishopMoves(MoveList<Move> playerMoves) {
+        int[] locations;
+        locations = getBoard().getBishopLocations(activePlayerColor);
+        for(int i : locations) {
+            BishopMoves rawMoves = new BishopMoves(board, i);
+            Piece piece = board.get(i);
+
+            // Bishop: non capture
+            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.NON_CAPTURE));
+            }
+
+            // Bishop: capture
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.CAPTURE));
+            }
+        }
+    }
+
+    private void knightMoves(MoveList<Move> playerMoves) {
+        int[] locations;
+        locations = getBoard().getKnightLocations(activePlayerColor);
+        for(int i : locations) {
+            KnightMoves rawMoves = new KnightMoves(board, i);
+            Piece piece = board.get(i);
+
+            // Knight: non capture
+            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.NON_CAPTURE));
+            }
+
+            // Knight: capture
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.CAPTURE));
+            }
+        }
+    }
+
+    private void rookMoves(MoveList<Move> playerMoves) {
+        int[] locations;
+        locations = getBoard().getRookLocations(activePlayerColor);
+        for(int i : locations) {
+            RookMoves rawMoves = new RookMoves(board, i);
+            Piece piece = board.get(i);
+
+            // Rook: non capture
+            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.NON_CAPTURE));
+            }
+
+            // Rook: capture
+            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
+                playerMoves.add(new Move(piece, i, dest, Move.CAPTURE));
+            }
+        }
     }
 
     public MoveList<Move> generateMoves() {
-        return generateMovesFor(getActivePlayerColor());
+//        return generateMovesFor(getActivePlayerColor());
+        return newGenerateMovesFor(getActivePlayerColor());
+    }
+
+    // This method generates moves at a board level (batch) instead of calculating moves a single position at a time.
+    private MoveList<Move> newGenerateMovesFor(PlayerColor playerColor) {
+        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>());;
+
+        rookMoves(playerMoves);
+        knightMoves(playerMoves);
+        bishopMoves(playerMoves);
+        queenMoves(playerMoves);
+        kingMoves(playerMoves);
+        pawnMoves(playerMoves);
+
+        if (depth > 0)
+            return playerMoves;
+
+        cleanUpMoves(playerMoves);
+
+        return playerMoves;
     }
 
     /*
@@ -897,7 +1172,7 @@ public class Game {
             perftResults.put(move.toLongSan(), moveCounter);
         }
 
-        printPerft(perftResults);
+        // printPerft(perftResults);
 
         return perftResults;
     }
