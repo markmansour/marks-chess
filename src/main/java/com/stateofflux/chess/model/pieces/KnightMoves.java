@@ -31,12 +31,8 @@ public class KnightMoves extends PieceMoves {
         super(board, location);
     }
 
-    protected void setupPaths() {
-        // no-op
-    }
-
     @Override
-    protected void findCaptureAndNonCaptureMoves() {
+    public void findCaptureAndNonCaptureMoves() {
         this.nonCaptureMoves |= KNIGHT_MOVES[this.location] & ~this.occupiedBoard;
         this.captureMoves |= KNIGHT_MOVES[this.location] & this.opponentBoard;
     }

@@ -580,7 +580,7 @@ public class Game {
             if (piece.getColor() != playerColor)
                 continue;
 
-            PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+            PieceMovesInterface rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
             pieceChar = piece.getPieceChar();
 
             // TODO: There has to be a better way to do this.
@@ -731,7 +731,7 @@ public class Game {
                 continue;
 
             // for each of the available opposition piece moves
-            PieceMoves rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
+            PieceMovesInterface rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
 
             // see if any can capture the king
             for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
@@ -915,7 +915,7 @@ public class Game {
         for (int possibleSourceLocation : possibleSourceLocations) {
             tempLocation = possibleSourceLocation;
             piece = this.getBoard().get(tempLocation);
-            PieceMoves pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
+            PieceMovesInterface pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
 
             // if the piece being reviewed isn't in the rank specified then skip over it
             if (rankSpecified != 0 && (('1' + (Board.rank(tempLocation))) != rankSpecified)) {

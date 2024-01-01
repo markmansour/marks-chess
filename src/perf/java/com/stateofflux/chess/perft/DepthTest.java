@@ -392,11 +392,12 @@ public class DepthTest {
 
             profile = asyncProfiler.dumpFlat(100);
         } finally {
+            endTime = System.nanoTime();
             asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
             // LOGGER.info(profile);
         }
 
         endTime = System.nanoTime();
-        LOGGER.info("Ran for: {} nanoseconds", TimeUnit.NANOSECONDS.toNanos(endTime - startTime));
+        LOGGER.info("profile{}-{}.html: ran for {} ms", methodName, startTime, TimeUnit.NANOSECONDS.toMillis(endTime - startTime));
     }
 }

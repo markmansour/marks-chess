@@ -34,6 +34,26 @@ public class KingMoves extends StraightLineMoves {
     public static final long BLACK_QUEEN_SIDE_CASTLING_DESTINATION_BITBOARD = (1L << BLACK_QUEEN_SIDE_CASTLING_DESTINATION);
     public static final long BLACK_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 57) | (1L << 58) | (1L << 59);
 
+    protected static Direction[] directions;
+
+    protected static void setupPaths() {
+        directions = new Direction[] {
+            Direction.UP_LEFT,
+            Direction.UP,
+            Direction.UP_RIGHT,
+            Direction.RIGHT,
+            Direction.DOWN_RIGHT,
+            Direction.DOWN,
+            Direction.DOWN_LEFT,
+            Direction.LEFT
+        };
+        // this.max = KING_DIRECTIONS_MAX;
+    }
+
+    static {
+        setupPaths();
+    }
+
     public KingMoves(Board board, int location) {
         super(board, location);
 
@@ -55,6 +75,55 @@ public class KingMoves extends StraightLineMoves {
         addCastlingMoves();
     }
 
+    public void findCaptureAndNonCaptureMoves() {
+        findCaptureAndNonCaptureMovesInStraightLines();
+    }
+
+    public boolean isCheckingForCaptures() {
+        return true;
+    }
+
+    public void findCaptureAndNonCaptureMovesInStraightLines() {
+        // validation here - throw IllegalArgumentException with details when invalid
+        int nextPosition;
+        long nextPositionBit;
+        int boardMax;
+
+        // calculate the max moves
+        for (Direction d : directions) {
+            // check to see we're not going off the board.
+            boardMax = Math.min(PieceMoves.maxStepsToBoundary(this.location, d), KING_DIRECTIONS_MAX);
+
+            for (int i = 1; i <= boardMax; i++) {
+                // calculate the next position
+                nextPosition = this.location + (i * d.getDistance());
+                nextPositionBit = 1L << nextPosition;
+
+                // if the next position is empty, add it to the bitmap
+                if ((this.occupiedBoard & nextPositionBit) == 0)
+                    this.nonCaptureMoves |= nextPositionBit;
+
+                // if the next position is the same color, stop
+                if ((currentPlayerBoard & nextPositionBit) != 0)
+                    break; // stop looking in the current direction
+
+                // this is only used by the pawn.
+                if (!this.isCheckingForCaptures()) {
+                    if ((opponentBoard & nextPositionBit) != 0)
+                        break;  // if the piece in front of the pawn is an opponent piece, then stop moving in this direction
+                    else
+                        continue;  // the next space is empty, so keep going in the same direction.
+                }
+
+                // if the next position is occupied, add it to the bitmap and stop
+                if ((this.opponentBoard & nextPositionBit) != 0) {
+                    this.captureMoves |= nextPositionBit;
+
+                    break; // no more searches in this direction.
+                }
+            }
+        }
+    }
 
     protected void addCastlingMoves() {
         /*
@@ -285,19 +354,5 @@ public class KingMoves extends StraightLineMoves {
         }
 
         return false;
-    }
-
-    protected void setupPaths() {
-        this.directions = new Direction[] {
-                Direction.UP_LEFT,
-                Direction.UP,
-                Direction.UP_RIGHT,
-                Direction.RIGHT,
-                Direction.DOWN_RIGHT,
-                Direction.DOWN,
-                Direction.DOWN_LEFT,
-                Direction.LEFT
-        };
-        this.max = KING_DIRECTIONS_MAX;
     }
 }

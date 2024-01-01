@@ -4,7 +4,7 @@ import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Direction;
 import com.stateofflux.chess.model.PlayerColor;
 
-public abstract class PieceMoves {
+public abstract class PieceMoves implements PieceMovesInterface {
     protected final Board board;
     protected int location;
     protected Piece piece;
@@ -13,16 +13,16 @@ public abstract class PieceMoves {
     protected long occupiedBoard;
     protected long opponentBoard;
     protected long currentPlayerBoard;
+    protected final boolean isWhite;
 
     protected PieceMoves(Board board, int location) {
         this.board = board;
         this.location = location;
-        this.piece = board.get(location);
+        this.isWhite = (((1L << location) & board.getWhite()) != 0);
 
         // are these always needed? Can we late bind them?
         this.occupiedBoard = this.board.getOccupied();  // the union of current and occupied boards
-
-        setupPaths();
+        this.piece = board.get(location);
         setBoards();
         findCaptureAndNonCaptureMoves();
     }
@@ -111,19 +111,16 @@ public abstract class PieceMoves {
         return Long.numberOfLeadingZeros(mask);
     }*/
 
-    abstract void setupPaths();
-
-    abstract void findCaptureAndNonCaptureMoves();
-
     // TODO: can this be set at instantiation?
     protected void setBoards() {
-        if(this.piece.getColor() == PlayerColor.WHITE) {
+        if (isWhite) {
             this.currentPlayerBoard = board.getWhite();
             this.opponentBoard = board.getBlack();
         } else {
             this.currentPlayerBoard = board.getBlack();
             this.opponentBoard = board.getWhite();
-        };
+        }
+        ;
     }
 
     protected long getOpponentBoard() {
@@ -142,10 +139,12 @@ public abstract class PieceMoves {
         return this.piece;
     }
 
+    @Override
     public long getCaptureMoves() {
         return this.captureMoves;
     }
 
+    @Override
     public long getNonCaptureMoves() {
         return this.nonCaptureMoves;
     }

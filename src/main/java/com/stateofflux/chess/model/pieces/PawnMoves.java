@@ -2,30 +2,33 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 
-public class PawnMoves extends StraightLineMoves {
+public class PawnMoves implements PieceMovesInterface {
     public static final String NO_EN_PASSANT = "-";
     public static final int NO_EN_PASSANT_VALUE = -1;
 
+    protected long nonCaptureMoves;
+    protected long captureMoves;
+
     private final int enPassantTarget;
-
-    public PawnMoves(Board board, int location, int enPassant) {
-        super(board, location);
-        this.enPassantTarget = enPassant;
-        findEnPassantCaptures();
-    }
-
-    protected void setupPaths() {
-    }
-
-    @Override
-    public boolean isCheckingForCaptures() {
-        return false;
-    }
+    protected final Board board;
+    protected final int location;
+    protected final Piece piece;
+    protected final boolean isWhite;
 
     public static final long[][] PAWN_ATTACKS = new long[2][64];
 
     static {
         initializePawnAttacks();
+    }
+
+    public PawnMoves(Board board, int location, int enPassant) {
+        this.board = board;
+        this.location = location;
+        this.enPassantTarget = enPassant;
+        this.isWhite = (((1L << location) & board.getWhite()) != 0);
+        this.piece = isWhite ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
+
+        findCaptureAndNonCaptureMoves();
     }
 
     private static void initializePawnAttacks() {
@@ -41,37 +44,55 @@ public class PawnMoves extends StraightLineMoves {
 
     }
 
-    @Override
     public void findCaptureAndNonCaptureMoves() {
-        long pawns;
-        boolean isWhite = piece.isWhite();
+        if(isWhite)
+            findCaptureAndNonCaptureWhiteMoves();
+        else
+            findCaptureAndNonCaptureBlackMoves();
+    }
+
+    public void findCaptureAndNonCaptureWhiteMoves() {
         long oneStep, twoStep;
+        long occupiedBoard = this.board.getOccupied();
+        long pawns;
+        long opponentBoard = board.getBlack();
 
         // one step forward
-        if(isWhite) {
-            pawns = board.getWhitePawns() & (1L << this.location);
-            oneStep = (pawns << 8L) & ~occupiedBoard;
-        } else {
-            pawns = board.getBlackPawns() & (1L << this.location);
-            oneStep = (pawns >> 8L) & ~occupiedBoard;
-        }
+        pawns = board.getWhitePawns() & (1L << this.location);
+        oneStep = (pawns << 8L) & ~occupiedBoard;
 
         // two steps forward
-        if(isWhite) {
-            twoStep = ((oneStep & Board.RANK_3) << 8L) & ~occupiedBoard;
-        } else {
-            twoStep = ((oneStep & Board.RANK_6) >> 8L) & ~occupiedBoard;
-        }
+        twoStep = ((oneStep & Board.RANK_3) << 8L) & ~occupiedBoard;
 
         this.nonCaptureMoves = oneStep | twoStep;
 
         // capture
-        if(isWhite) {
-            this.captureMoves |= PAWN_ATTACKS[0][this.location] & opponentBoard;
-        } else {
-            this.captureMoves |= PAWN_ATTACKS[1][this.location] & opponentBoard;
-        }
+        this.captureMoves |= PAWN_ATTACKS[0][this.location] & opponentBoard;
+
+        findEnPassantCaptures();
     }
+
+    public void findCaptureAndNonCaptureBlackMoves() {
+        long oneStep, twoStep;
+        long occupiedBoard = this.board.getOccupied();
+        long pawns;
+        long opponentBoard = board.getWhite();
+
+        // one step forward
+        pawns = board.getBlackPawns() & (1L << this.location);
+        oneStep = (pawns >> 8L) & ~occupiedBoard;
+
+        // two steps forward
+        twoStep = ((oneStep & Board.RANK_6) >> 8L) & ~occupiedBoard;
+
+        this.nonCaptureMoves = oneStep | twoStep;
+
+        // capture
+        this.captureMoves |= PAWN_ATTACKS[1][this.location] & opponentBoard;
+
+        findEnPassantCaptures();
+    }
+
 
     private void findEnPassantCaptures() {
         // if there is n en passant target, then exit
@@ -79,19 +100,35 @@ public class PawnMoves extends StraightLineMoves {
             return;
         }
 
-        boolean isWhite = piece.isWhite();
+        if(isWhite)
+            findWhiteEnPassantCaptures();
+        else
+            findBlackEnPassantCaptures();
+    }
+
+    private void findWhiteEnPassantCaptures() {
         int file = Board.file(this.enPassantTarget);
 
-        if(isWhite) {
-            if (file > 0 && this.enPassantTarget == (this.location + 9))  // white left
-                this.captureMoves |= (1L << this.enPassantTarget);
-            else if (file < 7 && this.enPassantTarget == (this.location + 7))  // white right
-                this.captureMoves |= (1L << this.enPassantTarget);
-        } else {
-            if (file > 0 && this.enPassantTarget == (this.location - 9))  // black left
-                this.captureMoves |= (1L << this.enPassantTarget);
-            else if (file < 7 && this.enPassantTarget == (this.location - 7))  // black right
-                this.captureMoves |= (1L << this.enPassantTarget);
-        }
+        if (file > 0 && this.enPassantTarget == (this.location + 9))  // white left
+            this.captureMoves |= (1L << this.enPassantTarget);
+        else if (file < 7 && this.enPassantTarget == (this.location + 7))  // white right
+            this.captureMoves |= (1L << this.enPassantTarget);
+    }
+
+    private void findBlackEnPassantCaptures() {
+        int file = Board.file(this.enPassantTarget);
+
+        if (file > 0 && this.enPassantTarget == (this.location - 9))  // black left
+            this.captureMoves |= (1L << this.enPassantTarget);
+        else if (file < 7 && this.enPassantTarget == (this.location - 7))  // black right
+            this.captureMoves |= (1L << this.enPassantTarget);
+    }
+
+    public long getCaptureMoves() {
+        return this.captureMoves;
+    };
+
+    public long getNonCaptureMoves() {
+        return this.nonCaptureMoves;
     }
 }

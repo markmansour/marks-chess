@@ -11,22 +11,8 @@ public class QueenMoves extends StraightLineMoves {
         super(board, location);
     }
 
-    protected void setupPaths() {
-        this.directions = new Direction[] {
-                Direction.UP_LEFT,
-                Direction.UP,
-                Direction.UP_RIGHT,
-                Direction.RIGHT,
-                Direction.DOWN_RIGHT,
-                Direction.DOWN,
-                Direction.DOWN_LEFT,
-                Direction.LEFT
-        };
-        this.max = QUEEN_DIRECTIONS_MAX;
-    }
-
     @Override
-    protected void findCaptureAndNonCaptureMoves() {
+    public void findCaptureAndNonCaptureMoves() {
         long queenAttacks = getBishopAttacks(location, occupiedBoard) | getRookAttacks(location, occupiedBoard);
         this.nonCaptureMoves = queenAttacks & ~occupiedBoard;
         this.captureMoves = queenAttacks & occupiedBoard & opponentBoard;
