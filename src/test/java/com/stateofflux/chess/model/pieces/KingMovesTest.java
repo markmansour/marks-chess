@@ -73,5 +73,9 @@ public class KingMovesTest {
         assertThat(game.generateMoves()).hasSize(3);
     }
 
+    @Test void kingCanMoveNearAnotherKing() {
+        Game game = new Game("4k2K/8/8/8/8/8/8/8 b - -");
+        assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7", "e8d8", "e8f8");
+    }
 
 }

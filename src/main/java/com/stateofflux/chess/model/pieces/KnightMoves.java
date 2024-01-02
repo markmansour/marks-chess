@@ -3,7 +3,7 @@ package com.stateofflux.chess.model.pieces;
 import com.stateofflux.chess.model.Board;
 
 public class KnightMoves extends PieceMoves {
-    static long[] KNIGHT_MOVES = new long[64];
+    static final long[] KNIGHT_MOVES = new long[64];
     static {
         int rank;
         int file;

@@ -36,7 +36,7 @@ public class PawnMoves implements PieceMovesInterface {
             long start = 1L << location;
 
             long white = ((start << 9L) & ~Board.FILE_A) | ((start << 7) & ~Board.FILE_H);
-            long black = ((start >> 9L) & ~Board.FILE_H) | ((start >> 7) & ~Board.FILE_A);
+            long black = ((start >>> 9L) & ~Board.FILE_H) | ((start >>> 7) & ~Board.FILE_A);
 
             PAWN_ATTACKS[0][location] = white;
             PAWN_ATTACKS[1][location] = black;

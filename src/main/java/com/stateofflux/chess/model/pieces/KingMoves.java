@@ -7,6 +7,25 @@ import com.stateofflux.chess.model.PlayerColor;
 
 public class KingMoves extends StraightLineMoves {
 
+    static final long[] KING_MOVES = new long[64];
+
+    static {
+        initializeKingAttacks();
+    }
+
+    private static void initializeKingAttacks() {
+        for (int i = 0; i < 64; i++) {
+            long start = 1L << i;
+
+            long attackBb = (((start << 7L) | (start >>> 9L) | (start >>> 1L)) & (~Board.FILE_H)) |
+                (((start << 9L) | (start >>> 7L) | (start << 1L)) & (~Board.FILE_A)) |
+                ((start >>> 8L) | (start << 8L));
+
+            KING_MOVES[i] = attackBb;
+        }
+    }
+
+
     private static final int KING_DIRECTIONS_MAX = 1;
     private final long kingSideCastlingDestinationBitBoard;
     private final long queenSideCastlingDestinationBitBoard;
@@ -36,24 +55,6 @@ public class KingMoves extends StraightLineMoves {
 
     protected static Direction[] directions;
 
-    protected static void setupPaths() {
-        directions = new Direction[] {
-            Direction.UP_LEFT,
-            Direction.UP,
-            Direction.UP_RIGHT,
-            Direction.RIGHT,
-            Direction.DOWN_RIGHT,
-            Direction.DOWN,
-            Direction.DOWN_LEFT,
-            Direction.LEFT
-        };
-        // this.max = KING_DIRECTIONS_MAX;
-    }
-
-    static {
-        setupPaths();
-    }
-
     public KingMoves(Board board, int location) {
         super(board, location);
 
@@ -76,53 +77,12 @@ public class KingMoves extends StraightLineMoves {
     }
 
     public void findCaptureAndNonCaptureMoves() {
-        findCaptureAndNonCaptureMovesInStraightLines();
-    }
+        long kingAttacks = KING_MOVES[location];
+        this.nonCaptureMoves = kingAttacks & ~occupiedBoard;
+        this.captureMoves = kingAttacks & occupiedBoard & opponentBoard;    }
 
     public boolean isCheckingForCaptures() {
         return true;
-    }
-
-    public void findCaptureAndNonCaptureMovesInStraightLines() {
-        // validation here - throw IllegalArgumentException with details when invalid
-        int nextPosition;
-        long nextPositionBit;
-        int boardMax;
-
-        // calculate the max moves
-        for (Direction d : directions) {
-            // check to see we're not going off the board.
-            boardMax = Math.min(PieceMoves.maxStepsToBoundary(this.location, d), KING_DIRECTIONS_MAX);
-
-            for (int i = 1; i <= boardMax; i++) {
-                // calculate the next position
-                nextPosition = this.location + (i * d.getDistance());
-                nextPositionBit = 1L << nextPosition;
-
-                // if the next position is empty, add it to the bitmap
-                if ((this.occupiedBoard & nextPositionBit) == 0)
-                    this.nonCaptureMoves |= nextPositionBit;
-
-                // if the next position is the same color, stop
-                if ((currentPlayerBoard & nextPositionBit) != 0)
-                    break; // stop looking in the current direction
-
-                // this is only used by the pawn.
-                if (!this.isCheckingForCaptures()) {
-                    if ((opponentBoard & nextPositionBit) != 0)
-                        break;  // if the piece in front of the pawn is an opponent piece, then stop moving in this direction
-                    else
-                        continue;  // the next space is empty, so keep going in the same direction.
-                }
-
-                // if the next position is occupied, add it to the bitmap and stop
-                if ((this.opponentBoard & nextPositionBit) != 0) {
-                    this.captureMoves |= nextPositionBit;
-
-                    break; // no more searches in this direction.
-                }
-            }
-        }
     }
 
     protected void addCastlingMoves() {
@@ -173,11 +133,6 @@ public class KingMoves extends StraightLineMoves {
 
         // much be queen side.
         return (queenSideCastlingEmptyCheckBitboard & this.getBoard().getOccupied()) == 0;
-//            // create a mask over the occupied board and only keep the empty check bitboard positions.
-//            (~queenSideCastlingEmptyCheckBitboard ^ this.getBoard().getOccupiedBoard()
-//                // check to see if the empty check bitboard positions are free
-//                | queenSideCastlingEmptyCheckBitboard) == 0;
-
     }
 
     private boolean kingDoesNotPassThroughOrFinishOnAttackedSpace(Castling side) {
