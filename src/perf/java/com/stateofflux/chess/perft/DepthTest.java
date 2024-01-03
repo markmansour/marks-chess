@@ -252,7 +252,7 @@ public class DepthTest {
     }*/
 
     @Test public void testContextBetweenGames() {
-        // fail("too long");
+        fail("too long");
         SortedMap<String, Integer> actual;
 
         // uci

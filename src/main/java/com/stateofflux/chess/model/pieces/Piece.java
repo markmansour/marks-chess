@@ -19,11 +19,11 @@ public enum Piece {
     BLACK_PAWN   (11, PlayerColor.BLACK, 'p'),
     EMPTY        (12, PlayerColor.NONE,  ' ');
 
-    public final static char KING_ALEGBRAIC = 'K';
-    public final static char QUEEN_ALEGBRAIC = 'Q';
-    public final static char ROOK_ALEGBRAIC = 'R';
-    public final static char BISHOP_ALEGBRAIC = 'B';
-    public final static char KNIGHT_ALEGBRAIC = 'N';
+    public final static char KING_ALGEBRAIC = 'K';
+    public final static char QUEEN_ALGEBRAIC = 'Q';
+    public final static char ROOK_ALGEBRAIC = 'R';
+    public final static char BISHOP_ALGEBRAIC = 'B';
+    public final static char KNIGHT_ALGEBRAIC = 'N';
 
     private final int index; // TODO: can this be replaced by .ordinal()?
     private final PlayerColor color;
@@ -68,22 +68,22 @@ public enum Piece {
     public static Piece getPieceByAlgebraicPieceChar(char algebraicPiece, PlayerColor color) {
         if(color == PlayerColor.BLACK) {
             return switch(algebraicPiece) {
-                case KING_ALEGBRAIC -> BLACK_KING;
-                case QUEEN_ALEGBRAIC -> BLACK_QUEEN;
-                case BISHOP_ALEGBRAIC -> BLACK_BISHOP;
-                case KNIGHT_ALEGBRAIC -> BLACK_KNIGHT;
-                case ROOK_ALEGBRAIC -> BLACK_ROOK;
+                case KING_ALGEBRAIC -> BLACK_KING;
+                case QUEEN_ALGEBRAIC -> BLACK_QUEEN;
+                case BISHOP_ALGEBRAIC -> BLACK_BISHOP;
+                case KNIGHT_ALGEBRAIC -> BLACK_KNIGHT;
+                case ROOK_ALGEBRAIC -> BLACK_ROOK;
                 default -> BLACK_PAWN;
             };
         }
 
         if(color == PlayerColor.WHITE) {
             return switch(algebraicPiece) {
-                case KING_ALEGBRAIC -> WHITE_KING;
-                case QUEEN_ALEGBRAIC -> WHITE_QUEEN;
-                case BISHOP_ALEGBRAIC -> WHITE_BISHOP;
-                case KNIGHT_ALEGBRAIC -> WHITE_KNIGHT;
-                case ROOK_ALEGBRAIC -> WHITE_ROOK;
+                case KING_ALGEBRAIC -> WHITE_KING;
+                case QUEEN_ALGEBRAIC -> WHITE_QUEEN;
+                case BISHOP_ALGEBRAIC -> WHITE_BISHOP;
+                case KNIGHT_ALGEBRAIC -> WHITE_KNIGHT;
+                case ROOK_ALGEBRAIC -> WHITE_ROOK;
                 default -> WHITE_PAWN;
             };
         }

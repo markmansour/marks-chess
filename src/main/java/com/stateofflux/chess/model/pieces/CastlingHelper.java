@@ -20,6 +20,13 @@ public class CastlingHelper {
     public final static int CASTLING_WHITE_QUEEN_SIDE = 4;
     public final static int CASTLING_BLACK_QUEEN_SIDE = 8;
 
+    public final static char WHITE_KING_CHAR = 'K';
+    public final static char WHITE_QUEEN_CHAR = 'Q';
+    public final static char BLACK_KING_CHAR = 'k';
+    public final static char BLACK_QUEEN_CHAR = 'q';
+    public final static char NO_CASTLING_CHAR = '-';
+
+
     private final int location;
 
     CastlingHelper(int location) {

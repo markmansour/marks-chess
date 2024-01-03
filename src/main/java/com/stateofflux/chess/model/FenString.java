@@ -2,7 +2,9 @@ package com.stateofflux.chess.model;
 
 import java.util.Scanner;
 
+import com.stateofflux.chess.model.pieces.CastlingHelper;
 import com.stateofflux.chess.model.pieces.PawnMoves;
+import com.stateofflux.chess.model.pieces.Piece;
 
 /**
  * See https://www.chessprogramming.org/Algebraic_Chess_Notation#Enpassant
@@ -22,10 +24,6 @@ import com.stateofflux.chess.model.pieces.PawnMoves;
 public class FenString {
     public static final String INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
-    public static final char WHITE_KING_SIDE_CASTLE = 'K';
-    public static final char WHITE_QUEEN_SIDE_CASTLE = 'Q';
-    public static final char BLACK_KING_SIDE_CASTLE = 'k';
-    public static final char BLACK_QUEEN_SIDE_CASTLE = 'q';
     public static final char NO_CASTLING = '-';
 
     private String piecePlacement;
@@ -144,11 +142,11 @@ public class FenString {
     private void setCastlingRights(String castlingRightsString) {
         for (char c : castlingRightsString.toCharArray()) {
             switch (c) {
-                case WHITE_KING_SIDE_CASTLE,
-                    WHITE_QUEEN_SIDE_CASTLE,
-                    BLACK_KING_SIDE_CASTLE,
-                    BLACK_QUEEN_SIDE_CASTLE,
-                    NO_CASTLING:
+                case CastlingHelper.WHITE_KING_CHAR,
+                    CastlingHelper.WHITE_QUEEN_CHAR,
+                    CastlingHelper.BLACK_KING_CHAR,
+                    CastlingHelper.BLACK_QUEEN_CHAR,
+                    CastlingHelper.NO_CASTLING_CHAR:
                     continue;
                 default:
                     throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);

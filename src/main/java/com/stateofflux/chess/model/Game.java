@@ -55,10 +55,10 @@ public class Game {
 
         StringBuilder sb = new StringBuilder();
 
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append('K');
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append('Q');
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append('k');
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append('q');
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append(CastlingHelper.WHITE_KING_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append(CastlingHelper.WHITE_QUEEN_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append(CastlingHelper.BLACK_KING_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append(CastlingHelper.BLACK_QUEEN_CHAR);
 
         return sb.toString();
     }
@@ -77,10 +77,10 @@ public class Game {
 
     private void setCastlingRightsFromFen(String fen) {
         if(fen.isBlank()) { clearCastlingRights(); }
-        if(fen.contains("K" )) { castlingRights |= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
-        if(fen.contains("Q")) { castlingRights |= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
-        if(fen.contains("k")) { castlingRights |= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
-        if(fen.contains("q")) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
     }
 
     protected int clock;
@@ -834,7 +834,12 @@ public class Game {
         String sourceHintWithoutPiece;
 
         switch(pieceToMoveChar) {
-            case 'N', 'B', 'R', 'Q', 'K' -> sourceHintWithoutPiece = sourceHint.substring(1);
+            case Piece.KING_ALGEBRAIC,
+                Piece.QUEEN_ALGEBRAIC,
+                Piece.ROOK_ALGEBRAIC,
+                Piece.BISHOP_ALGEBRAIC,
+                Piece.KNIGHT_ALGEBRAIC
+                -> sourceHintWithoutPiece = sourceHint.substring(1);
             default -> sourceHintWithoutPiece = sourceHint;
         }
 
@@ -862,11 +867,11 @@ public class Game {
 
         possibleSourceLocations =
             switch(pieceToMoveChar) {
-                case Piece.KING_ALEGBRAIC -> this.getBoard().getKingLocations(this.getActivePlayerColor());
-                case Piece.QUEEN_ALEGBRAIC -> this.getBoard().getQueenLocations(this.getActivePlayerColor());
-                case Piece.BISHOP_ALEGBRAIC -> this.getBoard().getBishopLocations(this.getActivePlayerColor());
-                case Piece.KNIGHT_ALEGBRAIC -> this.getBoard().getKnightLocations(this.getActivePlayerColor());
-                case Piece.ROOK_ALEGBRAIC -> this.getBoard().getRookLocations(this.getActivePlayerColor());
+                case Piece.KING_ALGEBRAIC -> this.getBoard().getKingLocations(this.getActivePlayerColor());
+                case Piece.QUEEN_ALGEBRAIC -> this.getBoard().getQueenLocations(this.getActivePlayerColor());
+                case Piece.BISHOP_ALGEBRAIC -> this.getBoard().getBishopLocations(this.getActivePlayerColor());
+                case Piece.KNIGHT_ALGEBRAIC -> this.getBoard().getKnightLocations(this.getActivePlayerColor());
+                case Piece.ROOK_ALGEBRAIC -> this.getBoard().getRookLocations(this.getActivePlayerColor());
                 default -> this.getBoard().getPawnLocations(this.getActivePlayerColor());
             };
 
