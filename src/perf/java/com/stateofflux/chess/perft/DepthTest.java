@@ -204,6 +204,7 @@ public class DepthTest {
     }
 
     // after magic bitboards - 20 seconds.
+    // after more optimizations - 6.5 seconds
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(4, perftRecords);
@@ -224,6 +225,7 @@ public class DepthTest {
     // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896,886 nodes/second, 824,539 nodes/second)
     // 4703 ms and reviewed 4865609 nodes.  1034575 nodes/second (1,019,616 nodes/second, 1,128,911 nodes/second) - use ints to represent castling
     // 3718 ms and reviewed 4865609 nodes.  1308662 nodes/second (1,437,402 and 1,270,725) - en passant uses ints.
+    // 3269 ms and reviewed 4865609 nodes.  1488408 nodes/second - simplified game clock counter (1,433,169 and 1,315,740)
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(5, defaultBoard());
@@ -232,6 +234,7 @@ public class DepthTest {
     // Nodes searched: 119060324
     // 11 mins 41 seconds (about 170 nodes per second)
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
+    // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(6, defaultBoard());
@@ -249,7 +252,7 @@ public class DepthTest {
     }*/
 
     @Test public void testContextBetweenGames() {
-        fail("too long");
+        // fail("too long");
         SortedMap<String, Integer> actual;
 
         // uci

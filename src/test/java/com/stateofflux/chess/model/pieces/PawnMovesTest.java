@@ -51,7 +51,7 @@ public class PawnMovesTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2");
+            .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1");
 
         PieceMovesInterface bm = new PawnMoves(game.getBoard(), 27, -1);// white pawn at D4
 
@@ -73,7 +73,7 @@ public class PawnMovesTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/pp1p1ppp/8/2p1p3/3P4/7P/PPP1PPP1/RNBQKBNR w KQkq - 0 3");
+            .isEqualTo("rnbqkbnr/pp1p1ppp/8/2p1p3/3P4/7P/PPP1PPP1/RNBQKBNR w KQkq - 0 2");
 
         PieceMovesInterface bm = new PawnMoves(game.getBoard(), 27, -1); // white pawn at D4
 

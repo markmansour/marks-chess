@@ -83,12 +83,7 @@ public class Game {
         if(fen.contains("q")) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
     }
 
-    // fifty-move rule
-    protected int halfmoveClock;
-
-    // The number of the full moves. It starts at 1 and is incremented after Black's
-    // move
-    protected int fullmoveCounter;
+    protected int clock;
     private boolean outOfTime = false;
 
     // game with no players - used for analysis
@@ -99,8 +94,7 @@ public class Game {
         this.setActivePlayerColor(PlayerColor.WHITE);
         this.setInitialCastlingRights();
         this.clearEnPassantTarget();
-        this.setHalfmoveClock(0);
-        this.setFullmoveCounter(1);
+        this.setClock(0);
     }
 
     public Game(String fenString) {
@@ -119,8 +113,7 @@ public class Game {
         this.setActivePlayerColor(game.getActivePlayerColor());
         this.setCastlingRights(game.getCastlingRights());
         this.setEnPassantTarget(game.getEnPassantTarget());
-        this.setHalfmoveClock(game.getHalfmoveClock());
-        this.setFullmoveCounter(game.getFullmoveCounter());
+        this.setClock(game.getClock());
 
         setActivePlayerIsInCheck();
     }
@@ -136,8 +129,7 @@ public class Game {
         this.setActivePlayerColor(fen.getActivePlayerColor());
         this.setCastlingRightsFromFen(fen.getCastlingRights());
         this.setEnPassantTargetFromFen(fen.getEnPassantTarget());
-        this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
-        this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
+        this.setClock(fen.getFullmoveCounter() * 2 + fen.getHalfmoveClock()); // TODO: THis is not right.  We don't know how many moves have been taken.
 
         setActivePlayerIsInCheck();
     }
@@ -149,8 +141,7 @@ public class Game {
         this.setActivePlayerColor(PlayerColor.WHITE);
         this.setInitialCastlingRights();
         this.clearEnPassantTarget();
-        this.setHalfmoveClock(0);
-        this.setFullmoveCounter(1);
+        this.setClock(0);
 
         for(var move : pgn.getMoves()) {
 //            LOGGER.info(move.toString());
@@ -184,20 +175,17 @@ public class Game {
         return this.getBoard().toFen();
     }
 
-    private void setFullmoveCounter(int fullmoveCounter) {
-        this.fullmoveCounter = fullmoveCounter;
+    public void setClock(int clock) { this.clock = clock; }
+    public int getClock() { return this.clock; }
+    public void incrementClock() { this.clock++; }
+    public void decrementClock() { this.clock--; }
+
+    public int getFullMoveCounter() {
+        return this.clock >> 1;  // divide by 2
     }
 
-    public int getFullmoveCounter() {
-        return this.fullmoveCounter;
-    }
-
-    private void setHalfmoveClock(int halfmoveClock) {
-        this.halfmoveClock = halfmoveClock;
-    }
-
-    public int getHalfmoveClock() {
-        return this.halfmoveClock;
+    public int getHalfMoveClock() {
+        return this.clock & 1;  // module 2
     }
 
     // TODO: Move to PawnMoves
@@ -922,7 +910,7 @@ public class Game {
 
     private void postMoveAccounting(Move move, int removedLocation) {
         setEnPassantTarget(move.getEnPassantTarget());
-        removeCastlingRightsFor(move.getFrom(), removedLocation);
+        removeCastlingRightsFor(move, removedLocation);
         historyAsHashes.add(getZobristKey());
         switchActivePlayer();
         setActivePlayerIsInCheck();
@@ -993,25 +981,6 @@ public class Game {
         this.check = inCheck;
     }
 
-    private void incrementClock() {
-        if (halfmoveClock == 0)
-            halfmoveClock = 1;
-        else {
-            halfmoveClock = 0;
-            fullmoveCounter++;
-        }
-    }
-
-    private void decrementClock()
-    {
-        if (halfmoveClock == 1)
-            halfmoveClock = 0;
-        else {
-            halfmoveClock = 1;
-            fullmoveCounter--;
-        }
-    }
-
     private void switchActivePlayer() {
         this.activePlayerColor = this.activePlayerColor.otherColor();
     }
@@ -1072,23 +1041,6 @@ public class Game {
         removeCastlingRightsForLocation(dest);
     }
 
-    private void removeCastlingRightsForLocation(int location) {
-        switch (location) {
-            case 0 -> clearCastlingWhiteQueenSide();
-            case 7 -> clearCastlingWhiteKingSide();
-            case 4 -> {
-                clearCastlingWhiteKingSide();
-                clearCastlingWhiteQueenSide();
-            }
-            case 56 -> clearCastlingBlackQueenSide();
-            case 63 -> clearCastlingBlackKingSide();
-            case 60 -> {
-                clearCastlingBlackKingSide();
-                clearCastlingBlackQueenSide();
-            }
-        };
-    }
-
     /*
      * <FEN> ::= <Piece Placement>
      * ' ' <Side to move>
@@ -1107,9 +1059,9 @@ public class Game {
         sb.append(' ');
         sb.append(this.getEnPassantTargetAsFen());
         sb.append(' ');
-        sb.append(this.getHalfmoveClock());
+        sb.append(this.getHalfMoveClock());
         sb.append(' ');
-        sb.append(this.getFullmoveCounter());
+        sb.append(this.getFullMoveCounter());
         return sb.toString();
     }
 
@@ -1138,7 +1090,7 @@ public class Game {
     }
 
     public boolean past50moves() {
-        return fullmoveCounter > 50;
+        return clock > 50;
     }
 
     public boolean hasInsufficientMaterials() {
@@ -1187,7 +1139,7 @@ public class Game {
     }
 
     public boolean isDraw() {
-        return getFullmoveCounter() * 50 >= 100 ||
+        return getFullMoveCounter() * 50 >= 100 ||
             isStalemate() ||
             hasInsufficientMaterials() ||
             isRepetition();
@@ -1410,7 +1362,7 @@ public class Game {
     public boolean isRepetition() {
         int n = 3;
 
-        final int i = Math.min(getHistory().size() - 1, getFullmoveCounter() * 2 + getHalfmoveClock());
+        final int i = Math.min(getHistory().size() - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
         if (getHistory().size() >= 4) {
             long lastKey = getHistory().get(getHistory().size() - 1);
             int rep = 0;

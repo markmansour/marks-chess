@@ -25,19 +25,14 @@ public class GameTest {
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
         assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(g.getHalfmoveClock()).isZero();
-        assertThat(g.getFullmoveCounter()).isOne();
+        assertThat(g.getHalfMoveClock()).isZero();
+        assertThat(g.getFullMoveCounter()).isOne();
     }
 
     @Test
     public void testDefaultGameSetup() {
         Game g = new Game();
-        assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-        assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-        assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
-        assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(g.getHalfmoveClock()).isZero();
-        assertThat(g.getFullmoveCounter()).isOne();
+        assertThat(g.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
     }
 
     @Test
@@ -55,13 +50,7 @@ public class GameTest {
         Game game = new Game();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         game.move("e3"); // from e2 to e3
-
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 1 0");
     }
 
     @Test
@@ -70,12 +59,7 @@ public class GameTest {
 
         game.move("e4"); // from e2 to e4
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 1 0");
     }
 
     @Test
@@ -83,12 +67,7 @@ public class GameTest {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P5/8/PP1PPPPP/RNBQKBNR w KQkq -");
         game.move("cxd5"); // from c4 to d5
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/3P4/8/8/PP1PPPPP/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/3P4/8/8/PP1PPPPP/RNBQKBNR b KQkq - 1 1");
     }
 
     @Test
@@ -100,17 +79,12 @@ public class GameTest {
         assertThat(gameMoves).hasSize(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2p1P3/8/PP1P1PPP/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2p1P3/8/PP1P1PPP/RNBQKBNR w KQkq - 1 1");
 
         // second scenario
         game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         game.move("dxe4"); // from d5 to c4
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2P1p3/8/PP1P1PPP/RNBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2P1p3/8/PP1P1PPP/RNBQKBNR w KQkq - 1 1");
     }
 
     @Test
@@ -118,12 +92,7 @@ public class GameTest {
         Game game = new Game("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq -");
         game.move("Ra3"); // from a1 to a3
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("Kkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-        assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR b Kkq - 1 1");
     }
 
     @Test
@@ -131,12 +100,7 @@ public class GameTest {
         Game game = new Game("r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR w KQkq -");
         game.move("Rxa6"); // from a1 to a6
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("Kkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
-        assertThat(game.getHalfmoveClock()).isOne();
-        assertThat(game.getFullmoveCounter()).isOne();
-        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
-        assertThat(game.getPiecePlacement()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR");
+        assertThat(game.asFen()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR b Kkq - 1 1");
     }
 
     // NOTE TO ME: Implement all the tests below and the enPassant, castling and
