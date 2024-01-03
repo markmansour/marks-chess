@@ -1036,9 +1036,24 @@ public class Game {
     /*
      * If the King or their respective rooks move, then remove the castling option
      */
-    private void removeCastlingRightsFor(int i, int dest) {
-        removeCastlingRightsForLocation(i);
-        removeCastlingRightsForLocation(dest);
+    private void removeCastlingRightsFor(Move m, int removedLocation) {
+        if(m.isCapture()) {
+            switch(removedLocation) {
+                case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteQueenSide();
+                case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteKingSide();
+                case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackQueenSide();
+                case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackKingSide();
+            }
+        }
+
+        switch(m.getFrom()) {
+            case CastlingHelper.WHITE_INITIAL_KING_LOCATION -> { clearCastlingWhiteQueenSide(); clearCastlingWhiteKingSide(); }
+            case CastlingHelper.BLACK_INITIAL_KING_LOCATION -> { clearCastlingBlackQueenSide(); clearCastlingBlackKingSide(); }
+            case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteQueenSide();
+            case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteKingSide();
+            case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackQueenSide();
+            case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackKingSide();
+        }
     }
 
     /*
