@@ -17,7 +17,7 @@ public class Move {
     private int secondaryFrom;
     private int secondaryTo;
     private Piece promotionPiece;
-    private String enPassantTarget = PawnMoves.NO_EN_PASSANT;
+    private int enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
 
     public Move(Piece piece, int from, int to, boolean capture) {
         this.piece = piece;
@@ -70,22 +70,22 @@ public class Move {
 
             if (destination < 31 &&
                 (((1L << (destination + 1)) & blackPawns) != 0))  // black pawn on the east
-                setEnPassant(FenString.locationToSquare(location + 8));
+                setEnPassant(location + 8);
 
             if (destination > 24 &&
                 (((1L << (destination - 1)) & blackPawns) != 0))  // black pawn on the west
-                setEnPassant(FenString.locationToSquare(location + 8));
+                setEnPassant(location + 8);
 
         } else if (location >= 48 && location <= 55 && destination - location == -16) {
 
             // set the en passant target
             if (destination < 39 &&
                 (((1L << (destination + 1)) & whitePawns) != 0))
-                setEnPassant(FenString.locationToSquare(location - 8));
+                setEnPassant(location - 8);
 
             if (destination > 32 &&
                 (((1L << (destination - 1)) & whitePawns) != 0))
-                setEnPassant(FenString.locationToSquare(location - 8));
+                setEnPassant(location - 8);
 
         } else {
             // reset the en passant target
@@ -94,16 +94,16 @@ public class Move {
     }
 
     // updateForEnPassant is the public method to set en passant
-    public void setEnPassant(String i) {
+    public void setEnPassant(int i) {
         enPassantTarget = i;
     }
 
-    public String getEnPassantTarget() {
+    public int getEnPassantTarget() {
         return enPassantTarget;
     }
 
     public boolean isEnPassant() {
-        return !enPassantTarget.equals("-");
+        return enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE;
     }
 
     public boolean isCastling() {
@@ -143,7 +143,7 @@ public class Move {
     }
 
     public void clearEnPassant() {
-        setEnPassant(PawnMoves.NO_EN_PASSANT);
+        setEnPassant(PawnMoves.NO_EN_PASSANT_VALUE);
     }
 
     public boolean isEnPassantCapture(int gameEnPassantState) {

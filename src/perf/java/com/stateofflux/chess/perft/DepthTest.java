@@ -214,6 +214,7 @@ public class DepthTest {
         depthHelper(4, defaultBoard());
     }
 
+    // NOTE - this method runs faster when the whole test suite is run.
     // about 43 seconds
     // about 30 seconds with Board.get caching
     // about 16 seconds with Piece Cache
@@ -222,6 +223,7 @@ public class DepthTest {
     // about 4.1 seconds with the new generateMovesFor logic that uses bitboards to verify if a piece is in check.
     // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896,886 nodes/second, 824,539 nodes/second)
     // 4703 ms and reviewed 4865609 nodes.  1034575 nodes/second (1,019,616 nodes/second, 1,128,911 nodes/second) - use ints to represent castling
+    // 3718 ms and reviewed 4865609 nodes.  1308662 nodes/second (1,437,402 and 1,270,725) - en passant uses ints.
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(5, defaultBoard());

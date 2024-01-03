@@ -327,7 +327,7 @@ public class Board {
         }
 
         if(m.isEnPassant()) {
-            int target = FenString.squareToLocation(m.getEnPassantTarget());
+            int target = m.getEnPassantTarget();
             // boardIndex doesn't change (pawn to pawn)
             removed = target;
             this.clearLocation(target);  // clear en passant target - TODO: this is not the right time to do this so delete this line.

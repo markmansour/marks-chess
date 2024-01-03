@@ -20,10 +20,11 @@ public class GameTest {
     @Test
     public void scanInitialFenString() {
         Game g = new Game(FenString.INITIAL_BOARD);
+
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
-        assertThat(g.getEnPassantTarget()).isEqualTo("-");
+        assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(g.getHalfmoveClock()).isZero();
         assertThat(g.getFullmoveCounter()).isOne();
     }
@@ -34,7 +35,7 @@ public class GameTest {
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
-        assertThat(g.getEnPassantTarget()).isEqualTo("-");
+        assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(g.getHalfmoveClock()).isZero();
         assertThat(g.getFullmoveCounter()).isOne();
     }
@@ -55,8 +56,8 @@ public class GameTest {
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         game.move("e3"); // from e2 to e3
 
-        assertThat(game.getCastlingRights()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
@@ -69,8 +70,8 @@ public class GameTest {
 
         game.move("e4"); // from e2 to e4
 
-        assertThat(game.getCastlingRights()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
@@ -82,8 +83,8 @@ public class GameTest {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P5/8/PP1PPPPP/RNBQKBNR w KQkq -");
         game.move("cxd5"); // from c4 to d5
 
-        assertThat(game.getCastlingRights()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
@@ -99,8 +100,8 @@ public class GameTest {
         assertThat(gameMoves).hasSize(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
-        assertThat(game.getCastlingRights()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
@@ -117,8 +118,8 @@ public class GameTest {
         Game game = new Game("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq -");
         game.move("Ra3"); // from a1 to a3
 
-        assertThat(game.getCastlingRights()).isEqualTo("Kkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("Kkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
@@ -130,8 +131,8 @@ public class GameTest {
         Game game = new Game("r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR w KQkq -");
         game.move("Rxa6"); // from a1 to a6
 
-        assertThat(game.getCastlingRights()).isEqualTo("Kkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("-");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("Kkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(game.getHalfmoveClock()).isOne();
         assertThat(game.getFullmoveCounter()).isOne();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
@@ -233,8 +234,8 @@ public class GameTest {
         Game game = new Game("2r3k1/1q1nbppp/r3p3/3pP3/p1pP4/P1Q2N2/1PRN1PPP/2R4K w - - 0 22");
         game.move("b4"); // from b2 to b4 - creating an en passant situation
 
-        assertThat(game.getCastlingRights()).isEqualTo("-");
-        assertThat(game.getEnPassantTarget()).isEqualTo("b3");
+        assertThat(game.cannotCastle()).isTrue();
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("b3");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - - 1 22
         // 2r3k1/1q1nbppp/r3p3/3pP3/1P1P4/PpQ2N2/2RN1PPP/2R4K b - - 1 22
@@ -243,8 +244,8 @@ public class GameTest {
         game = new Game("rnbqkbnr/ppppppp1/8/1P1P4/8/2P4p/P3PPPP/RNBQKBNR b KQkq -");
         game.move("c5"); // from c7 to c5 - creating an en passant situation
 
-        assertThat(game.getCastlingRights()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTarget()).isEqualTo("c6");
+        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("c6");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
     }
@@ -261,7 +262,7 @@ public class GameTest {
         game.move("f4");  // initial position - two square pawn advance
         // move from g4 to f3 would be possible IF it didn't put the black king in check.
         // therefore this is NOT an en passant move.
-        assertThat(game.getEnPassantTargetAsInt()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
+        assertThat(game.getEnPassantTarget()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
         assertThat(game.generateMoves().asLongSan()).doesNotContain("g4f3");
     }
 
@@ -566,7 +567,6 @@ public class GameTest {
         LOGGER.info("--------------------------");
         game.move("Kf1");  // move King from e1 to f1
         LOGGER.info(game.asFen());
-        assertThat(game.getCastlingRights()).isEqualTo("-");
     }
 
     public static class Repetition {

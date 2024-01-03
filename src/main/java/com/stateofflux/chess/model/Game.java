@@ -39,15 +39,16 @@ public class Game {
     // protected String castlingRights;
     protected int castlingRights;
 
-    private boolean isCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
-    private boolean isCastlingBlackKingSide () { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
-    private boolean isCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
-    private boolean isCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
+    public boolean canCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
+    public boolean canCastlingBlackKingSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
+    public boolean canCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
+    public boolean canCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
+    public boolean cannotCastle()              { return castlingRights == 0; }
 
-    private void clearCastlingWhiteKingSide()  { castlingRights ^= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
-    private void clearCastlingBlackKingSide()  { castlingRights ^= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
-    private void clearCastlingWhiteQueenSide() { castlingRights ^= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
-    private void clearCastlingBlackQueenSide() { castlingRights ^= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+    private void clearCastlingWhiteKingSide()  { castlingRights &= ~CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+    private void clearCastlingBlackKingSide()  { castlingRights &= ~CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+    private void clearCastlingWhiteQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+    private void clearCastlingBlackQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
 
     public String getCastlingRightsForFen() {
         if(castlingRights == 0) return "-";
@@ -75,11 +76,11 @@ public class Game {
     }
 
     private void setCastlingRightsFromFen(String fen) {
-        if(fen.strip().length() == 0) { clearCastlingRights(); }
-        if(fen.contains("K" )) { castlingRights &= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
-        if(fen.contains("Q")) { castlingRights &= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
-        if(fen.contains("k")) { castlingRights &= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
-        if(fen.contains("q")) { castlingRights &= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+        if(fen.isBlank()) { clearCastlingRights(); }
+        if(fen.contains("K" )) { castlingRights |= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+        if(fen.contains("Q")) { castlingRights |= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+        if(fen.contains("k")) { castlingRights |= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+        if(fen.contains("q")) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
     }
 
     // fifty-move rule
@@ -97,7 +98,7 @@ public class Game {
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
         this.setInitialCastlingRights();
-        this.setEnPassantTarget("-");
+        this.clearEnPassantTarget();
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
     }
@@ -134,7 +135,7 @@ public class Game {
 
         this.setActivePlayerColor(fen.getActivePlayerColor());
         this.setCastlingRightsFromFen(fen.getCastlingRights());
-        this.setEnPassantTarget(fen.getEnPassantTarget());
+        this.setEnPassantTargetFromFen(fen.getEnPassantTarget());
         this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
         this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
 
@@ -147,7 +148,7 @@ public class Game {
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
         this.setInitialCastlingRights();
-        this.setEnPassantTarget("-");
+        this.clearEnPassantTarget();
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
 
@@ -200,15 +201,22 @@ public class Game {
     }
 
     // TODO: Move to PawnMoves
-    public static int enPassantTargetToLocation(String target) {
-        return (target.equals(PawnMoves.NO_EN_PASSANT)) ? PawnMoves.NO_EN_PASSANT_VALUE : FenString.squareToLocation(target);
+    private void setEnPassantTargetFromFen(String target) {
+        if(target.equals(PawnMoves.NO_EN_PASSANT))
+            clearEnPassantTarget();
+        else
+            this.enPassantTarget = FenString.squareToLocation(target);
     }
 
-    private void setEnPassantTarget(String target) {
-        this.enPassantTarget = enPassantTargetToLocation(target);
+    private void clearEnPassantTarget() {
+        this.enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
     }
 
-    public String getEnPassantTarget() {
+    private void setEnPassantTarget(int target) {
+        this.enPassantTarget = target;
+    }
+
+    public String getEnPassantTargetAsFen() {
         if (this.enPassantTarget == -1) {
             return "-";
         }
@@ -216,7 +224,7 @@ public class Game {
         return FenString.locationToSquare(enPassantTarget);
     }
 
-    public int getEnPassantTargetAsInt() {
+    public int getEnPassantTarget() {
         return this.enPassantTarget;
     }
 
@@ -275,7 +283,7 @@ public class Game {
             enPassantMask &= Board.RANK_4;
 
             if(enPassantMask != 0) {
-                m.setEnPassant(FenString.locationToSquare(dest - 8));
+                m.setEnPassant(dest - 8);
             }
 
             playerMoves.add(m);
@@ -293,7 +301,7 @@ public class Game {
             enPassantMask &= Board.RANK_5;
 
             if(enPassantMask != 0) {
-                m.setEnPassant(FenString.locationToSquare(dest + 8));
+                m.setEnPassant(dest + 8);
             }
 
             playerMoves.add(m);
@@ -358,7 +366,7 @@ public class Game {
             attackBoard = PawnMoves.PAWN_ATTACKS[1][i];
 
             if(hasEnPassantTarget) {
-                attackBoard &= (opponentBoard | (1L << getEnPassantTargetAsInt()));
+                attackBoard &= (opponentBoard | (1L << getEnPassantTarget()));
             } else {
                 attackBoard &= opponentBoard;
             }
@@ -394,7 +402,7 @@ public class Game {
             attackBoard = PawnMoves.PAWN_ATTACKS[0][i];
 
             if(hasEnPassantTarget) {
-                attackBoard &= (opponentBoard | (1L << getEnPassantTargetAsInt()));
+                attackBoard &= (opponentBoard | (1L << getEnPassantTarget()));
             } else {
                 attackBoard &= opponentBoard;
             }
@@ -477,25 +485,25 @@ public class Game {
         // white king side
         if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
             to == CastlingHelper.WHITE_KING_SIDE_CASTLING_KING_LOCATION&&
-            isCastlingWhiteKingSide()) {
+            canCastlingWhiteKingSide()) {
             m.setCastling(
                 CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
             to == CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION &&
-            isCastlingWhiteQueenSide()) {
+            canCastlingWhiteQueenSide()) {
             m.setCastling(
                 CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
             to == CastlingHelper.BLACK_KING_SIDE_CASTLING_KING_LOCATION &&
-            isCastlingBlackKingSide()) {
+            canCastlingBlackKingSide()) {
             m.setCastling(
                 CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
             to == CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION &&
-            isCastlingBlackQueenSide()) {
+            canCastlingBlackQueenSide()) {
             m.setCastling(
                 CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
@@ -764,15 +772,15 @@ public class Game {
 
         // if it is a castling
         if (from == 4) { // e1 -> 4
-            if (to == 6 && isCastlingWhiteKingSide()) { // g1
+            if (to == 6 && canCastlingWhiteKingSide()) { // g1
                 m.setCastling(7, 5);
-            } else if (to == 2 && isCastlingWhiteQueenSide()) { // b1
+            } else if (to == 2 && canCastlingWhiteQueenSide()) { // b1
                 m.setCastling(0, 3);
             }
         } else if (from == 60) { // g8 || b8
-            if (to == 62 && isCastlingBlackKingSide()) {
+            if (to == 62 && canCastlingBlackKingSide()) {
                 m.setCastling(63, 61);
-            } else if (to == 58 && isCastlingBlackQueenSide()) {
+            } else if (to == 58 && canCastlingBlackQueenSide()) {
                 m.setCastling(56, 59);
             }
         }
@@ -814,7 +822,7 @@ public class Game {
         long[] boardsBeforeUpdate = getBoard().getCopyOfBoards();
         Piece[] copyOfPieceCache = Arrays.copyOf(getBoard().getPieceCache(), getBoard().getPieceCache().length);
 
-        int removed = this.getBoard().update(move, getEnPassantTargetAsInt());
+        int removed = this.getBoard().update(move, getEnPassantTarget());
 
         removeEnPassantIfAttackingPieceIsPinned(move);
         recordMove(move, boardsBeforeUpdate, copyOfPieceCache);
@@ -879,7 +887,7 @@ public class Game {
         for (int possibleSourceLocation : possibleSourceLocations) {
             tempLocation = possibleSourceLocation;
             piece = this.getBoard().get(tempLocation);
-            PieceMovesInterface pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTargetAsInt());
+            PieceMovesInterface pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTarget());
 
             // if the piece being reviewed isn't in the rank specified then skip over it
             if (rankSpecified != 0 && (('1' + (Board.rank(tempLocation))) != rankSpecified)) {
@@ -925,7 +933,7 @@ public class Game {
         History h = new History(
             move,
             boards,
-            getEnPassantTargetAsInt(),
+            getEnPassantTarget(),
             check,
             castlingRights,
             pieceCache
@@ -948,7 +956,7 @@ public class Game {
 
     private void removeEnPassantIfAttackingPieceIsPinned(Move move) {
         // if the move doesn't trigger en passant, then exit
-        if(move.getEnPassantTarget().equals(PawnMoves.NO_EN_PASSANT))
+        if(move.getEnPassantTarget() == PawnMoves.NO_EN_PASSANT_VALUE)
             return;
 
         willEnPassantLeaveKingInCheck(move, move.getTo() - 1); // west
@@ -958,20 +966,19 @@ public class Game {
     private void willEnPassantLeaveKingInCheck(Move move, int location) {
         Move enPassantMove;
         Piece enPassantPiece;
-        int enPassantLocation = Game.enPassantTargetToLocation(move.getEnPassantTarget());
 
         if (Board.rank(location) == Board.rank(move.getTo())) { // same rank
             enPassantPiece = getBoard().get(location);
 
             if(enPassantPiece.isPawn() &&
                 enPassantPiece.getColor() != move.getPiece().getColor()) {
-                enPassantMove = new Move(enPassantPiece, location, enPassantLocation, true);
+                enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
                 // enPassantMove.setEnPassant(move.getEnPassantTarget());
 
                 long[] boardsBackup = getBoard().getCopyOfBoards();
                 Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
 
-                this.getBoard().update(enPassantMove, getEnPassantTargetAsInt());
+                this.getBoard().update(enPassantMove, getEnPassantTarget());
                 if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
                     move.clearEnPassant();
                     setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
@@ -1098,7 +1105,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getCastlingRightsForFen());
         sb.append(' ');
-        sb.append(this.getEnPassantTarget());
+        sb.append(this.getEnPassantTargetAsFen());
         sb.append(' ');
         sb.append(this.getHalfmoveClock());
         sb.append(' ');
@@ -1114,7 +1121,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getCastlingRightsForFen());
         sb.append(' ');
-        sb.append(this.getEnPassantTarget());
+        sb.append(this.getEnPassantTargetAsFen());
         return sb.toString();
     }
     
@@ -1362,10 +1369,10 @@ public class Game {
 //        LOGGER.info("zobrist: {}, {}, {}, {}", asFen(), castlingRights, color, getEnPassantTargetAsInt());
         long hash = 0;
 
-        if(isCastlingWhiteKingSide())  hash ^= getCastleRightKey(1, PlayerColor.WHITE);
-        if(isCastlingWhiteQueenSide()) hash ^= getCastleRightKey(2, PlayerColor.WHITE);
-        if(isCastlingBlackKingSide())  hash ^= getCastleRightKey(3, PlayerColor.BLACK);
-        if(isCastlingBlackQueenSide()) hash ^= getCastleRightKey(4, PlayerColor.BLACK);
+        if(canCastlingWhiteKingSide())  hash ^= getCastleRightKey(1, PlayerColor.WHITE);
+        if(canCastlingWhiteQueenSide()) hash ^= getCastleRightKey(2, PlayerColor.WHITE);
+        if(canCastlingBlackKingSide())  hash ^= getCastleRightKey(3, PlayerColor.BLACK);
+        if(canCastlingBlackQueenSide()) hash ^= getCastleRightKey(4, PlayerColor.BLACK);
 
         // TODO: I think it will be faster to iterate over each board's bits so replace this algo.
         for (int i = 0; i < 64; i++) {
@@ -1376,7 +1383,7 @@ public class Game {
 
         hash ^= getSideKey(color);
 
-        int epT = getEnPassantTargetAsInt();
+        int epT = getEnPassantTarget();
         if (epT >= 0) {
             hash ^= getEnPassantKey(epT);
         }
