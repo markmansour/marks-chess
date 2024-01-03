@@ -236,7 +236,7 @@ public class DepthTest {
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        fail("too long");
+        // fail("too long");
         depthHelper(6, defaultBoard());
     }
 

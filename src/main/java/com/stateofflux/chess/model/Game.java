@@ -49,6 +49,9 @@ public class Game {
     private void clearCastlingBlackKingSide()  { castlingRights &= ~CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
     private void clearCastlingWhiteQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
     private void clearCastlingBlackQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+    private void clearCastlingWhite() { castlingRights &= ~(CastlingHelper.CASTLING_WHITE_KING_SIDE | CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
+    private void clearCastlingBlack() { castlingRights &= ~(CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+
 
     public String getCastlingRightsForFen() {
         if(castlingRights == 0) return "-";
@@ -684,9 +687,7 @@ public class Game {
 
         if((pawnCaptures(color.otherColor(), location) & board.getPawns(color)) != 0) return true;
         if((knightCaptures(location) & board.getKnights(color)) != 0) return true;
-        if((kingCaptures(location) & board.getKings(color)) != 0) return true;
-
-        return false;
+        return (kingCaptures(location) & board.getKings(color)) != 0;
     }
 
     /*
@@ -917,6 +918,7 @@ public class Game {
         setEnPassantTarget(move.getEnPassantTarget());
         removeCastlingRightsFor(move, removedLocation);
         historyAsHashes.add(getZobristKey());
+//        historyAsHashes.add(1L);
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
@@ -1044,6 +1046,25 @@ public class Game {
     private void removeCastlingRightsFor(Move m, int removedLocation) {
         if(m.isCapture()) {
             switch(removedLocation) {
+                case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteQueenSide(); break;
+                case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteKingSide(); break;
+                case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackQueenSide(); break;
+                case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackKingSide(); break;
+            }
+        }
+
+        switch(m.getFrom()) {
+            case CastlingHelper.WHITE_INITIAL_KING_LOCATION: clearCastlingWhite(); break;
+            case CastlingHelper.BLACK_INITIAL_KING_LOCATION: clearCastlingBlack(); break;
+            case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteQueenSide(); break;
+            case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteKingSide(); break;
+            case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackQueenSide(); break;
+            case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackKingSide(); break;
+        }
+
+/*
+        if(m.isCapture()) {
+            switch(removedLocation) {
                 case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteQueenSide();
                 case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingWhiteKingSide();
                 case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackQueenSide();
@@ -1059,6 +1080,7 @@ public class Game {
             case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackQueenSide();
             case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION -> clearCastlingBlackKingSide();
         }
+*/
     }
 
     /*
