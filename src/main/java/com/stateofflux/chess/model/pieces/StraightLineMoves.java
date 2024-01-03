@@ -5,9 +5,9 @@ import com.stateofflux.chess.model.Direction;
 
 public abstract class StraightLineMoves extends PieceMoves {
 
-    static final long[] ROOK_MASKS = new long[64];
-    static final long[][] ROOK_TABLE = new long[64][4096];
-    static final long[] ROOK_MAGIC = new long[] {
+    private static final long[] ROOK_MASKS = new long[64];
+    public static final long[][] ROOK_TABLE = new long[64][4096];
+    private static final long[] ROOK_MAGIC = new long[]{
         0xa8002c000108020L, 0x6c00049b0002001L, 0x100200010090040L, 0x2480041000800801L, 0x280028004000800L,
         0x900410008040022L, 0x280020001001080L, 0x2880002041000080L, 0xa000800080400034L, 0x4808020004000L,
         0x2290802004801000L, 0x411000d00100020L, 0x402800800040080L, 0xb000401004208L, 0x2409000100040200L,
@@ -22,7 +22,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         0x2000009044210200L, 0x4080008040102101L, 0x40002080411d01L, 0x2005524060000901L, 0x502001008400422L,
         0x489a000810200402L, 0x1004400080a13L, 0x4000011008020084L, 0x26002114058042L
     };
-    static final int[] ROOK_INDEX_BITS = new int[] {
+    private static final int[] ROOK_INDEX_BITS = new int[]{
         12, 11, 11, 11, 11, 11, 11, 12,
         11, 10, 10, 10, 10, 10, 10, 11,
         11, 10, 10, 10, 10, 10, 10, 11,
@@ -33,8 +33,8 @@ public abstract class StraightLineMoves extends PieceMoves {
         12, 11, 11, 11, 11, 11, 11, 12
     };
     private static final long[] BISHOP_MASKS = new long[64];
-    private static final long[][] BISHOP_TABLE = new long[64][1024];
-    private static final long[] BISHOP_MAGIC = new long[] {
+    public static final long[][] BISHOP_TABLE = new long[64][1024];
+    private static final long[] BISHOP_MAGIC = new long[]{
         0x89a1121896040240L, 0x2004844802002010L, 0x2068080051921000L, 0x62880a0220200808L, 0x4042004000000L,
         0x100822020200011L, 0xc00444222012000aL, 0x28808801216001L, 0x400492088408100L, 0x201c401040c0084L,
         0x840800910a0010L, 0x82080240060L, 0x2000840504006000L, 0x30010c4108405004L, 0x1008005410080802L,
@@ -49,7 +49,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         0x822088220820214L, 0x40808090012004L, 0x910224040218c9L, 0x402814422015008L, 0x90014004842410L,
         0x1000042304105L, 0x10008830412a00L, 0x2520081090008908L, 0x40102000a0a60140L
     };
-    private static final int[] BISHOP_INDEX_BITS = new int[] {
+    private static final int[] BISHOP_INDEX_BITS = new int[]{
         6, 5, 5, 5, 5, 5, 5, 6,
         5, 5, 5, 5, 5, 5, 5, 5,
         5, 5, 7, 7, 7, 7, 5, 5,
@@ -133,7 +133,7 @@ public abstract class StraightLineMoves extends PieceMoves {
     }
 
     // good
-    static long getBishopAttacks(int location, long blockers) {
+    public static long getBishopAttacks(int location, long blockers) {
         blockers &= BISHOP_MASKS[location];
         int key = (int) ((blockers * BISHOP_MAGIC[location]) >>> (64 - BISHOP_INDEX_BITS[location]));
         return BISHOP_TABLE[location][key];
@@ -191,7 +191,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         return attacks;
     }
 
-    protected static long getRookAttacks(int square, long blockers) {
+    public static long getRookAttacks(int square, long blockers) {
         blockers &= ROOK_MASKS[square];
         int key = (int) ((blockers * ROOK_MAGIC[square]) >>> (64 - ROOK_INDEX_BITS[square]));
         return ROOK_TABLE[square][key];

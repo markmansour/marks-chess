@@ -219,6 +219,8 @@ public class DepthTest {
     // about 16 seconds with Piece Cache
     // about 14.5 seconds with new Rook moves.
     // about 12.5 seconds with all pieces using more bit friendly calcs.
+    // about 4.1 seconds with the new generateMovesFor logic that uses bitboards to verify if a piece is in check.
+    // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896886 nodes/second, 824539 nodes/second)
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(5, defaultBoard());
@@ -226,6 +228,7 @@ public class DepthTest {
 
     // Nodes searched: 119060324
     // 11 mins 41 seconds (about 170 nodes per second)
+    // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(6, defaultBoard());
@@ -360,6 +363,7 @@ public class DepthTest {
         String methodName = "depthOf" + depth;
         long startTime = System.nanoTime();
         long endTime;
+        int perftCount = -1;
 
         try {
             asyncProfiler.start(Events.CPU, 1_000_000);
@@ -368,7 +372,7 @@ public class DepthTest {
                 // LOGGER.info("{}: {}", counter++, pr.FenString());
                 Game game = new Game(pr.FenString());
                 actual = game.perftAtRoot(depth);
-                int perftCount = actual.values()
+                perftCount = actual.values()
                     .stream()
                     .reduce(0, Integer::sum);
 
@@ -394,10 +398,16 @@ public class DepthTest {
         } finally {
             endTime = System.nanoTime();
             asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
-            // LOGGER.info(profile);
+            LOGGER.info(profile);
         }
 
         endTime = System.nanoTime();
-        LOGGER.info("profile{}-{}.html: ran for {} ms", methodName, startTime, TimeUnit.NANOSECONDS.toMillis(endTime - startTime));
+        LOGGER.info("profile{}-{}.html: ran for {} ms and reviewed {} nodes.  {} nodes/second",
+            methodName,
+            startTime,
+            TimeUnit.NANOSECONDS.toMillis(endTime - startTime),
+            perftCount,
+            (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(endTime - startTime)
+            );
     }
 }

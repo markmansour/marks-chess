@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.stateofflux.chess.model.pieces.PieceMoves;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,6 +145,7 @@ public class Board {
         calculateBlackBoard();
         calculateOccupied();
     }
+
     private void preWarmCache() {
         // warming of the cache doesn't have a measurable impact on speed
 /*
@@ -660,13 +662,37 @@ public class Board {
         int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
         if(this.boards[index] == 0) // the king has been removed from the board.  This can happen when looking for check
             return -1;
-
-        return bitboardToArray(this.boards[index])[0];
+        return PieceMoves.bitscanForward(this.boards[index]);
     }
 
     public long getPieceLocations(Piece p) {
         return this.boards[p.getIndex()];
     }
+
+    public long getPawns(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_PAWN.getIndex()] : this.boards[Piece.BLACK_PAWN.getIndex()];
+    }
+
+    public long getRooks(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_ROOK.getIndex()] : this.boards[Piece.BLACK_ROOK.getIndex()];
+    }
+
+    public long getKnights(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KNIGHT.getIndex()] : this.boards[Piece.BLACK_KNIGHT.getIndex()];
+    }
+
+    public long getBishops(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_BISHOP.getIndex()] : this.boards[Piece.BLACK_BISHOP.getIndex()];
+    }
+
+    public long getQueens(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_QUEEN.getIndex()] : this.boards[Piece.BLACK_QUEEN.getIndex()];
+    }
+
+    public long getKings(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KING.getIndex()] : this.boards[Piece.BLACK_KING.getIndex()];
+    }
+
 
     public static int countSetBits(long n) {
         // base case

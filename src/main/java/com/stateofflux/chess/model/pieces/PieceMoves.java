@@ -65,7 +65,7 @@ public abstract class PieceMoves implements PieceMovesInterface {
      *   => e.g. __builtin_ffs(10) = 2 because 10 is '...1 0 1 0' in base 2 and first 1-bit from right is at index 1 (0-based) and function returns 1 + index.
      *   see: https://codeforces.com/blog/entry/15643?locale=en
      */
-    static int bitscanForward(long l) {
+    public static int bitscanForward(long l) {
         if(l == 0L)
             return -1;
 

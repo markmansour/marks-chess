@@ -7,7 +7,7 @@ import com.stateofflux.chess.model.PlayerColor;
 
 public class KingMoves extends StraightLineMoves {
 
-    static final long[] KING_MOVES = new long[64];
+    public static final long[] KING_MOVES = new long[64];
 
     static {
         initializeKingAttacks();

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 public class Game {
     // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+    private static final int MOVE_LIST_CAPACITY = 220;
+
     record History(Move move, long[] boards, int enPassantTarget, boolean check, String castlingRights, Piece[] pieceCache) {};
 
     protected Player white;
@@ -197,18 +199,26 @@ public class Game {
         return this.activePlayerColor.otherColor();
     }
 
-    private void pawnMoves(MoveList<Move> playerMoves) {
-        long oneStep;
-
+    private void pawnMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         if(getActivePlayerColor() == PlayerColor.WHITE) {
-            oneStep = whitePawnOneStep(playerMoves);
-            whiteTwoStepsForward(playerMoves, oneStep);
-            whitePawnAttacks(playerMoves);
+            whitePawnMoves(playerMoves);
         } else {
-            oneStep = blackPawnOneStep(playerMoves);
-            blackTwoStepsForward(playerMoves, oneStep);
-            blackPawnAttacks(playerMoves);
+            blackPawnMoves(playerMoves);
         }
+    }
+
+    private void blackPawnMoves(MoveList<Move> playerMoves) {
+        long oneStep;
+        oneStep = blackPawnOneStep(playerMoves);
+        blackTwoStepsForward(playerMoves, oneStep);
+        blackPawnAttacks(playerMoves);
+    }
+
+    private void whitePawnMoves(MoveList<Move> playerMoves) {
+        long oneStep;
+        oneStep = whitePawnOneStep(playerMoves);
+        whiteTwoStepsForward(playerMoves, oneStep);
+        whitePawnAttacks(playerMoves);
     }
 
     private void whiteTwoStepsForward(MoveList<Move> playerMoves, long oneStep) {
@@ -368,7 +378,7 @@ public class Game {
     @Nullable
     private void cleanUpMoves(MoveList<Move> playerMoves) {
         // if in check, make sure any move takes the player out of check.
-        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
+        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>(playerMoves.size()));
 
         for (var move : playerMoves) {
             // can't use castling to get out of check
@@ -389,11 +399,16 @@ public class Game {
         }
 
         playerMoves.removeAll(toRemove);
+
+
     }
 
-    private void kingMoves(MoveList<Move> playerMoves) {
+    //   8/K1b5/1k5p/7P/8/8/8/8 b - - 0 1
+    //   K7/2b5/1k5p/7P/8/8/8/8 w - -
+    private void kingMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         int[] locations;
         locations = getBoard().getKingLocations(activePlayerColor);
+
         int kingLocation = locations[0];
         KingMoves rawMoves = new KingMoves(board, kingLocation);
         Piece king = board.get(kingLocation);
@@ -449,9 +464,10 @@ public class Game {
         // black queen site
     }
 
-    private void queenMoves(MoveList<Move> playerMoves) {
+    private void queenMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         int[] locations;
         locations = getBoard().getQueenLocations(activePlayerColor);
+
         for(int i : locations) {
             QueenMoves rawMoves = new QueenMoves(board, i);
             Piece piece = board.get(i);
@@ -468,9 +484,10 @@ public class Game {
         }
     }
 
-    private void bishopMoves(MoveList<Move> playerMoves) {
+    private void bishopMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         int[] locations;
         locations = getBoard().getBishopLocations(activePlayerColor);
+
         for(int i : locations) {
             BishopMoves rawMoves = new BishopMoves(board, i);
             Piece piece = board.get(i);
@@ -487,9 +504,10 @@ public class Game {
         }
     }
 
-    private void knightMoves(MoveList<Move> playerMoves) {
+    private void knightMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         int[] locations;
         locations = getBoard().getKnightLocations(activePlayerColor);
+
         for(int i : locations) {
             KnightMoves rawMoves = new KnightMoves(board, i);
             Piece piece = board.get(i);
@@ -506,9 +524,10 @@ public class Game {
         }
     }
 
-    private void rookMoves(MoveList<Move> playerMoves) {
+    private void rookMoves(MoveList<Move> playerMoves, PlayerColor activePlayerColor) {
         int[] locations;
         locations = getBoard().getRookLocations(activePlayerColor);
+
         for(int i : locations) {
             RookMoves rawMoves = new RookMoves(board, i);
             Piece piece = board.get(i);
@@ -525,30 +544,54 @@ public class Game {
         }
     }
 
+    private long rookCaptures(PlayerColor pc, int targetLocation) {
+        long rooks = board.getRooks(pc);
+        long rooksAttacks = getRookAttacksForSquare(targetLocation, 0L);
+        return rooksAttacks & rooks;
+    }
+
+    private long getRookAttacksForSquare(int location, long currentPlayerBoard) {
+        return StraightLineMoves.getRookAttacks(location, board.getOccupied()) & ~currentPlayerBoard;
+    }
+
+    private long bishopCaptures(PlayerColor pc, int targetLocation) {
+        long bishops = board.getBishops(pc);
+        long bishopAttacks = getBishopAttacksForSquare(targetLocation, 0L);
+        return bishopAttacks & bishops;
+    }
+
+    private long queenCaptures(PlayerColor pc, int targetLocation) {
+        long queens = board.getQueens(pc);
+        long rooksAttacks = getRookAttacksForSquare(targetLocation, 0L);
+        long bishopAttacks = getBishopAttacksForSquare(targetLocation, 0L);
+        return (rooksAttacks | bishopAttacks) & queens;
+    }
+
+    private long getBishopAttacksForSquare(int location, long currentPlayerBoard) {
+        return StraightLineMoves.getBishopAttacks(location, board.getOccupied()) & ~currentPlayerBoard;
+    }
+
+    private long pawnCaptures(PlayerColor color, int targetLocation) {
+        return PawnMoves.PAWN_ATTACKS[color == PlayerColor.WHITE ? 0 : 1][targetLocation];
+    }
+
+    private long knightCaptures(int targetLocation) {
+        return KnightMoves.KNIGHT_MOVES[targetLocation];
+    }
+
+    private long kingCaptures(int targetLocation) {
+        return KingMoves.KING_MOVES[targetLocation];
+    }
+
+    private long getCurrentPlayerBoard() {
+        return activePlayerColor == PlayerColor.WHITE ? board.getWhite() : board.getBlack();
+    }
+
     public MoveList<Move> generateMoves() {
-//        return generateMovesFor(getActivePlayerColor());
-        return newGenerateMovesFor(getActivePlayerColor());
+        return generateMovesFor(getActivePlayerColor());
     }
 
     // This method generates moves at a board level (batch) instead of calculating moves a single position at a time.
-    private MoveList<Move> newGenerateMovesFor(PlayerColor playerColor) {
-        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>());;
-
-        rookMoves(playerMoves);
-        knightMoves(playerMoves);
-        bishopMoves(playerMoves);
-        queenMoves(playerMoves);
-        kingMoves(playerMoves);
-        pawnMoves(playerMoves);
-
-        if (depth > 0)
-            return playerMoves;
-
-        cleanUpMoves(playerMoves);
-
-        return playerMoves;
-    }
-
     /*
      * iterate over all pieces on the board
      * for each piece, generate the moves for that piece
@@ -562,148 +605,23 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
+
     private MoveList<Move> generateMovesFor(PlayerColor playerColor) {
-        char pieceChar;
+        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>(MOVE_LIST_CAPACITY));;
 
-        // reset the current state
-        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>());;
-        Move m;
-
-        // TODO find a faster way to iterate over the board.
-        for (int i = 0; i < 64; i++) {
-            Piece piece = this.getBoard().get(i);
-
-            if (piece == Piece.EMPTY) // || (onlyActivePlayer && this.activePlayerColor != piece.getColor()))
-                continue;
-
-            // only process moves for the active player
-            if (piece.getColor() != playerColor)
-                continue;
-
-            PieceMovesInterface rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
-            pieceChar = piece.getPieceChar();
-
-            // TODO: There has to be a better way to do this.
-            for (int dest : Board.bitboardToArray(rawMoves.getNonCaptureMoves())) {
-                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && Board.rank(dest) == 7) {  // white is promoting
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.WHITE_QUEEN);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.WHITE_BISHOP);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.WHITE_KNIGHT);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.WHITE_ROOK);
-                    playerMoves.add(m);
-
-                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && Board.rank(dest) == 0) {  // black is promoting
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.BLACK_QUEEN);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.BLACK_BISHOP);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.BLACK_KNIGHT);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.setPromotion(Piece.BLACK_ROOK);
-                    playerMoves.add(m);
-                } else { // normal move
-                    m = new Move(piece, i, dest, Move.NON_CAPTURE);
-                    m.updateMoveForCastling(check, castlingRights);
-                    // TODO can en passant ever happen here for NON CAPTURE MOVES?
-                    m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-                    removeEnPassantIfAttackingPieceIsPinned(m);
-                    playerMoves.add(m);
-                }
-            }
-
-            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-                if (pieceChar == Piece.WHITE_PAWN.getPieceChar() && Board.rank(dest) == 7) {  // white is promoting
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.WHITE_QUEEN);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.WHITE_BISHOP);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.WHITE_KNIGHT);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.WHITE_ROOK);
-                    playerMoves.add(m);
-
-                } else if (pieceChar == Piece.BLACK_PAWN.getPieceChar() && Board.rank(dest) == 0) {  // black is promoting
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.BLACK_QUEEN);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.BLACK_BISHOP);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.BLACK_KNIGHT);
-                    playerMoves.add(m);
-
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.setPromotion(Piece.BLACK_ROOK);
-                    playerMoves.add(m);
-                } else { // normal move
-                    m = new Move(piece, i, dest, Move.CAPTURE);
-                    m.updateMoveForCastling(check, castlingRights);
-                    m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-                    removeEnPassantIfAttackingPieceIsPinned(m);
-                    playerMoves.add(m);
-                }
-            }
-        }
+        rookMoves(playerMoves, playerColor);
+        knightMoves(playerMoves, playerColor);
+        bishopMoves(playerMoves, playerColor);
+        queenMoves(playerMoves, playerColor);
+        kingMoves(playerMoves, playerColor);
+        pawnMoves(playerMoves, playerColor);
 
         if (depth > 0)
             return playerMoves;
 
-        // if in check, make sure any move takes the player out of check.
-        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>());
-        boolean playerIsChecked = getChecked();
-
-        for (var move : playerMoves) {
-           // can't use castling to get out of check
-            if(getChecked() && move.isCastling()) {
-                toRemove.add(move);
-                continue;
-            }
-
-            move(move);
-
-            // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            // isPlayerInCheck(activePlayer) looks at the current players check state, whereas getChecked looks at the
-            // checked state as if the turn was over so it looks at the opponents check state.
-            if(isPlayerInCheck(getActivePlayerColor().otherColor()))  // move() changes the color of the player, so check to see if the previous move was valid
-                toRemove.add(move);
-
-            undo();
-        }
-
-        playerMoves.removeAll(toRemove);
+        cleanUpMoves(playerMoves);
 
         return playerMoves;
-    }
-
-    private void setOtherPlayerIsInCheck() {
-        setPlayerIsInCheck(getActivePlayerColor().otherColor());
     }
 
     private void setActivePlayerIsInCheck() {
@@ -717,36 +635,20 @@ public class Game {
 
     private boolean isPlayerInCheck(PlayerColor playerColor) {
         int kingLocation = board.getKingLocation(playerColor);
-        if(kingLocation == -1) return true;
+        if(kingLocation == -1) return true;  // this only happens in testing scenarios.
+        return locationUnderAttack(playerColor.otherColor(), kingLocation);
+    }
 
-        boolean check = false;
+    private boolean locationUnderAttack(PlayerColor color, int location) {
+        if(rookCaptures(color, location) != 0) return true;  // can the opposing player capture the king with their rooks?
+        if(bishopCaptures(color, location) != 0) return true;
+        if(queenCaptures(color, location) != 0) return true;
 
-        // for every square
-        for (int i = 0; i < 64; i++) {
-            // find the opponent pieces
-            Piece piece = this.getBoard().get(i);
+        if((pawnCaptures(color.otherColor(), location) & board.getPawns(color)) != 0) return true;
+        if((knightCaptures(location) & board.getKnights(color)) != 0) return true;
+        if((kingCaptures(location) & board.getKings(color)) != 0) return true;
 
-            // check if the opponents pieces can capture the king
-            if (piece == Piece.EMPTY || piece.getColor() == playerColor)
-                continue;
-
-            // for each of the available opposition piece moves
-            PieceMovesInterface rawMoves = piece.generateMoves(this.board, i, getCastlingRights(), getEnPassantTargetAsInt());
-
-            // see if any can capture the king
-            for (int dest : Board.bitboardToArray(rawMoves.getCaptureMoves())) {
-                if(dest == kingLocation) {
-                    // check!
-                    check = true;
-                    break;
-                }
-
-            }
-
-            if(check)
-                break;
-        }
-        return check;
+        return false;
     }
 
     /*

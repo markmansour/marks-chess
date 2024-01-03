@@ -33,10 +33,10 @@ public class KingMovesTest {
 
     @Test void isBlackKingInCheck() {
         String[] fens = {
+            "3k3r/6bp/1pp1bp2/5p2/p1PQ4/1q6/5PPP/4R1K1 b - -", // white queen
             "8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -", // pawn (g6 - 46), king (f7 - 53)
             "3R2k1/1b3pp1/4pn1p/2q1N3/2p2P2/P3R1P1/1P5P/5K2 b - -",  // white rook
             "2bk3r/6bp/1pp1Np2/5p2/p1Pr3Q/1q6/5PPP/4R1K1 b - -", // white knight
-            "3k3r/6bp/1pp1bp2/5p2/p1PQ4/1q6/5PPP/4R1K1 b - -", // white queen
         };
 
         for(String fen : fens) {
