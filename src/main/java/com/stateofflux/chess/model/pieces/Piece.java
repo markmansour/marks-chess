@@ -106,7 +106,7 @@ public enum Piece {
         return String.valueOf(pieceChar);
     }
 
-    public PieceMovesInterface generateMoves(Board b, int location, String castlingRights, int enPassantTarget) {
+    public PieceMovesInterface generateMoves(Board b, int location, int castlingRights, int enPassantTarget) {
         return switch (this) {
             case WHITE_KING, BLACK_KING -> new KingMoves(b, location);
             case WHITE_QUEEN, BLACK_QUEEN -> new QueenMoves(b, location);

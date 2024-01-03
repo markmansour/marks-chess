@@ -33,7 +33,7 @@ public class KingMoves extends StraightLineMoves {
     private final long queenSideCastlingEmptyCheckBitboard;
 
     public enum Castling { QUEEN_SIDE, KING_SIDE };
-    private final String castlingRights;
+    private final int castlingRights;
     private final PlayerColor playerColor;
 
     public static final int WHITE_KING_SIDE_CASTLING_DESTINATION = 6;
@@ -92,7 +92,7 @@ public class KingMoves extends StraightLineMoves {
          * The king is not currently in check.
          * The king does not pass through or finish on a square that is attacked by an enemy piece.
          */
-        if(castlingRights.charAt(0) == FenString.NO_CASTLING || playerColor == PlayerColor.NONE)
+        if(castlingRights == 0 || playerColor == PlayerColor.NONE)
             return;
 
         if(castlingPiecesAreInOriginalPositions(Castling.KING_SIDE) &&
@@ -114,13 +114,13 @@ public class KingMoves extends StraightLineMoves {
 
     protected boolean castlingPiecesAreInOriginalPositions(Castling side) {
         if(playerColor == PlayerColor.WHITE) {
-            return (side == Castling.KING_SIDE && castlingRights.indexOf(FenString.WHITE_KING_SIDE_CASTLE) >= 0) ||
-                (side == Castling.QUEEN_SIDE && castlingRights.indexOf(FenString.WHITE_QUEEN_SIDE_CASTLE) >= 0);
+            return (side == Castling.KING_SIDE && (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0) ||
+                (side == Castling.QUEEN_SIDE && (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0);
         }
 
         if(playerColor == PlayerColor.BLACK) {
-            return (side == Castling.KING_SIDE && castlingRights.indexOf(FenString.BLACK_KING_SIDE_CASTLE) >= 0) ||
-                (side == Castling.QUEEN_SIDE && castlingRights.indexOf(FenString.BLACK_QUEEN_SIDE_CASTLE) >= 0);
+            return (side == Castling.KING_SIDE && (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0) ||
+                (side == Castling.QUEEN_SIDE && (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0);
         }
 
         throw new IllegalArgumentException("PlayerColor must be white or black");

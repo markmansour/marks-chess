@@ -22,7 +22,7 @@ public class GameTest {
         Game g = new Game(FenString.INITIAL_BOARD);
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-        assertThat(g.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
+        assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
         assertThat(g.getEnPassantTarget()).isEqualTo("-");
         assertThat(g.getHalfmoveClock()).isZero();
         assertThat(g.getFullmoveCounter()).isOne();
@@ -33,7 +33,7 @@ public class GameTest {
         Game g = new Game();
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-        assertThat(g.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
+        assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
         assertThat(g.getEnPassantTarget()).isEqualTo("-");
         assertThat(g.getHalfmoveClock()).isZero();
         assertThat(g.getFullmoveCounter()).isOne();

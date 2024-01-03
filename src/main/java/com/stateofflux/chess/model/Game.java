@@ -17,7 +17,7 @@ public class Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
     private static final int MOVE_LIST_CAPACITY = 220;
 
-    record History(Move move, long[] boards, int enPassantTarget, boolean check, String castlingRights, Piece[] pieceCache) {};
+    record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache) {};
 
     protected Player white;
     protected Player black;
@@ -36,9 +36,52 @@ public class Game {
     // kingside, "Q" if White can castle queenside, "k" if Black can castle
     // kingside, and "q" if Black can castle queenside. A situation that temporarily
     // prevents castling does not prevent the use of this notation.
-    protected String castlingRights;
+    // protected String castlingRights;
+    protected int castlingRights;
 
-    // The number of halfmoves since the last capture or pawn advance, used for the
+    private boolean isCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
+    private boolean isCastlingBlackKingSide () { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
+    private boolean isCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
+    private boolean isCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
+
+    private void clearCastlingWhiteKingSide()  { castlingRights ^= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+    private void clearCastlingBlackKingSide()  { castlingRights ^= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+    private void clearCastlingWhiteQueenSide() { castlingRights ^= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+    private void clearCastlingBlackQueenSide() { castlingRights ^= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+
+    public String getCastlingRightsForFen() {
+        if(castlingRights == 0) return "-";
+
+        StringBuilder sb = new StringBuilder();
+
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append('K');
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append('Q');
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append('k');
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append('q');
+
+        return sb.toString();
+    }
+
+    private void setInitialCastlingRights() {
+        castlingRights =
+            CastlingHelper.CASTLING_WHITE_KING_SIDE |
+            CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
+            CastlingHelper.CASTLING_BLACK_KING_SIDE |
+            CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
+    }
+
+    private void clearCastlingRights() {
+        castlingRights = 0;
+    }
+
+    private void setCastlingRightsFromFen(String fen) {
+        if(fen.strip().length() == 0) { clearCastlingRights(); }
+        if(fen.contains("K" )) { castlingRights &= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+        if(fen.contains("Q")) { castlingRights &= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+        if(fen.contains("k")) { castlingRights &= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+        if(fen.contains("q")) { castlingRights &= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+    }
+
     // fifty-move rule
     protected int halfmoveClock;
 
@@ -53,7 +96,7 @@ public class Game {
         this.board = new Board();
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
-        this.setCastlingRights("KQkq");
+        this.setInitialCastlingRights();
         this.setEnPassantTarget("-");
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
@@ -90,7 +133,7 @@ public class Game {
         this.board.setGame(this);
 
         this.setActivePlayerColor(fen.getActivePlayerColor());
-        this.setCastlingRights(fen.getCastlingRights());
+        this.setCastlingRightsFromFen(fen.getCastlingRights());
         this.setEnPassantTarget(fen.getEnPassantTarget());
         this.setHalfmoveClock(fen.getHalfmoveClock());      // TODO: This is not right
         this.setFullmoveCounter(fen.getFullmoveCounter());  // TODO: THis is not right.  We don't know how many moves have been taken.
@@ -103,7 +146,7 @@ public class Game {
         this.board = new Board();
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
-        this.setCastlingRights("KQkq");
+        this.setInitialCastlingRights();
         this.setEnPassantTarget("-");
         this.setHalfmoveClock(0);
         this.setFullmoveCounter(1);
@@ -179,11 +222,11 @@ public class Game {
 
     public boolean hasEnPassantTarget() { return this.enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE; }
 
-    private void setCastlingRights(String castlingRights) {
+    private void setCastlingRights(int castlingRights) {
         this.castlingRights = castlingRights;
     }
 
-    public String getCastlingRights() {
+    public int getCastlingRights() {
         return this.castlingRights;
     }
 
@@ -430,33 +473,32 @@ public class Game {
     private void addCastling(Move m) {
         int from = m.getFrom();
         int to = m.getTo();
-        String castlingRights = getCastlingRights();
 
         // white king side
-        if(from == CastlingLocations.WHITE_INITIAL_KING_LOCATION.location() &&
-            to == CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location() &&
-            castlingRights.contains("K")) {
+        if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
+            to == CastlingHelper.WHITE_KING_SIDE_CASTLING_KING_LOCATION&&
+            isCastlingWhiteKingSide()) {
             m.setCastling(
-                CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location(),
-                CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location());
-        } else if(from == CastlingLocations.WHITE_INITIAL_KING_LOCATION.location() &&
-            to == CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION.location() &&
-            castlingRights.contains("Q")) {
+                CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION,
+                CastlingHelper.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION);
+        } else if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
+            to == CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION &&
+            isCastlingWhiteQueenSide()) {
             m.setCastling(
-                CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location(),
-                CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location());
-        } else if(from == CastlingLocations.BLACK_INITIAL_KING_LOCATION.location() &&
-            to == CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location() &&
-            castlingRights.contains("k")) {
+                CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
+                CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
+        } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
+            to == CastlingHelper.BLACK_KING_SIDE_CASTLING_KING_LOCATION &&
+            isCastlingBlackKingSide()) {
             m.setCastling(
-                CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location(),
-                CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location());
-        } else if(from == CastlingLocations.BLACK_INITIAL_KING_LOCATION.location() &&
-            to == CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION.location() &&
-            castlingRights.contains("q")) {
+                CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION,
+                CastlingHelper.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION);
+        } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
+            to == CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION &&
+            isCastlingBlackQueenSide()) {
             m.setCastling(
-                CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location(),
-                CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location());
+                CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
+                CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
         }
 
         // white queen side
@@ -708,12 +750,32 @@ public class Game {
         if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
             m.setPromotion(promotion);
         else {
-            m.updateMoveForCastling(check, castlingRights);
+            updateMoveForCastling(m);
             m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
             removeEnPassantIfAttackingPieceIsPinned(m);
         }
 
         move(m);
+    }
+
+    void updateMoveForCastling(Move m) {
+        int from = m.getFrom();
+        int to = m.getTo();
+
+        // if it is a castling
+        if (from == 4) { // e1 -> 4
+            if (to == 6 && isCastlingWhiteKingSide()) { // g1
+                m.setCastling(7, 5);
+            } else if (to == 2 && isCastlingWhiteQueenSide()) { // b1
+                m.setCastling(0, 3);
+            }
+        } else if (from == 60) { // g8 || b8
+            if (to == 62 && isCastlingBlackKingSide()) {
+                m.setCastling(63, 61);
+            } else if (to == 58 && isCastlingBlackQueenSide()) {
+                m.setCastling(56, 59);
+            }
+        }
     }
 
     public void move(String action) {
@@ -958,30 +1020,30 @@ public class Game {
         if (action.equals("O-O-O")) {  // queen side castling
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
                 castlingPiece = Piece.BLACK_KING;
-                sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION.location();
-                secondarySourceLocation = CastlingLocations.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
-                secondaryDestinationLocation = CastlingLocations.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+                sourceLocation = CastlingHelper.BLACK_INITIAL_KING_LOCATION;
+                destinationLocation = CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION;
+                secondarySourceLocation = CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION;
+                secondaryDestinationLocation = CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
                 castlingPiece = Piece.WHITE_KING;
-                sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION.location();
-                secondarySourceLocation = CastlingLocations.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION.location();
-                secondaryDestinationLocation = CastlingLocations.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION.location();
+                sourceLocation = CastlingHelper.WHITE_INITIAL_KING_LOCATION;
+                destinationLocation = CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION;
+                secondarySourceLocation = CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION;
+                secondaryDestinationLocation = CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION;
             }
         } else if (action.equals("O-O")) { // king side castle
             if (this.getActivePlayerColor() == PlayerColor.BLACK) {
                 castlingPiece = Piece.BLACK_KING;
-                sourceLocation = CastlingLocations.BLACK_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_KING_LOCATION.location();
-                secondarySourceLocation = CastlingLocations.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION.location();
-                secondaryDestinationLocation = CastlingLocations.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION.location();
+                sourceLocation = CastlingHelper.BLACK_INITIAL_KING_LOCATION;
+                destinationLocation = CastlingHelper.BLACK_KING_SIDE_CASTLING_KING_LOCATION;
+                secondarySourceLocation = CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION;
+                secondaryDestinationLocation = CastlingHelper.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION;
             } else if (this.getActivePlayerColor() == PlayerColor.WHITE) {
                 castlingPiece = Piece.WHITE_KING;
-                sourceLocation = CastlingLocations.WHITE_INITIAL_KING_LOCATION.location();
-                destinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_KING_LOCATION.location();
-                secondarySourceLocation = CastlingLocations.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION.location();
-                secondaryDestinationLocation = CastlingLocations.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION.location();
+                sourceLocation = CastlingHelper.WHITE_INITIAL_KING_LOCATION;
+                destinationLocation = CastlingHelper.WHITE_KING_SIDE_CASTLING_KING_LOCATION;
+                secondarySourceLocation = CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION;
+                secondaryDestinationLocation = CastlingHelper.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION;
             }
         }
 
@@ -1001,20 +1063,22 @@ public class Game {
     private void removeCastlingRightsFor(int i, int dest) {
         removeCastlingRightsForLocation(i);
         removeCastlingRightsForLocation(dest);
-
-        if (this.castlingRights.isEmpty())
-            this.castlingRights = "-";
     }
 
     private void removeCastlingRightsForLocation(int location) {
-        this.castlingRights = switch (location) {
-            case 0 -> this.castlingRights.replace("Q", "");
-            case 4 -> this.castlingRights.replace("K", "").replace("Q", "");
-            case 7 -> this.castlingRights.replace("K", "");
-            case 56 -> this.castlingRights.replace("q", "");
-            case 60 -> this.castlingRights.replace("k", "").replace("q", "");
-            case 63 -> this.castlingRights.replace("k", "");
-            default -> this.castlingRights;
+        switch (location) {
+            case 0 -> clearCastlingWhiteQueenSide();
+            case 7 -> clearCastlingWhiteKingSide();
+            case 4 -> {
+                clearCastlingWhiteKingSide();
+                clearCastlingWhiteQueenSide();
+            }
+            case 56 -> clearCastlingBlackQueenSide();
+            case 63 -> clearCastlingBlackKingSide();
+            case 60 -> {
+                clearCastlingBlackKingSide();
+                clearCastlingBlackQueenSide();
+            }
         };
     }
 
@@ -1032,7 +1096,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getActivePlayerColor());
         sb.append(' ');
-        sb.append(this.getCastlingRights());
+        sb.append(this.getCastlingRightsForFen());
         sb.append(' ');
         sb.append(this.getEnPassantTarget());
         sb.append(' ');
@@ -1048,7 +1112,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getActivePlayerColor());
         sb.append(' ');
-        sb.append(this.getCastlingRights());
+        sb.append(this.getCastlingRightsForFen());
         sb.append(' ');
         sb.append(this.getEnPassantTarget());
         return sb.toString();
@@ -1297,15 +1361,13 @@ public class Game {
     public long getZobristKey(PlayerColor color) {
 //        LOGGER.info("zobrist: {}, {}, {}, {}", asFen(), castlingRights, color, getEnPassantTargetAsInt());
         long hash = 0;
-        for(char c : castlingRights.toCharArray()) {
-            switch(c) {
-                case 'K': hash ^= getCastleRightKey(1, PlayerColor.WHITE); break;
-                case 'Q': hash ^= getCastleRightKey(2, PlayerColor.WHITE); break;
-                case 'k': hash ^= getCastleRightKey(3, PlayerColor.BLACK); break;
-                case 'q': hash ^= getCastleRightKey(4, PlayerColor.BLACK); break;
-            }
-        }
 
+        if(isCastlingWhiteKingSide())  hash ^= getCastleRightKey(1, PlayerColor.WHITE);
+        if(isCastlingWhiteQueenSide()) hash ^= getCastleRightKey(2, PlayerColor.WHITE);
+        if(isCastlingBlackKingSide())  hash ^= getCastleRightKey(3, PlayerColor.BLACK);
+        if(isCastlingBlackQueenSide()) hash ^= getCastleRightKey(4, PlayerColor.BLACK);
+
+        // TODO: I think it will be faster to iterate over each board's bits so replace this algo.
         for (int i = 0; i < 64; i++) {
             Piece piece = this.getBoard().get(i);
             if (piece != Piece.EMPTY)
@@ -1323,7 +1385,7 @@ public class Game {
     }
 
     private long getCastleRightKey(int castlingRightOrdinal, PlayerColor color) {
-        return zorbistRandomKeys.get(3 * castlingRightOrdinal+ 300 + 3 * color.ordinal());
+        return zorbistRandomKeys.get(3 * castlingRightOrdinal + 300 + 3 * color.ordinal());
     }
 
     private long getSideKey(PlayerColor side) {

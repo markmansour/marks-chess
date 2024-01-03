@@ -220,7 +220,8 @@ public class DepthTest {
     // about 14.5 seconds with new Rook moves.
     // about 12.5 seconds with all pieces using more bit friendly calcs.
     // about 4.1 seconds with the new generateMovesFor logic that uses bitboards to verify if a piece is in check.
-    // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896886 nodes/second, 824539 nodes/second)
+    // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896,886 nodes/second, 824,539 nodes/second)
+    // 4703 ms and reviewed 4865609 nodes.  1034575 nodes/second (1,019,616 nodes/second, 1,128,911 nodes/second) - use ints to represent castling
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(5, defaultBoard());
