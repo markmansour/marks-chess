@@ -29,7 +29,7 @@ public class Game {
     private boolean limitMovesTo50 = true;
     private int depth = 0;
     private final LinkedList<Long> historyAsHashes = new LinkedList<>();
-    private LinkedList<History> history = new LinkedList<>();
+    private final LinkedList<History> historyOfMoves = new LinkedList<>();
 
     // If neither side has the ability to castle, this field uses the character "-".
     // Otherwise, this field contains one or more letters: "K" if White can castle
@@ -910,7 +910,7 @@ public class Game {
         return new Move(piece, source, destination, capture);
     }
 
-    public LinkedList<Long> getHistory() {
+    public LinkedList<Long> getHistoryAsHashes() {
         return historyAsHashes;
     }
 
@@ -918,7 +918,6 @@ public class Game {
         setEnPassantTarget(move.getEnPassantTarget());
         removeCastlingRightsFor(move, removedLocation);
         historyAsHashes.add(getZobristKey());
-//        historyAsHashes.add(1L);
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
@@ -933,11 +932,11 @@ public class Game {
             castlingRights,
             pieceCache
         );
-        history.add(h);
+        historyOfMoves.add(h);
     }
 
     public void undo() {
-        History h = history.pollLast();
+        History h = historyOfMoves.pollLast();
         getBoard().setBoards(h.boards);
         getBoard().setPieceCache(h.pieceCache);
         historyAsHashes.pollLast();  // drop the hash
@@ -1369,8 +1368,9 @@ public class Game {
         if(canCastlingBlackQueenSide()) hash ^= getCastleRightKey(4, PlayerColor.BLACK);
 
         // TODO: I think it will be faster to iterate over each board's bits so replace this algo.
+
         for (int i = 0; i < 64; i++) {
-            Piece piece = this.getBoard().get(i);
+            Piece piece = board.get(i);
             if (piece != Piece.EMPTY)
                 hash ^= getPieceSquareKey(piece, i);
         }
@@ -1404,12 +1404,12 @@ public class Game {
     public boolean isRepetition() {
         int n = 3;
 
-        final int i = Math.min(getHistory().size() - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
-        if (getHistory().size() >= 4) {
-            long lastKey = getHistory().get(getHistory().size() - 1);
+        final int i = Math.min(getHistoryAsHashes().size() - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
+        if (getHistoryAsHashes().size() >= 4) {
+            long lastKey = getHistoryAsHashes().get(getHistoryAsHashes().size() - 1);
             int rep = 0;
             for (int x = 4; x <= i; x += 2) {
-                final long k = getHistory().get(getHistory().size() - x - 1);
+                final long k = getHistoryAsHashes().get(getHistoryAsHashes().size() - x - 1);
                 if (k == lastKey && ++rep >= n - 1) {
                     return true;
                 }
