@@ -215,17 +215,23 @@ public class DepthTest {
         depthHelper(4, defaultBoard());
     }
 
-    // NOTE - this method runs faster when the whole test suite is run.
-    // about 43 seconds
-    // about 30 seconds with Board.get caching
-    // about 16 seconds with Piece Cache
-    // about 14.5 seconds with new Rook moves.
-    // about 12.5 seconds with all pieces using more bit friendly calcs.
-    // about 4.1 seconds with the new generateMovesFor logic that uses bitboards to verify if a piece is in check.
-    // 5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896,886 nodes/second, 824,539 nodes/second)
-    // 4703 ms and reviewed 4865609 nodes.  1034575 nodes/second (1,019,616 nodes/second, 1,128,911 nodes/second) - use ints to represent castling
-    // 3718 ms and reviewed 4865609 nodes.  1308662 nodes/second (1,437,402 and 1,270,725) - en passant uses ints.
-    // 3269 ms and reviewed 4865609 nodes.  1488408 nodes/second - simplified game clock counter (1,433,169 and 1,315,740)
+    /*
+     NOTE - this method runs faster when the whole test suite is run.
+
+     6d1e0ec - creating a new game for each depth traversal - 1082 nodes/second
+     45941 ms and reviewed 4867157 nodes.  105943 nodes/second - added undo to replace cloning the game object to save state. - 1fd28a9
+     about 30 seconds with Board.get caching
+     about 16 seconds with Piece Cache
+     about 14.5 seconds with new Rook moves.
+     about 12.5 seconds with all pieces using more bit friendly calcs.
+     about 4.1 seconds with the new generateMovesFor logic that uses bitboards to verify if a piece is in check.
+     5739 ms and reviewed 4865609 nodes.  836,446 nodes/second (896,886 nodes/second, 824,539 nodes/second)
+     4703 ms and reviewed 4865609 nodes.  1034575 nodes/second (1,019,616 nodes/second, 1,128,911 nodes/second) - use ints to represent castling
+     3718 ms and reviewed 4865609 nodes.  1308662 nodes/second (1,437,402 and 1,270,725) - en passant uses ints.
+     3269 ms and reviewed 4865609 nodes.  1488408 nodes/second - simplified game clock counter (1,433,169 and 1,315,740)
+     2454 ms and reviewed 4865609 nodes.  1982725 nodes/second - incremental zobrist key management.
+
+     */
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(5, defaultBoard());
@@ -235,8 +241,9 @@ public class DepthTest {
     // 11 mins 41 seconds (about 170 nodes per second)
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
+    // ran for 61093 ms and reviewed 119060324 nodes.  1948837 nodes/second - after incremental zobrist hashing update
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        // fail("too long");
+        fail("too long");
         depthHelper(6, defaultBoard());
     }
 
