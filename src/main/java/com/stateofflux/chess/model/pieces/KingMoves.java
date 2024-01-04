@@ -58,7 +58,7 @@ public class KingMoves extends StraightLineMoves {
     public KingMoves(Board board, int location) {
         super(board, location);
 
-        this.castlingRights = this.getBoard().getGame().getCastlingRights();
+        this.castlingRights = this.getBoard().getCastlingRights();
         this.playerColor = this.getPiece().getColor();
 
         if(playerColor == PlayerColor.WHITE) {

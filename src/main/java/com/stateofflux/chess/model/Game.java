@@ -31,61 +31,6 @@ public class Game {
     private final LinkedList<Long> historyAsHashes = new LinkedList<>();
     private final LinkedList<History> historyOfMoves = new LinkedList<>();
 
-    // If neither side has the ability to castle, this field uses the character "-".
-    // Otherwise, this field contains one or more letters: "K" if White can castle
-    // kingside, "Q" if White can castle queenside, "k" if Black can castle
-    // kingside, and "q" if Black can castle queenside. A situation that temporarily
-    // prevents castling does not prevent the use of this notation.
-    // protected String castlingRights;
-    protected int castlingRights;
-
-    public boolean canCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
-    public boolean canCastlingBlackKingSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
-    public boolean canCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
-    public boolean canCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
-    public boolean cannotCastle()              { return castlingRights == 0; }
-
-    private void clearCastlingWhiteKingSide()  { castlingRights &= ~CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
-    private void clearCastlingBlackKingSide()  { castlingRights &= ~CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
-    private void clearCastlingWhiteQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
-    private void clearCastlingBlackQueenSide() { castlingRights &= ~CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
-    private void clearCastlingWhite() { castlingRights &= ~(CastlingHelper.CASTLING_WHITE_KING_SIDE | CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
-    private void clearCastlingBlack() { castlingRights &= ~(CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
-
-
-    public String getCastlingRightsForFen() {
-        if(castlingRights == 0) return "-";
-
-        StringBuilder sb = new StringBuilder();
-
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append(CastlingHelper.WHITE_KING_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append(CastlingHelper.WHITE_QUEEN_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append(CastlingHelper.BLACK_KING_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append(CastlingHelper.BLACK_QUEEN_CHAR);
-
-        return sb.toString();
-    }
-
-    private void setInitialCastlingRights() {
-        castlingRights =
-            CastlingHelper.CASTLING_WHITE_KING_SIDE |
-            CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
-            CastlingHelper.CASTLING_BLACK_KING_SIDE |
-            CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
-    }
-
-    private void clearCastlingRights() {
-        castlingRights = 0;
-    }
-
-    private void setCastlingRightsFromFen(String fen) {
-        if(fen.isBlank()) { clearCastlingRights(); }
-        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
-        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
-        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
-        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
-    }
-
     protected int clock;
     private boolean outOfTime = false;
 
@@ -94,10 +39,12 @@ public class Game {
         this.depth = 0;
         this.board = new Board();
         this.board.setGame(this);
-        this.setActivePlayerColor(PlayerColor.WHITE);
-        this.setInitialCastlingRights();
-        this.clearEnPassantTarget();
-        this.setClock(0);
+
+        setActivePlayerColor(PlayerColor.WHITE);
+        board.setInitialCastlingRights();
+        clearEnPassantTarget();
+        setClock(0);
+        board.setZobristKey(getActivePlayerColor(), getEnPassantTarget());
     }
 
     public Game(String fenString) {
@@ -113,10 +60,11 @@ public class Game {
         this.board = new Board(game.getPiecePlacement());
         this.board.setGame(this);
 
-        this.setActivePlayerColor(game.getActivePlayerColor());
-        this.setCastlingRights(game.getCastlingRights());
-        this.setEnPassantTarget(game.getEnPassantTarget());
-        this.setClock(game.getClock());
+        setActivePlayerColor(game.getActivePlayerColor());
+        board.setCastlingRights(game.board.getCastlingRights());
+        setEnPassantTarget(game.getEnPassantTarget());
+        setClock(game.getClock());
+        board.setZobristKey(getActivePlayerColor(), getEnPassantTarget());
 
         setActivePlayerIsInCheck();
     }
@@ -129,10 +77,11 @@ public class Game {
         this.board = new Board(fen.getPiecePlacement());
         this.board.setGame(this);
 
-        this.setActivePlayerColor(fen.getActivePlayerColor());
-        this.setCastlingRightsFromFen(fen.getCastlingRights());
-        this.setEnPassantTargetFromFen(fen.getEnPassantTarget());
-        this.setClock(fen.getFullmoveCounter() * 2 + fen.getHalfmoveClock()); // TODO: THis is not right.  We don't know how many moves have been taken.
+        setActivePlayerColor(fen.getActivePlayerColor());
+        board.setCastlingRightsFromFen(fen.getCastlingRights());
+        setEnPassantTargetFromFen(fen.getEnPassantTarget());
+        setClock(fen.getFullmoveCounter() * 2 + fen.getHalfmoveClock()); // TODO: THis is not right.  We don't know how many moves have been taken.
+        board.setZobristKey(getActivePlayerColor(), getEnPassantTarget());
 
         setActivePlayerIsInCheck();
     }
@@ -142,7 +91,7 @@ public class Game {
         this.board = new Board();
         this.board.setGame(this);
         this.setActivePlayerColor(PlayerColor.WHITE);
-        this.setInitialCastlingRights();
+        this.board.setInitialCastlingRights();
         this.clearEnPassantTarget();
         this.setClock(0);
 
@@ -196,14 +145,18 @@ public class Game {
         if(target.equals(PawnMoves.NO_EN_PASSANT))
             clearEnPassantTarget();
         else
-            this.enPassantTarget = FenString.squareToLocation(target);
+            setEnPassantTarget(FenString.squareToLocation(target));
     }
 
     private void clearEnPassantTarget() {
-        this.enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
+        setEnPassantTarget(PawnMoves.NO_EN_PASSANT_VALUE);
     }
 
     private void setEnPassantTarget(int target) {
+        // if there is a new en passant target OR the current enPassant target needs resetting
+        if(target >= 0 || this.enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE)
+            board.updateZobristKeyWithEnPassant(target);
+
         this.enPassantTarget = target;
     }
 
@@ -221,16 +174,12 @@ public class Game {
 
     public boolean hasEnPassantTarget() { return this.enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE; }
 
-    private void setCastlingRights(int castlingRights) {
-        this.castlingRights = castlingRights;
-    }
-
-    public int getCastlingRights() {
-        return this.castlingRights;
-    }
-
     private void setActivePlayerColor(PlayerColor activePlayerColor) {
+        if(this.activePlayerColor != null)
+            board.updateZobristKeyFlipPlayer(this.activePlayerColor);  // xor out the old color
+
         this.activePlayerColor = activePlayerColor;
+        board.updateZobristKeyFlipPlayer(this.activePlayerColor); // xor in the new color
     }
 
     public PlayerColor getActivePlayerColor() {
@@ -476,25 +425,25 @@ public class Game {
         // white king side
         if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
             to == CastlingHelper.WHITE_KING_SIDE_CASTLING_KING_LOCATION&&
-            canCastlingWhiteKingSide()) {
+            board.canCastlingWhiteKingSide()) {
             m.setCastling(
                 CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.WHITE_KING_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.WHITE_INITIAL_KING_LOCATION &&
             to == CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_KING_LOCATION &&
-            canCastlingWhiteQueenSide()) {
+            board.canCastlingWhiteQueenSide()) {
             m.setCastling(
                 CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.WHITE_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
             to == CastlingHelper.BLACK_KING_SIDE_CASTLING_KING_LOCATION &&
-            canCastlingBlackKingSide()) {
+            board.canCastlingBlackKingSide()) {
             m.setCastling(
                 CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.BLACK_KING_SIDE_CASTLING_ROOK_LOCATION);
         } else if(from == CastlingHelper.BLACK_INITIAL_KING_LOCATION &&
             to == CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_KING_LOCATION &&
-            canCastlingBlackQueenSide()) {
+            board.canCastlingBlackQueenSide()) {
             m.setCastling(
                 CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION,
                 CastlingHelper.BLACK_QUEEN_SIDE_CASTLING_ROOK_LOCATION);
@@ -761,15 +710,15 @@ public class Game {
 
         // if it is a castling
         if (from == 4) { // e1 -> 4
-            if (to == 6 && canCastlingWhiteKingSide()) { // g1
+            if (to == 6 && board.canCastlingWhiteKingSide()) { // g1
                 m.setCastling(7, 5);
-            } else if (to == 2 && canCastlingWhiteQueenSide()) { // b1
+            } else if (to == 2 && board.canCastlingWhiteQueenSide()) { // b1
                 m.setCastling(0, 3);
             }
         } else if (from == 60) { // g8 || b8
-            if (to == 62 && canCastlingBlackKingSide()) {
+            if (to == 62 && board.canCastlingBlackKingSide()) {
                 m.setCastling(63, 61);
-            } else if (to == 58 && canCastlingBlackQueenSide()) {
+            } else if (to == 58 && board.canCastlingBlackQueenSide()) {
                 m.setCastling(56, 59);
             }
         }
@@ -881,7 +830,7 @@ public class Game {
         for (int possibleSourceLocation : possibleSourceLocations) {
             tempLocation = possibleSourceLocation;
             piece = this.getBoard().get(tempLocation);
-            PieceMovesInterface pm = piece.generateMoves(this.board, tempLocation, getCastlingRights(), getEnPassantTarget());
+            PieceMovesInterface pm = piece.generateMoves(this.board, tempLocation, board.getCastlingRights(), getEnPassantTarget());
 
             // if the piece being reviewed isn't in the rank specified then skip over it
             if (rankSpecified != 0 && (('1' + (Board.rank(tempLocation))) != rankSpecified)) {
@@ -917,7 +866,7 @@ public class Game {
     private void postMoveAccounting(Move move, int removedLocation) {
         setEnPassantTarget(move.getEnPassantTarget());
         removeCastlingRightsFor(move, removedLocation);
-        historyAsHashes.add(getZobristKey());
+        historyAsHashes.add(board.getZobristKey());
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
@@ -929,7 +878,7 @@ public class Game {
             boards,
             getEnPassantTarget(),
             check,
-            castlingRights,
+            board.getCastlingRights(),
             pieceCache
         );
         historyOfMoves.add(h);
@@ -940,9 +889,9 @@ public class Game {
         getBoard().setBoards(h.boards);
         getBoard().setPieceCache(h.pieceCache);
         historyAsHashes.pollLast();  // drop the hash
-        this.enPassantTarget = h.enPassantTarget();
+        setEnPassantTarget(h.enPassantTarget());
         this.check = h.check();
-        this.castlingRights = h.castlingRights();
+        board.setCastlingRights(h.castlingRights());
 
         switchActivePlayer();
         decrementClock();
@@ -967,7 +916,6 @@ public class Game {
             if(enPassantPiece.isPawn() &&
                 enPassantPiece.getColor() != move.getPiece().getColor()) {
                 enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
-                // enPassantMove.setEnPassant(move.getEnPassantTarget());
 
                 long[] boardsBackup = getBoard().getCopyOfBoards();
                 Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
@@ -979,6 +927,7 @@ public class Game {
                 }
                 this.getBoard().setBoards(boardsBackup);
                 this.getBoard().setPieceCache(piecesBackup);
+                board.setZobristKey(getActivePlayerColor(), getEnPassantTarget());
             }
         }
     }
@@ -988,7 +937,9 @@ public class Game {
     }
 
     private void switchActivePlayer() {
+        board.updateZobristKeyFlipPlayer(activePlayerColor);
         this.activePlayerColor = this.activePlayerColor.otherColor();
+        board.updateZobristKeyFlipPlayer(activePlayerColor);
     }
 
     private Move extractCastlingMove(String action) {
@@ -1045,20 +996,20 @@ public class Game {
     private void removeCastlingRightsFor(Move m, int removedLocation) {
         if(m.isCapture()) {
             switch(removedLocation) {
-                case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteQueenSide(); break;
-                case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteKingSide(); break;
-                case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackQueenSide(); break;
-                case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackKingSide(); break;
+                case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingWhiteQueenSide(); break;
+                case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION:  board.clearCastlingWhiteKingSide(); break;
+                case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingBlackQueenSide(); break;
+                case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION:  board.clearCastlingBlackKingSide(); break;
             }
         }
 
         switch(m.getFrom()) {
-            case CastlingHelper.WHITE_INITIAL_KING_LOCATION: clearCastlingWhite(); break;
-            case CastlingHelper.BLACK_INITIAL_KING_LOCATION: clearCastlingBlack(); break;
-            case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteQueenSide(); break;
-            case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingWhiteKingSide(); break;
-            case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackQueenSide(); break;
-            case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION: clearCastlingBlackKingSide(); break;
+            case CastlingHelper.WHITE_INITIAL_KING_LOCATION: board.clearCastlingWhite(); break;
+            case CastlingHelper.BLACK_INITIAL_KING_LOCATION: board.clearCastlingBlack(); break;
+            case CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingWhiteQueenSide(); break;
+            case CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingWhiteKingSide(); break;
+            case CastlingHelper.BLACK_QUEEN_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingBlackQueenSide(); break;
+            case CastlingHelper.BLACK_KING_SIDE_INITIAL_ROOK_LOCATION: board.clearCastlingBlackKingSide(); break;
         }
 
 /*
@@ -1096,7 +1047,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getActivePlayerColor());
         sb.append(' ');
-        sb.append(this.getCastlingRightsForFen());
+        sb.append(board.getCastlingRightsForFen());
         sb.append(' ');
         sb.append(this.getEnPassantTargetAsFen());
         sb.append(' ');
@@ -1112,7 +1063,7 @@ public class Game {
         sb.append(' ');
         sb.append(this.getActivePlayerColor());
         sb.append(' ');
-        sb.append(this.getCastlingRightsForFen());
+        sb.append(board.getCastlingRightsForFen());
         sb.append(' ');
         sb.append(this.getEnPassantTargetAsFen());
         return sb.toString();
@@ -1242,163 +1193,6 @@ public class Game {
         }
 
         LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0, Integer::sum));
-    }
-
-    /*
-     * https://web.archive.org/web/20070810003508/www.seanet.com/%7Ebrucemo/topics/zobrist.htm
-        # A means of enabling position comparison
-
-        A chess position is comprised of the pieces on the board, side to move, castling legality, and en-passant
-        capture legality.
-
-        When writing a chess program, it is necessary to be able to compare two positions in order to see if they are
-        the same.  If you had to compare the position of each piece, it wouldn't take long to do, but in practice you
-        will have to do this thousands of times per second, so if you did it this way it could become a performance
-        bottleneck.  Also, the number of positions that you will save for future comparison is extremely large, so
-        storing the location of each piece, etc., ends up taking too much space.
-
-        A solution to this problem involves creation of a signature value, typically 64-bits.  Since 64 bits is not
-        enough to enumerate every chess position, there will exist the possibility of a signature collision, but in
-        practice this is rare enough that it can be ignored, as long as you make sure you don't actually crash if you
-        get a collision.
-
-        Whether or not 32-bits is enough is open to some debate, but conventional wisdom says "no".
-
-        A popular way of implementing signatures involves Zobrist keys.
-
-        # Implementation
-
-        You start by making a multi-dimensional array of 64-bit elements, each of which contains a random number.  In
-        C, the "rand()" function returns a 15-bit value (0..32767), so in order to get a 64-bit random number you will
-        probably have to do a little work.  Actually, I'll do it for you.  Here is a 64-bit random number function:
-
-        U64 rand64(void)
-        {
-            return rand() ^ ((U64)rand() << 15) ^ ((U64)rand() << 30) ^
-                ((U64)rand() << 45) ^ ((U64)rand() << 60);
-        }
-
-        This function works by filling up a whole "U64" element (you define this element yourself, depending upon what
-        compiler you use -- try "long long" or "__int64") with hunks of gibberish returned by "rand()".
-
-        Anyway, your table has three dimensions -- type of piece, color of piece, and location of piece:
-
-        U64 zobrist[pcMAX][coMAX][sqMAX];
-        You start by filling this up with random numbers when the program boots.  The numbers need to be pretty random.
-        I've read Usenet posts and so on where people claim that "rand()" is not random enough for this, but "rand()"
-        is what I've always used and I've never had a problem.  If you want to make something more random, more power
-        to you, but make sure that you don't use anything less random than "rand()".
-
-        To create a zobrist key for a position, you set your key to zero, then you go find every piece on the board,
-        and XOR (via the "^" operator) "zobrist[pc][co][sq]" into your key.
-
-        If the position is white to move, you leave it alone, but if it's black to move, you XOR a 64-bit constant
-        random number into the key.
-
-        # Why Zobrist keys are especially nice
-
-        This Zobrist key technique creates keys that aren't related to the position being keyed.  If a single piece or
-        pawn is moved, you get a key that's completely different, so these keys don't tend to clump up or collide very
-        much.  This is good if you are trying to use them as hash keys.
-
-        Another nice thing is that you can manage these keys incrementally.  If, for example, you have a white pawn on
-        e5, the key has had "zobrist[PAWN][WHITE][E5]" XOR'd into it.  If you XOR this value into the key again, due
-        to the way that XOR works, the pawn is deleted from the key.
-
-        What this means is that if you have a key for the current position, and want to move a white pawn from e5 to
-        e6, you XOR in the "white pawn on e5" key, which removes the pawn from e5, and XOR in the "white pawn on e6"
-        key, which puts a white pawn on e6.  You are guaranteed to get the same key that you'd get if you started over
-        and XOR'd all of the keys for all of the pieces together.
-
-        If you want to switch side to move, you XOR the "change side to move" key in.  You can also manage castling
-        and en-passant values the same way.
-
-        The utility of this is that you can create a zobrist key at the root of the search, and keep it current
-        throughout the course of the search by updating it in "MakeMove()".
-
-        # Some uses for these keys
-
-        * These Zobrist keys are often used as hash keys.  Hash keys have several uses in chess programs:
-        * You can use them to implement a transposition table.  This is a large hash table that allows you to keep track
-          of positions that you've seen during the search.  This will let you save work in some cases.  If you are going
-          to search a position to depth 9, you can look it up in the transposition table, and if you've already searched
-          it to depth 9, you might be able to avoid a long search.  A less obvious use of the main transposition table
-          involves improving your move ordering.
-        * You can use them to implement pawn structure hashing.  You can keep a key that is created only from the pawns
-          that are on the board.  You can do sophisticated analysis of pawn structures, and store the result in a hash
-          table for later retrieval.  In practice you end up with relatively few pawn structures that arise from a given
-          start position, so the hit rate on this hash table is extremely high, so in essence you get to do all of the
-          pawn structure evaluation you want for free.
-        * You can make a smaller hash table, which you can use to detect repetitions in the current line, so you can
-          detect perpetual check and other repetition draw cases.
-        * You can use these to create an opening book that handles transpositions.
-     */
-    // from https://github.com/bhlangonijr/chesslib/blob/49599909c02fc652b15d89048ec88f8b707facf6/src/main/java/com/github/bhlangonijr/chesslib/Board.java
-    private static final List<Long> zorbistRandomKeys = new ArrayList<>();
-    private static final long RANDOM_SEED = 49109794719L;
-    private static final int ZOBRIST_TABLE_SIZE = 2000;
-
-    static {
-        final XorShiftRandom random = new XorShiftRandom(RANDOM_SEED);
-        for (int i = 0; i < ZOBRIST_TABLE_SIZE; i++) {
-            long key = random.nextLong();
-            zorbistRandomKeys.add(key);
-        }
-    }
-
-    /**
-     * Returns a Zobrist hash code value for this board. A Zobrist hashing assures the same position returns the same
-     * hash value. It is calculated using the position of the pieces, the side to move, the castle rights and the en
-     * passant target.
-     *
-     * @return a Zobrist hash value for this board
-     * @see <a href="https://en.wikipedia.org/wiki/Zobrist_hashing">Zobrist hashing in Wikipedia</a>
-     */
-    public long getZobristKey() {
-        return getZobristKey(this.getActivePlayerColor());
-    }
-
-    public long getZobristKey(PlayerColor color) {
-//        LOGGER.info("zobrist: {}, {}, {}, {}", asFen(), castlingRights, color, getEnPassantTargetAsInt());
-        long hash = 0;
-
-        if(canCastlingWhiteKingSide())  hash ^= getCastleRightKey(1, PlayerColor.WHITE);
-        if(canCastlingWhiteQueenSide()) hash ^= getCastleRightKey(2, PlayerColor.WHITE);
-        if(canCastlingBlackKingSide())  hash ^= getCastleRightKey(3, PlayerColor.BLACK);
-        if(canCastlingBlackQueenSide()) hash ^= getCastleRightKey(4, PlayerColor.BLACK);
-
-        // TODO: I think it will be faster to iterate over each board's bits so replace this algo.
-
-        for (int i = 0; i < 64; i++) {
-            Piece piece = board.get(i);
-            if (piece != Piece.EMPTY)
-                hash ^= getPieceSquareKey(piece, i);
-        }
-
-        hash ^= getSideKey(color);
-
-        int epT = getEnPassantTarget();
-        if (epT >= 0) {
-            hash ^= getEnPassantKey(epT);
-        }
-
-        return hash;
-    }
-
-    private long getCastleRightKey(int castlingRightOrdinal, PlayerColor color) {
-        return zorbistRandomKeys.get(3 * castlingRightOrdinal + 300 + 3 * color.ordinal());
-    }
-
-    private long getSideKey(PlayerColor side) {
-        return zorbistRandomKeys.get(3 * side.ordinal() + 500);
-    }
-
-    private long getEnPassantKey(int enPassantTarget) {
-        return zorbistRandomKeys.get(3 * enPassantTarget + 400);
-    }
-
-    private long getPieceSquareKey(Piece piece, int square) {
-        return zorbistRandomKeys.get(57 * piece.getIndex() + 13 * square);
     }
 
     public boolean isRepetition() {

@@ -23,7 +23,7 @@ public class GameTest {
 
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
-        assertThat(g.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
+        assertThat(g.board.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
         assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(g.getHalfMoveClock()).isZero();
         assertThat(g.getFullMoveCounter()).isOne();
@@ -198,7 +198,7 @@ public class GameTest {
         Game game = new Game("2r3k1/1q1nbppp/r3p3/3pP3/p1pP4/P1Q2N2/1PRN1PPP/2R4K w - - 0 22");
         game.move("b4"); // from b2 to b4 - creating an en passant situation
 
-        assertThat(game.cannotCastle()).isTrue();
+        assertThat(game.board.cannotCastle()).isTrue();
         assertThat(game.getEnPassantTargetAsFen()).isEqualTo("b3");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - - 1 22
@@ -208,7 +208,7 @@ public class GameTest {
         game = new Game("rnbqkbnr/ppppppp1/8/1P1P4/8/2P4p/P3PPPP/RNBQKBNR b KQkq -");
         game.move("c5"); // from c7 to c5 - creating an en passant situation
 
-        assertThat(game.getCastlingRightsForFen()).isEqualTo("KQkq");
+        assertThat(game.board.getCastlingRightsForFen()).isEqualTo("KQkq");
         assertThat(game.getEnPassantTargetAsFen()).isEqualTo("c6");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
@@ -536,7 +536,7 @@ public class GameTest {
     public static class Repetition {
         @Test public void getGameState() {
             Game g = new Game();
-            long hash = g.getZobristKey();
+            long hash = g.board.getZobristKey();
             assertThat(hash).isEqualTo(4516155336704681926L);
         }
 
@@ -553,7 +553,10 @@ public class GameTest {
 
         @Test
         public void testThreefoldRepetition2() {
-            // There is a repetition in the 50th move, but the 51st move overwrites the repetition
+            // This is not three fold repetition.  Move 47 (g5) creates an en passant move.  Moves 49 and 51 have
+            // the same pattern as 47, but due to the en passant are only repeated twice.
+            // according to https://support.chess.com/article/1042-i-got-a-draw-by-repetition-how-did-that-happen
+            // then a draw occurs as soon as there is third repetition
             Game game = Game.fromSan("1. Nf3 Nf6 2. c4 c5 3. b3 d6 4. d4 cxd4 5. Nxd4 e5 6. Nb5 Be6 7. g3 a6 8. N5c3 d5 9. cxd5 Nxd5 10. Bg2 Bb4 11. Bd2 Nc6 12. O-O O-O 13. Na4 Rc8 14. a3 Be7 15. e3 b5 16. Nb2 Qb6 17. Nd3 Rfd8 18. Qe2 Nf6 19. Nc1 e4 20. Bc3 Nd5 21. Bxe4 Nxc3 22. Nxc3 Na5 23. N1a2 Nxb3 24. Rad1 Bc4 25. Qf3 Qf6 26. Qg4 Be6 27. Qe2 Rxc3 28. Nxc3 Qxc3 29. Rxd8+ Bxd8 30. Rd1 Be7 31. Bb7 Nc5 32. Qf3 g6 33. Bd5 Bxd5 34. Qxd5 Qxa3 35. Qe5 Ne6 36. Ra1 Qd6 37. Qxd6 Bxd6 38. Rxa6 Bc5 39. Kf1 Kf8 40. Ke2 Ke7 41. Kd3 Kd7 42. g4 Kc7 43. Ra8 Kc6 44. f4 Be7 45. Rc8+ Kd5 46. Re8 Kd6 47. g5 f5 48. Rb8 Kc6 49. Re8 Kd6 50. Rb8 Kc6 51. Re8 Kd6");
             assertThat(game.isRepetition()).isFalse();
         }
