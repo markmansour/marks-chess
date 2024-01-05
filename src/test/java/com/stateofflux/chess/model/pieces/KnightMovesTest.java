@@ -12,7 +12,7 @@ public class KnightMovesTest {
     @Test
     public void testAllPotentialMovesAreFound() {
         Board openingBoard = new Board("8/8/8/8/3N4/8/8/8"); // D4 - Position 27
-        PieceMoves bm = new KnightMoves(openingBoard, 27);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 27);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 44 | 1L << 37 |
@@ -25,7 +25,7 @@ public class KnightMovesTest {
     @Test
     void testAllCaptureAndNonCaptureMovesAreFound() {
         Board openingBoard = new Board("rnbqkbnr/pppppppp/8/3N4/8/8/PPPPPPPP/R1BQKBNR"); // white knight at D5 (35)
-        PieceMoves bm = new KnightMoves(openingBoard, 35);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 35);
 
         // 35: 7, 15, 17, 10, -6, -15, -18, -10
         assertThat(bm.getNonCaptureMoves())
@@ -39,7 +39,7 @@ public class KnightMovesTest {
     @Test
     public void testThatMovesOffTheTopAndLeftOfBoardAreNotReturned() {
         Board openingBoard = new Board("N7/8/8/8/8/8/8/8"); // 56 - A8
-        PieceMoves bm = new KnightMoves(openingBoard, 56);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 56);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 50 | 1L << 41);
@@ -50,7 +50,7 @@ public class KnightMovesTest {
     @Test
     public void testThatMovesOffTheBottomAndRightOfBoardAreNotReturned() {
         Board openingBoard = new Board("8/8/8/8/8/8/8/7N"); // 7 - H1
-        PieceMoves bm = new KnightMoves(openingBoard, 7);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 7);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 13 | 1L << 22);
@@ -61,7 +61,7 @@ public class KnightMovesTest {
     @Test
     public void testThatMovesOffTheTopAndRightOfBoardAreNotReturned() {
         Board openingBoard = new Board("7N/8/8/8/8/8/8/8"); // 63 - H8
-        PieceMoves bm = new KnightMoves(openingBoard, 63);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 63);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 53 | 1L << 46);
@@ -72,7 +72,7 @@ public class KnightMovesTest {
     @Test
     public void testThatMovesOffTheBottomAndLeftOfBoardAreNotReturned() {
         Board openingBoard = new Board("8/8/8/8/8/8/8/N7"); // 0 - A1
-        PieceMoves bm = new KnightMoves(openingBoard, 0);
+        PieceMovesInterface bm = new KnightMoves(openingBoard, 0);
 
         assertThat(bm.getNonCaptureMoves())
                 .isEqualTo(1L << 17 | 1L << 10);

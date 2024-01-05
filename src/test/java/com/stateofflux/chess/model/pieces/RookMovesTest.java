@@ -4,9 +4,6 @@ import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.PieceMoves;
-import com.stateofflux.chess.model.pieces.RookMoves;
-
 import static org.assertj.core.api.Assertions.*;
 
 public class RookMovesTest {
@@ -41,13 +38,13 @@ public class RookMovesTest {
         game.move("Rxa8+");
         // assertThat(game.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'k', 'K'});
         assertThat(game.asFen()).startsWith("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
-        assertThat(game.getChecked()).isTrue();
+        assertThat(game.isChecked()).isTrue();
         assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 
     @Test void cantUseCastlingToGetOutOfCheck() {
         Game game = new Game("R3k2r/8/8/8/8/8/8/4K2R b Kk -");
-        assertThat(game.getChecked()).isTrue();
+        assertThat(game.isChecked()).isTrue();
         assertThat(game.generateMoves().asLongSan()).containsOnly("e8d7", "e8e7", "e8f7");
     }
 }

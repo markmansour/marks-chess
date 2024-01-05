@@ -2,8 +2,16 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 
-public class KnightMoves extends PieceMoves {
+public class KnightMoves implements PieceMovesInterface {
     public static final long[] KNIGHT_MOVES = new long[64];
+
+    protected long nonCaptureMoves;
+    protected long captureMoves;
+
+    protected final Board board;
+    protected final int location;
+    protected final Piece piece;
+    protected final boolean isWhite;
 
     static {
         int rank;
@@ -29,12 +37,28 @@ public class KnightMoves extends PieceMoves {
     }
 
     public KnightMoves(Board board, int location) {
-        super(board, location);
+        this.board = board;
+        this.location = location;
+        this.isWhite = (((1L << location) & board.getWhite()) != 0);
+        this.piece = isWhite ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
+
+        findCaptureAndNonCaptureMoves();
     }
 
     @Override
     public void findCaptureAndNonCaptureMoves() {
-        this.nonCaptureMoves |= KNIGHT_MOVES[this.location] & ~this.occupiedBoard;
-        this.captureMoves |= KNIGHT_MOVES[this.location] & this.opponentBoard;
+        long occupiedBoard = this.board.getOccupied();
+        long opponentBoard = isWhite ? board.getBlack() : board.getWhite();
+
+        this.nonCaptureMoves |= KNIGHT_MOVES[this.location] & ~occupiedBoard;
+        this.captureMoves |= KNIGHT_MOVES[this.location] & opponentBoard;
+    }
+
+    public long getCaptureMoves() {
+        return this.captureMoves;
+    };
+
+    public long getNonCaptureMoves() {
+        return this.nonCaptureMoves;
     }
 }

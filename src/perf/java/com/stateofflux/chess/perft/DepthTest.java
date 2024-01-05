@@ -1,5 +1,6 @@
 package com.stateofflux.chess.perft;
 
+import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.FenString;
 import one.profiler.AsyncProfiler;
 import one.profiler.Events;
@@ -390,7 +391,7 @@ public class DepthTest {
                     .reduce(0, Integer::sum);
 
                 Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
-                Integer expected = (Integer) expectedDepthMethod.invoke(pr, null);
+                Integer expected = (Integer) expectedDepthMethod.invoke(pr);
                 // LOGGER.info("pulling expected out of {}", pr);
                 if(perftCount != expected) {
                     game.printPerft(actual);

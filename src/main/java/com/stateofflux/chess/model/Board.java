@@ -11,25 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import com.stateofflux.chess.model.pieces.Piece;
 
-/*
- * Class uses Forsyth–Edwards Notation
- *
- * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
- *
- * https://en.wikipedia.org/wiki/Shannon_number describes the number of possible games.
- * For a depth of 10 (known as ply) there are 69 trillion possible games.
- *
- * Note: Assume that each game needs a copy of this board.
- *
- * There are 11 longs (64 bits / 8 bytes each) to represent the board, a total of 88 bytes (11 * 8 bytes) plus object overhead.
- *
- * Therefore 88 bytes * 69 trillion games is 69,000,000,000,000/1024/1024/1024
- *   => 64,261 Gigabytes of memory.  This assumes no pruning of branches that would be a low yield.
- *
- * Useful links
- * * https://en.wikipedia.org/wiki/Portal:Chess
- * * https://chessify.me/blog/what-is-depth-in-chess-different-depths-for-stockfish-and-lczero
- */
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
@@ -52,9 +33,8 @@ public class Board {
     public static long FILE_A = 0x101010101010101L;
 
     private long[] boards = new long[Piece.SIZE];
-    private Game game;
 
-    // cached state
+    // caches
     private long occupiedBoard;
     private long blackBoard;
     private long whiteBoard;
@@ -62,15 +42,11 @@ public class Board {
     private long whiteBoardWithoutKing;
     private Piece[] pieceCache = new Piece[64];
 
-    // If neither side has the ability to castle, this field uses the character "-".
-    // Otherwise, this field contains one or more letters: "K" if White can castle
-    // kingside, "Q" if White can castle queenside, "k" if Black can castle
-    // kingside, and "q" if Black can castle queenside. A situation that temporarily
-    // prevents castling does not prevent the use of this notation.
-    // protected String castlingRights;
+    // instance vars
     protected int castlingRights;
     private long zobristKey;
 
+    // --------------------------- Constructors ---------------------------
     /**
      * RANKS:
      *   8 | 56 57 58 59 60 61 62 63 (MSB,
@@ -113,57 +89,20 @@ public class Board {
         this.boards[Piece.BLACK_KNIGHT.getIndex()] = 1L << 57 | 1L << 62;
         this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
 
-        preWarmCache();
         populatePieceCache();
         calculateAllCacheBoards();
     }
 
-    // --------------------------- Constructors ---------------------------
     /*
      * Build a board using a fen string
      */
     public Board(String fen) {
         this.populate(fen);
         populatePieceCache();
-        preWarmCache();
         calculateAllCacheBoards();
     }
 
-    private void populatePieceCache() {
-        Arrays.fill(pieceCache, null);
-
-        for(int i = 0; i < this.boards.length; i++) {
-            int[] locations = Board.bitboardToArray(this.boards[i]);
-            Piece p = Piece.getPieceByIndex(i);
-
-            for (int location : locations) {
-                pieceCache[location] = p;
-            }
-        }
-
-        for(int k = 0; k < pieceCache.length; k++) {
-            if(pieceCache[k] == null)
-                pieceCache[k] = Piece.EMPTY;
-        }
-    }
-
-    public void calculateAllCacheBoards() {
-        calculateWhiteBoardWithoutKing();
-        calculateWhiteBoard();
-        calculateBlackBoardWithoutKing();
-        calculateBlackBoard();
-        calculateOccupied();
-    }
-
-    private void preWarmCache() {
-        // warming of the cache doesn't have a measurable impact on speed
-/*
-        for(int i = 0; i < 64; i++) {
-            get(i);
-        }
-*/
-    }
-
+    // --------------------------- Static Methods ---------------------------
     public static int rank(int location) {
         return location >> 3;   // div 8
     }
@@ -171,6 +110,32 @@ public class Board {
     public static int file(int location) {
         return location & 0x7;  // modulo 8
     }
+
+    public static int countSetBits(long n) {
+        // base case
+        if (n == 0)
+            return 0;
+        else
+            return 1 + countSetBits(n & (n - 1L));
+    }
+
+    /** returns locations from 0-63 **/
+    public static int[] bitboardToArray(long l) {
+        int bitsSet = countSetBits(l);
+        int[] result = new int[bitsSet];
+        int counter = 0;
+
+        // todo - short circuit the loop if the
+        for (int i = 0; i < 64 && counter < bitsSet; i++) {
+            if ((l & (1L << i)) != 0) {
+                result[counter++] = i;
+            }
+        }
+
+        return result;
+    }
+
+    // --------------------------- Instance Methods ---------------------------
 
     public void setBoards(long[] boards) {
         this.boards = Arrays.copyOf(boards, boards.length);
@@ -206,7 +171,6 @@ public class Board {
         }
     }
 
-    // --------------------------- Instance Methods ---------------------------
     public long setByBoard(Piece piece, int boardIndex, int location) {
         long temp = this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
@@ -230,15 +194,14 @@ public class Board {
         calculateOccupied();
     }
 
-    // TODO: Can I remove this method to make it more efficient?
     protected void clearLocation(int location) {
         long bitToClear = 1L << location;
 
-        for(int i = 0; i < this.boards.length; i++) {
-            if((this.boards[i] & bitToClear) != 0) {
+        for(int i = 0; i < boards.length; i++) {
+            if((boards[i] & bitToClear) != 0) {
                 // clear the bit at the location on all boards
                 clearZorbistMask(bitToClear);
-                this.boards[i] &= ~bitToClear;
+                boards[i] &= ~bitToClear;
             }
         }
     }
@@ -260,44 +223,12 @@ public class Board {
 
         return setByBoard(piece, piece.getIndex(), location);
     }
-
-/*
-    public void remove(int location) {
-        long bitLocation = 1L << location;
-
-        for (int i = 0; i < this.boards.length; i++) {
-            if ((this.boards[i] & bitLocation) != 0)
-                clearByBoard(i, location);
-        }
-    }
-*/
-
     /*
      * return the character representing a piece
      */
+
     public Piece get(int location) {
         return pieceCache[location];
-/*
-        long bitLocation = 1L << location;
-        Piece cachedPiece = pieceByLocationCache[location];
-
-        // TODO: check for empty first so we don't need to iterate over the boards!
-
-        // cache hit
-        if(cachedPiece != null && (this.boards[cachedPiece.getIndex()] & bitLocation) != 0)
-            return cachedPiece;
-
-        // cache miss
-        for (int i = 0; i < this.boards.length; i++) {
-            if ((this.boards[i] & bitLocation) != 0) {
-                Piece p = Piece.getPieceByIndex(i);
-                pieceByLocationCache[location] = p;
-                return p;
-            }
-        }
-
-        return Piece.EMPTY;
-*/
     }
 
     protected int getBoardIndex(int location) {
@@ -308,25 +239,11 @@ public class Board {
 
         throw new AssertionError("Location not found: " + location);
     }
-
-    // starting from location, but not looking ahead more than max, find the next
-    // piece on the board
-    // TODO: Could this be done as a BitSet operation?
-    protected int nextPiece(int location, int max) {
-        int i = 1;
-
-        while (location + i < 64 &&
-                i < max &&
-                this.get(location + i) == Piece.EMPTY)
-            i++;
-
-        return i + location;
-    }
-
     /*
      * Move a piece on the board, but do not perform validation.
      * return the removed location
      */
+
     public int update(Move m, int gameEnPassantState) {
         boolean standardMove = true;
         int removed = -1;
@@ -361,7 +278,7 @@ public class Board {
             sourceFile = Board.file(m.getFrom());
             destFile = Board.file(target);
 
-            assert(sourceFile != destFile);
+            // assert(sourceFile != destFile);
             if(sourceFile < destFile)
                 removed = m.getFrom() + 1;
             else if(sourceFile > destFile)
@@ -394,11 +311,6 @@ public class Board {
         return removed;
     }
 
-    public boolean isEmpty(int location) {
-        return (~this.getOccupied() & (1L << location)) != 0;
-    }
-
-    // this can be optimized.
     public long getOccupied() {
         return this.occupiedBoard;
     }
@@ -411,27 +323,6 @@ public class Board {
         }
 
         return this.occupiedBoard = usedBoard;
-    }
-
-    public long getBlack() {
-        return this.blackBoard;
-    }
-
-    private long calculateBlackBoard() {
-        return this.blackBoard = this.blackBoardWithoutKing |
-            this.boards[Piece.BLACK_KING.getIndex()];
-    }
-
-    public long getBlackWithoutKing() {
-        return this.blackBoardWithoutKing;
-    }
-
-    private void calculateBlackBoardWithoutKing() {
-        this.blackBoardWithoutKing = this.boards[Piece.BLACK_PAWN.getIndex()] |
-            this.boards[Piece.BLACK_KNIGHT.getIndex()] |
-            this.boards[Piece.BLACK_BISHOP.getIndex()] |
-            this.boards[Piece.BLACK_ROOK.getIndex()] |
-            this.boards[Piece.BLACK_QUEEN.getIndex()];
     }
 
     public boolean hasBlackKingOnly() {
@@ -468,27 +359,6 @@ public class Board {
             getQueenLocations(PlayerColor.BLACK).length == 1;
     }
 
-    public long getWhite() {
-        return this.whiteBoard;
-    }
-
-    public long calculateWhiteBoard() {
-        return this.whiteBoard = this.whiteBoardWithoutKing |
-            this.boards[Piece.WHITE_KING.getIndex()];
-    }
-
-    public long getWhiteWithoutKing() {
-        return this.whiteBoardWithoutKing;
-    }
-
-    public long calculateWhiteBoardWithoutKing() {
-        return this.whiteBoardWithoutKing = this.boards[Piece.WHITE_PAWN.getIndex()] |
-            this.boards[Piece.WHITE_KNIGHT.getIndex()] |
-            this.boards[Piece.WHITE_BISHOP.getIndex()] |
-            this.boards[Piece.WHITE_ROOK.getIndex()] |
-            this.boards[Piece.WHITE_QUEEN.getIndex()];
-    }
-
     public boolean hasWhiteKingOnly() {
         return getWhiteWithoutKing() == 0;
     }
@@ -523,6 +393,11 @@ public class Board {
                 (knights == 2);
     }
 
+    // ------------------------ Get Pieces methods -------------------------------
+    public long getPieceLocations(Piece p) {
+        return this.boards[p.getIndex()];
+    }
+
     public long getWhitePawns() {
         return this.boards[Piece.WHITE_PAWN.getIndex()];
     }
@@ -531,7 +406,249 @@ public class Board {
         return this.boards[Piece.BLACK_PAWN.getIndex()];
     }
 
+    public long getPawns(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_PAWN.getIndex()] : this.boards[Piece.BLACK_PAWN.getIndex()];
+    }
+
+    public long getRooks(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_ROOK.getIndex()] : this.boards[Piece.BLACK_ROOK.getIndex()];
+    }
+
+    public long getKnights(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KNIGHT.getIndex()] : this.boards[Piece.BLACK_KNIGHT.getIndex()];
+    }
+
+    public long getBishops(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_BISHOP.getIndex()] : this.boards[Piece.BLACK_BISHOP.getIndex()];
+    }
+
+    public long getQueens(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_QUEEN.getIndex()] : this.boards[Piece.BLACK_QUEEN.getIndex()];
+    }
+
+    public long getKings(PlayerColor playerColor) {
+        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KING.getIndex()] : this.boards[Piece.BLACK_KING.getIndex()];
+    }
+
+    public int[] getPawnLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_PAWN, Piece.BLACK_PAWN, playerColor);
+    }
+
+    public int[] getRookLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_ROOK, Piece.BLACK_ROOK, playerColor);
+    }
+
+	public int[] getKnightLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_KNIGHT, Piece.BLACK_KNIGHT, playerColor);
+	}
+
+	public int[] getBishopLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_BISHOP, Piece.BLACK_BISHOP, playerColor);
+	}
+
+	public int[] getQueenLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_QUEEN, Piece.BLACK_QUEEN, playerColor);
+	}
+
+	public int[] getKingLocations(PlayerColor playerColor) {
+        return getPieceLocationsAsArray(Piece.WHITE_KING, Piece.BLACK_KING, playerColor);
+	}
+
+    public int getKingLocation(PlayerColor color) {
+        int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
+        if(this.boards[index] == 0) // the king has been removed from the board.  This can happen when looking for check
+            return -1;
+        return PieceMoves.bitscanForward(this.boards[index]);
+    }
+
+    public int[] getPieceLocationsAsArray(Piece one, Piece two, PlayerColor activePlayerColor) {
+        return Board.bitboardToArray(getPieceLocations(activePlayerColor == PlayerColor.WHITE ? one : two ));
+	}
+
+    public boolean hasInsufficientMaterials(boolean isOutOfTime) {
+        // logic assumes there is always one black and white king.
+        // King vs king
+        if(hasBlackKingOnly() && hasWhiteKingOnly())
+            return true;
+
+        // King + minor piece (knight of bishop) vs king
+        if((hasWhiteKingOnly() && blackHasOnlyOneMinorPiece()) ||
+            (hasBlackKingOnly() && whiteHasOnlyOneMinorPiece()))
+            return true;
+
+        // King + minor piece vs king + minor piece
+        if(blackHasOnlyOneMinorPiece() && whiteHasOnlyOneMinorPiece())
+            return true;
+
+        // King + two knights vs king
+        if((hasBlackKingOnly() && whiteHasOnlyTwoKnights()) ||
+            (hasWhiteKingOnly() && blackHasOnlyTwoKnights()))
+            return true;
+
+        // Lone king vs all the pieces & time runs out
+        return isOutOfTime &&
+            ((hasBlackKingOnly() && whiteHasAllOriginalPieces()) ||
+                (hasWhiteKingOnly() && blackHasAllOriginalPieces()));
+    }
+
+    // ------------------------ Caching methods -------------------------------
+    private void populatePieceCache() {
+        Arrays.fill(pieceCache, null);
+
+        for(int i = 0; i < this.boards.length; i++) {
+            int[] locations = Board.bitboardToArray(this.boards[i]);
+            Piece p = Piece.getPieceByIndex(i);
+
+            for (int location : locations) {
+                pieceCache[location] = p;
+            }
+        }
+
+        for(int k = 0; k < pieceCache.length; k++) {
+            if(pieceCache[k] == null)
+                pieceCache[k] = Piece.EMPTY;
+        }
+    }
+
+    public void calculateAllCacheBoards() {
+        calculateWhiteBoardWithoutKing();
+        calculateWhiteBoard();
+        calculateBlackBoardWithoutKing();
+        calculateBlackBoard();
+        calculateOccupied();
+    }
+
+    public long[] getCopyOfBoards() {
+        return Arrays.copyOf(getBoards(), getBoards().length);
+    }
+
+    public Piece[] getCopyOfPieceCache() {
+        return Arrays.copyOf(pieceCache, pieceCache.length);
+    }
+
+    public Piece[] getPieceCache() {
+        return pieceCache;
+    }
+
+    public void setPieceCache(Piece[] pieceCache) {
+        this.pieceCache = pieceCache;
+    }
+
+    public long getWhite() {
+        return this.whiteBoard;
+    }
+
+    public long calculateWhiteBoard() {
+        return this.whiteBoard = this.whiteBoardWithoutKing |
+            this.boards[Piece.WHITE_KING.getIndex()];
+    }
+
+    public long getWhiteWithoutKing() {
+        return this.whiteBoardWithoutKing;
+    }
+
+    public long calculateWhiteBoardWithoutKing() {
+        return this.whiteBoardWithoutKing = this.boards[Piece.WHITE_PAWN.getIndex()] |
+            this.boards[Piece.WHITE_KNIGHT.getIndex()] |
+            this.boards[Piece.WHITE_BISHOP.getIndex()] |
+            this.boards[Piece.WHITE_ROOK.getIndex()] |
+            this.boards[Piece.WHITE_QUEEN.getIndex()];
+    }
+
+    public long getBlack() {
+        return this.blackBoard;
+    }
+
+    private void calculateBlackBoard() {
+        this.blackBoard = this.blackBoardWithoutKing |
+            this.boards[Piece.BLACK_KING.getIndex()];
+    }
+
+    public long getBlackWithoutKing() {
+        return this.blackBoardWithoutKing;
+    }
+
+    private void calculateBlackBoardWithoutKing() {
+        this.blackBoardWithoutKing = this.boards[Piece.BLACK_PAWN.getIndex()] |
+            this.boards[Piece.BLACK_KNIGHT.getIndex()] |
+            this.boards[Piece.BLACK_BISHOP.getIndex()] |
+            this.boards[Piece.BLACK_ROOK.getIndex()] |
+            this.boards[Piece.BLACK_QUEEN.getIndex()];
+    }
+
+    // ------------------------ Castling Rights -------------------------------
+    public void setCastlingRights(int castlingRights) {
+        this.castlingRights = castlingRights;
+    }
+
+    public int getCastlingRights() {
+        return this.castlingRights;
+    }
+
+    private void clearCastling(int value) {
+        this.zobristKey ^= getCastlingRights(castlingRights);  // xor the castling rights off
+        castlingRights &= ~value;
+        this.zobristKey ^= getCastlingRights(castlingRights);  // xor the castling rights on
+    }
+
+    public boolean canCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
+    public boolean canCastlingBlackKingSide()  { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
+    public boolean canCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
+    public boolean canCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
+
+    public boolean cannotCastle()              { return castlingRights == 0; }
+    public void clearCastlingWhiteKingSide()  { clearCastling(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
+    public void clearCastlingBlackKingSide()  { clearCastling(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
+    public void clearCastlingWhiteQueenSide() { clearCastling(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
+    public void clearCastlingBlackQueenSide() { clearCastling(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+    public void clearCastlingWhite()          { clearCastling((CastlingHelper.CASTLING_WHITE_KING_SIDE | CastlingHelper.CASTLING_WHITE_QUEEN_SIDE)); }
+
+    public void setInitialCastlingRights() {
+        castlingRights =
+            CastlingHelper.CASTLING_WHITE_KING_SIDE |
+                CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
+                CastlingHelper.CASTLING_BLACK_KING_SIDE |
+                CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
+        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
+    }
+
+    public void setCastlingRightsFromFen(String fen) {
+        if(fen.isBlank()) { clearCastlingRights(); }
+        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
+        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
+        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
+        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+    }
+
+    public String getCastlingRightsForFen() {
+        if(castlingRights == 0) return "-";
+
+        StringBuilder sb = new StringBuilder();
+
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append(CastlingHelper.WHITE_KING_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append(CastlingHelper.WHITE_QUEEN_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append(CastlingHelper.BLACK_KING_CHAR);
+        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append(CastlingHelper.BLACK_QUEEN_CHAR);
+
+        return sb.toString();
+    }
+
+    public void clearCastlingBlack()          { clearCastling((CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE)); }
+
+    public void clearCastlingRights() {
+        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
+        castlingRights = 0;
+        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
+    }
+
+    public void addCastlingRights(int value) {
+        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
+        castlingRights |= value;
+        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
+    }
+
     // --------------------------- Visualization ---------------------------
+
     // implement a Forsyth-Edwards toString() method
     public String toFen() {
         StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
@@ -567,299 +684,21 @@ public class Board {
 
         return f.toString();
     }
+    // Note: this isn't called very often, so not worth optimizing
 
-    public void printOccupied() {
-        StringBuilder prettyBoard = new StringBuilder(64);
+    protected int nextPiece(int location, int max) {
+        int i = 1;
 
-        for (int i = 0; i < 64; i++) {
-            prettyBoard.insert(i, get(i));
-        }
-
-        CharSequence[] ranks = new CharSequence[8];
-
-        for (int i = 7; i >= 0; i--) {
-            ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8);
-            LOGGER.info("{}: {}", Integer.valueOf(i + 1), ranks[i]);
-        }
-
-        LOGGER.info("   abcdefgh");
-
-        var game = this.getGame();
-        if(game != null) {
-            LOGGER.info("FEN: {}", game.asFen());
-            LOGGER.info("isOver: {}", game.isOver());
-            LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
-            LOGGER.info("hasResigned: {}", game.hasResigned());
-            LOGGER.info("isStalemate: {}", game.isStalemate());
-            LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
-            LOGGER.info("exceededMoves: {}", game.exceededMoves());
-            LOGGER.info("hasRepeated: {}", game.isRepetition());
-        }
-        LOGGER.info("--------------------------");
-    }
-
-    // --------------------------- Static Methods ---------------------------
-    // useful for debugging.
-    public static void printOccupied(long board) {
-        StringBuilder rankString;
-        List<String> ranks = new ArrayList<>();
-
-        for (int rank = 8; rank > 0; rank--) {
-            rankString = new StringBuilder(8);
-            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
-                rankString.append((board & (1L << location)) == 0 ? '.' : '1');
-            }
-
-            ranks.add(rankString.toString());
-        }
-
-        int i = 0;
-        for (String r : ranks) {
-            LOGGER.info("{}: {}", 8 - i, r);
+        while (location + i < 64 &&
+            i < max &&
+            this.get(location + i) == Piece.EMPTY)
             i++;
-        }
 
-        LOGGER.info("   abcdefgh");
-    }
-
-    public static void printBoard(long board) {
-        String reversedLong = longToReversedBinaryString(board);
-
-        for (int rank = 7; rank >= 0; rank--) {
-            LOGGER.info("{}: {}",
-                    rank + 1,
-                    reversedLong.substring(rank * 8, (rank + 1) * 8).replace('0', '.'));
-        }
-
-        LOGGER.info("   abcdefgh");
-    }
-
-    public static String longToReversedBinaryString(long l) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("0".repeat(Long.numberOfLeadingZeros(l)));
-        sb.append(Long.toBinaryString(l));
-
-        return sb.reverse().toString();
-    }
-
-    public int[] getPawnLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_PAWN, Piece.BLACK_PAWN, playerColor);
-    }
-
-    public int[] getRookLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_ROOK, Piece.BLACK_ROOK, playerColor);
-    }
-
-	public int[] getKnightLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_KNIGHT, Piece.BLACK_KNIGHT, playerColor);
-	}
-
-	public int[] getBishopLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_BISHOP, Piece.BLACK_BISHOP, playerColor);
-	}
-
-	public int[] getQueenLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_QUEEN, Piece.BLACK_QUEEN, playerColor);
-	}
-
-	public int[] getKingLocations(PlayerColor playerColor) {
-        return getPieceLocationsAsArray(Piece.WHITE_KING, Piece.BLACK_KING, playerColor);
-	}
-
-    public int[] getPieceLocationsAsArray(Piece one, Piece two, PlayerColor activePlayerColor) {
-        return Board.bitboardToArray(getPieceLocations(activePlayerColor == PlayerColor.WHITE ? one : two ));
-	}
-
-    // TODO - still buggy
-    // TEST DATA:
-    // * FEN: r3Q1N1/2B3r1/P3b1p1/1pp4p/1R5P/1kR5/7N/4K3 w - - 0 97
-    // * move: R : c3b3
-    // results in a 0 length array.
-    public int getKingLocation(PlayerColor color) {
-        int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
-        if(this.boards[index] == 0) // the king has been removed from the board.  This can happen when looking for check
-            return -1;
-        return PieceMoves.bitscanForward(this.boards[index]);
-    }
-
-    public long getPieceLocations(Piece p) {
-        return this.boards[p.getIndex()];
-    }
-
-    public long getPawns(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_PAWN.getIndex()] : this.boards[Piece.BLACK_PAWN.getIndex()];
-    }
-
-    public long getRooks(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_ROOK.getIndex()] : this.boards[Piece.BLACK_ROOK.getIndex()];
-    }
-
-    public long getKnights(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KNIGHT.getIndex()] : this.boards[Piece.BLACK_KNIGHT.getIndex()];
-    }
-
-    public long getBishops(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_BISHOP.getIndex()] : this.boards[Piece.BLACK_BISHOP.getIndex()];
-    }
-
-    public long getQueens(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_QUEEN.getIndex()] : this.boards[Piece.BLACK_QUEEN.getIndex()];
-    }
-
-    public long getKings(PlayerColor playerColor) {
-        return playerColor == PlayerColor.WHITE ? this.boards[Piece.WHITE_KING.getIndex()] : this.boards[Piece.BLACK_KING.getIndex()];
-    }
-
-
-    public static int countSetBits(long n) {
-        // base case
-        if (n == 0)
-            return 0;
-        else
-            return 1 + countSetBits(n & (n - 1L));
-    }
-
-    /** returns locations from 0-63 **/
-    public static int[] bitboardToArray(long l) {
-        int bitsSet = countSetBits(l);
-        int[] result = new int[bitsSet];
-        int counter = 0;
-
-        // todo - short circuit the loop if the
-        for (int i = 0; i < 64 && counter < bitsSet; i++) {
-            if ((l & (1L << i)) != 0) {
-                result[counter++] = i;
-            }
-        }
-
-        return result;
-    }
-
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public Game getGame() {
-        return this.game;
-    }
-
-    public boolean hasInsufficientMaterials(boolean isOutOfTime) {
-        // logic assumes there is always one black and white king.
-        // King vs king
-        if(hasBlackKingOnly() && hasWhiteKingOnly())
-            return true;
-
-        // King + minor piece (knight of bishop) vs king
-        if((hasWhiteKingOnly() && blackHasOnlyOneMinorPiece()) ||
-            (hasBlackKingOnly() && whiteHasOnlyOneMinorPiece()))
-            return true;
-
-        // King + minor piece vs king + minor piece
-        if(blackHasOnlyOneMinorPiece() && whiteHasOnlyOneMinorPiece())
-            return true;
-
-        // King + two knights vs king
-        if((hasBlackKingOnly() && whiteHasOnlyTwoKnights()) ||
-            (hasWhiteKingOnly() && blackHasOnlyTwoKnights()))
-            return true;
-
-        // Lone king vs all the pieces & time runs out
-        if(isOutOfTime &&
-            ((hasBlackKingOnly() && whiteHasAllOriginalPieces()) ||
-                (hasWhiteKingOnly() && blackHasAllOriginalPieces())))
-            return true;
-
-        return false;
-    }
-
-    public long[] getCopyOfBoards() {
-        return Arrays.copyOf(getBoards(), getBoards().length);
-    }
-
-    public Piece[] getCopyOfPieceCache() {
-        return Arrays.copyOf(pieceCache, pieceCache.length);
-    }
-
-    public Piece[] getPieceCache() {
-        return pieceCache;
-    }
-
-    public void setPieceCache(Piece[] pieceCache) {
-        this.pieceCache = pieceCache;
-    }
-
-    // ------------------------ Castling Rights -------------------------------
-    public void setCastlingRights(int castlingRights) {
-        this.castlingRights = castlingRights;
-    }
-
-    public int getCastlingRights() {
-        return this.castlingRights;
-    }
-
-
-    public boolean canCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
-    public boolean canCastlingBlackKingSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
-    public boolean canCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
-    public boolean canCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
-    public boolean cannotCastle()              { return castlingRights == 0; }
-
-    public void clearCastlingWhiteKingSide()  { clearCastling(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
-    public void clearCastlingBlackKingSide()  { clearCastling(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
-    public void clearCastlingWhiteQueenSide() { clearCastling(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
-    public void clearCastlingBlackQueenSide() { clearCastling(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
-    public void clearCastlingWhite()          { clearCastling((CastlingHelper.CASTLING_WHITE_KING_SIDE | CastlingHelper.CASTLING_WHITE_QUEEN_SIDE)); }
-    public void clearCastlingBlack()          { clearCastling((CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE)); }
-
-    private void clearCastling(int value) {
-        this.zobristKey ^= getCastlingRights(castlingRights);  // xor the castling rights off
-        castlingRights &= ~value;
-        this.zobristKey ^= getCastlingRights(castlingRights);  // xor the castling rights on
-    }
-
-    public String getCastlingRightsForFen() {
-        if(castlingRights == 0) return "-";
-
-        StringBuilder sb = new StringBuilder();
-
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE ) != 0) sb.append(CastlingHelper.WHITE_KING_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0) sb.append(CastlingHelper.WHITE_QUEEN_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE ) != 0) sb.append(CastlingHelper.BLACK_KING_CHAR);
-        if((castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0) sb.append(CastlingHelper.BLACK_QUEEN_CHAR);
-
-        return sb.toString();
-    }
-
-    public void setInitialCastlingRights() {
-        castlingRights =
-            CastlingHelper.CASTLING_WHITE_KING_SIDE |
-                CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
-                CastlingHelper.CASTLING_BLACK_KING_SIDE |
-                CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
-    }
-
-    public void clearCastlingRights() {
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
-        castlingRights = 0;
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
-    }
-
-    public void setCastlingRightsFromFen(String fen) {
-        if(fen.isBlank()) { clearCastlingRights(); }
-        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
-        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
-        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
-        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
-    }
-
-    public void addCastlingRights(int value) {
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
-        castlingRights |= value;
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
+        return i + location;
     }
 
     // ------------------------ Zobrist Keys -------------------------------
+
     /*
      * https://web.archive.org/web/20070810003508/www.seanet.com/%7Ebrucemo/topics/zobrist.htm
         # A means of enabling position comparison
@@ -977,7 +816,7 @@ public class Board {
     }
 
     public void setZobristKey(PlayerColor color, int epT) {
-        this.zobristKey = calculateFullZorbistKey(color, epT);;
+        this.zobristKey = calculateFullZorbistKey(color, epT);
     }
 
     private long calculateFullZorbistKey(PlayerColor color, int epT) {
@@ -1027,10 +866,6 @@ public class Board {
 
     private long getPieceSquareKey(Piece piece, int square) {
         return zorbistRandomKeys.get(57 * piece.getIndex() + 13 * square);
-    }
-
-    public void clearZobristKey(Piece piece, int square) {
-        this.zobristKey &= ~getPieceSquareKey(piece, square);
     }
 
     public void clearZorbistMask(long mask) {

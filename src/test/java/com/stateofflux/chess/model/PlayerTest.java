@@ -10,7 +10,5 @@ public class PlayerTest {
 
     @Test
     public void aTest() {
-        Board b = new Board();
-        Player p = new Player(b, PlayerColor.WHITE);
     }
 }

@@ -1,7 +1,6 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -42,7 +41,7 @@ public class KingMovesTest {
         for(String fen : fens) {
             Game game = new Game(fen);
             LOGGER.info(fen);
-            assertThat(game.getChecked()).isTrue();
+            assertThat(game.isChecked()).isTrue();
         }
     }
 
@@ -57,7 +56,7 @@ public class KingMovesTest {
 
         for(String fen : fens) {
             Game game = new Game(fen);
-            assertThat(game.getChecked()).isTrue();
+            assertThat(game.isChecked()).isTrue();
         }
     }
 

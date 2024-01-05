@@ -149,7 +149,7 @@ public class KingMoves extends StraightLineMoves {
         }
 
         for(int square: squaresToCheck) {
-           if(isInCheckForCastling(square, side)) {
+           if(isInCheckForCastling(square)) {
                return false;
            }
         }
@@ -162,7 +162,7 @@ public class KingMoves extends StraightLineMoves {
     }
 
     // we can assume the King is only in row 1 (for white) or row 8 (for black)
-    protected boolean isInCheckForCastling(int tempLocation, Castling side) {
+    protected boolean isInCheckForCastling(int tempLocation) {
         if(this.playerColor == PlayerColor.WHITE) {
             // pawn
             if( (((1L << (tempLocation - 1 + 8)) |

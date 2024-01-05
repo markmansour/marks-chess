@@ -480,7 +480,7 @@ public class GameTest {
     public static class CheckTest {
         @Test public void nextMoveGetsOutOfCheck() {
             Game game = new Game("8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -");
-            assertThat(game.getChecked()).isTrue();
+            assertThat(game.isChecked()).isTrue();
 
             // generate next set of moves for the active player
             MoveList<Move> moves = game.generateMoves();
@@ -488,18 +488,15 @@ public class GameTest {
             // all moves take black out of check
             for(var move : moves) {
                 Game newGame = new Game(game.asFen());
-                LOGGER.info("fen: " + newGame.asFen());
                 newGame.move(move);
-                LOGGER.info("move: " + move);
-                LOGGER.info("inCheck? " + newGame.isChecked(PlayerColor.BLACK));
-                assertThat(newGame.isChecked(PlayerColor.BLACK)).isFalse();
+                assertThat(newGame.isChecked()).isFalse();
                 assertThat(game.isCheckmated(PlayerColor.BLACK)).isFalse();
             }
         }
 
         @Test public void isCheckmated() {
             Game game = new Game("6Q1/3rk3/4Q3/pp4P1/8/5P2/5PK1/8 b - -");
-            assertThat(game.getChecked()).isTrue();
+            assertThat(game.isChecked()).isTrue();
             assertThat(game.isCheckmated(PlayerColor.BLACK)).isTrue();
         }
 
@@ -584,9 +581,9 @@ public class GameTest {
             game.move("Kg1"); // move 5: twofold repetition
             game.move("Kh7");
             game.move("Kh2");
-            game.getBoard().printOccupied();
+            game.printOccupied();
             game.move("Kg8");
-            game.getBoard().printOccupied();
+            game.printOccupied();
             game.move("Kg1"); // move 9: threefold repetition
             assertThat(game.isRepetition()).isTrue();
         }
@@ -620,21 +617,14 @@ public class GameTest {
         Game game = new Game();
         game.disable50MovesRule();
         int counter = 0;
-//        while(!game.isOver() && counter++ < 55) {
+
         while(!game.isOver() && counter++ < 1055) {
             LOGGER.info("--------------------------");
             MoveList<Move> moves = game.generateMoves();
             var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
             LOGGER.info("move: " + move);
             game.move(move);
-            LOGGER.info("%d: %s check? %s --- %s check? %s === opponent checkmate? %s".formatted(
-                counter,
-                game.getActivePlayerColor(),
-                game.isChecked(game.getActivePlayerColor()),
-                game.getWaitingPlayer(),
-                game.isChecked(game.getWaitingPlayer()),
-                game.isCheckmated(game.getWaitingPlayer())));
-            game.getBoard().printOccupied();
+            game.printOccupied();
             LOGGER.info(game.asFen());
         }
 
