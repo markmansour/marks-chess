@@ -29,8 +29,8 @@ public class Game {
     private int clock;
     private boolean outOfTime = false;
 
-    private final LinkedList<Long> historyAsHashes = new LinkedList<>();
-    private final LinkedList<History> historyOfMoves = new LinkedList<>();
+    private final Deque<Long> historyAsHashes = new ArrayDeque<>();
+    private final Deque<History> historyOfMoves = new ArrayDeque<>();
 
     // --------------------------- Constructors ---------------------------
 
@@ -407,17 +407,17 @@ public class Game {
     private void postMoveAccounting(Move move, int removedLocation) {
         setEnPassantTarget(move.getEnPassantTarget());
         removeCastlingRightsFor(move, removedLocation);
-        historyAsHashes.add(board.getZobristKey());
+        historyAsHashes.push(board.getZobristKey());
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
     }
 
     public void undo() {
-        History h = historyOfMoves.pollLast();
+        History h = historyOfMoves.pop();
         getBoard().setBoards(h.boards);
         getBoard().setPieceCache(h.pieceCache);
-        historyAsHashes.pollLast();  // drop the hash
+        historyAsHashes.pop();  // drop the hash
         setEnPassantTarget(h.enPassantTarget());
         this.check = h.check();
         board.setCastlingRights(h.castlingRights());
@@ -455,7 +455,7 @@ public class Game {
 
         // TODO: the depth of historyOfMoves is only as deep as the depth traversal (so no very large - currently depth 6 max)
         //       Therefore convert this to a fixed size array (and reuse the arrays instead of reallocated them).
-        historyOfMoves.add(new History(
+        historyOfMoves.push(new History(
             move,
             boardsBeforeUpdate,
             getEnPassantTarget(),
@@ -658,7 +658,7 @@ public class Game {
             this.getEnPassantTargetAsFen();
     }
 
-    public LinkedList<Long> getHistoryAsHashes() {
+    public Deque<Long> getHistoryAsHashes() {
         return historyAsHashes;
     }
 
@@ -1037,13 +1037,14 @@ public class Game {
 
     public boolean isRepetition() {
         int n = 3;
+        Long[] hashes = getHistoryAsHashes().toArray(new Long[0]);
 
-        final int i = Math.min(getHistoryAsHashes().size() - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
+        final int i = Math.min(hashes.length - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
         if (getHistoryAsHashes().size() >= 4) {
-            long lastKey = getHistoryAsHashes().get(getHistoryAsHashes().size() - 1);
+            long lastKey = hashes[getHistoryAsHashes().size() - 1];
             int rep = 0;
             for (int x = 4; x <= i; x += 2) {
-                final long k = getHistoryAsHashes().get(getHistoryAsHashes().size() - x - 1);
+                final long k = hashes[hashes.length - x - 1];
                 if (k == lastKey && ++rep >= n - 1) {
                     return true;
                 }
