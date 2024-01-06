@@ -519,7 +519,7 @@ public class Board {
     }
 
     public long[] getCopyOfBoards() {
-        return Arrays.copyOf(getBoards(), getBoards().length);
+        return getBoards().clone();  // array of primitives will be cloned.
     }
 
     public Piece[] getCopyOfPieceCache() {
@@ -538,17 +538,17 @@ public class Board {
         return this.whiteBoard;
     }
 
-    public long calculateWhiteBoard() {
-        return this.whiteBoard = this.whiteBoardWithoutKing |
-            this.boards[Piece.WHITE_KING.getIndex()];
-    }
-
     public long getWhiteWithoutKing() {
         return this.whiteBoardWithoutKing;
     }
 
-    public long calculateWhiteBoardWithoutKing() {
-        return this.whiteBoardWithoutKing = this.boards[Piece.WHITE_PAWN.getIndex()] |
+    public void calculateWhiteBoard() {
+        this.whiteBoard = this.whiteBoardWithoutKing |
+            this.boards[Piece.WHITE_KING.getIndex()];
+    }
+
+    public void calculateWhiteBoardWithoutKing() {
+        this.whiteBoardWithoutKing = this.boards[Piece.WHITE_PAWN.getIndex()] |
             this.boards[Piece.WHITE_KNIGHT.getIndex()] |
             this.boards[Piece.WHITE_BISHOP.getIndex()] |
             this.boards[Piece.WHITE_ROOK.getIndex()] |

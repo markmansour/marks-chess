@@ -231,7 +231,7 @@ public class DepthTest {
      3718 ms and reviewed 4865609 nodes.  1308662 nodes/second (1,437,402 and 1,270,725) - en passant uses ints.
      3269 ms and reviewed 4865609 nodes.  1488408 nodes/second - simplified game clock counter (1,433,169 and 1,315,740)
      2454 ms and reviewed 4865609 nodes.  1982725 nodes/second - incremental zobrist key management.
-
+     2317 ms and reviewed 4865609 nodes.  2099960 nodes/second - use clone instead of Arrays.copyOf for Board.getCopyOfBoards
      */
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
