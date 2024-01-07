@@ -180,16 +180,6 @@ public class Board {
         this.boards[boardIndex] ^= (1L << location);  // TODO: should be this.boards[boardIndex] &= ~(1L << location);  ??
         updateZobristKeyWhenSetting(piece, location);
         pieceCache[location] = Piece.EMPTY;
-
-        if(boardIndex <= 5) { // white
-            calculateWhiteBoard();
-            calculateWhiteBoardWithoutKing();
-        } else if(boardIndex <= 11) { // black
-            calculateBlackBoard();
-            calculateBlackBoardWithoutKing();
-        }
-
-        calculateOccupied();
     }
 
     protected void clearLocation(int location) {
@@ -237,17 +227,19 @@ public class Board {
 
         throw new AssertionError("Location not found: " + location);
     }
+
+
     /*
      * Move a piece on the board, but do not perform validation.
      * return the removed location
      */
-
     public int update(Move m, int gameEnPassantState) {
         boolean standardMove = true;
         int removed = -1;
 
         int fromBoardIndex = this.getBoardIndex(m.getFrom());  // TODO: replace fromBoardIndex = m.getPiece().getIndex();
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
+
         removed = m.getTo();  // TODO: replace with pieceCache[m.getTo()].getIndex();
         this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
 
