@@ -15,7 +15,7 @@ public class KingMovesTest {
         Game game = new Game();
 
         // starting at position 8, moving up 2 squares should give an answer of 16 | 24.
-        PieceMoves pieceMoves = new KingMoves(game.getBoard(), 4);
+        PieceMovesInterface pieceMoves = new KingMoves(game.getBoard(), 4);
 
         assertThat(pieceMoves.getNonCaptureMoves()).isZero();
         assertThat(pieceMoves.getCaptureMoves()).isZero();
@@ -24,7 +24,7 @@ public class KingMovesTest {
     @Test
     public void movingUpIntoEmptySpace() {
         Game game = new Game("rnbqkbnr/pppp4/4pppp/1B6/3PPPQ1/8/PPP3PP/RNB1K1NR b KQkq -");
-        PieceMoves pieceMoves = new KingMoves(game.getBoard(), 4);
+        PieceMovesInterface pieceMoves = new KingMoves(game.getBoard(), 4);
 
         assertThat(pieceMoves.getNonCaptureMoves()).isEqualTo(1 << 3L | 1L << 11 | 1L << 12 | 1L << 13 | 1L << 5);
         assertThat(pieceMoves.getCaptureMoves()).isZero();

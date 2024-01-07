@@ -24,7 +24,7 @@ public class GameTest {
         assertThat(g.getPiecePlacement()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         assertThat(g.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(g.board.getCastlingRightsForFen().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
-        assertThat(g.getEnPassantTargetAsFen()).isEqualTo("-");
+        assertThat(g.board.getEnPassantTargetAsFen()).isEqualTo("-");
         assertThat(g.getHalfMoveClock()).isZero();
         assertThat(g.getFullMoveCounter()).isOne();
     }
@@ -199,7 +199,7 @@ public class GameTest {
         game.move("b4"); // from b2 to b4 - creating an en passant situation
 
         assertThat(game.board.cannotCastle()).isTrue();
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("b3");
+        assertThat(game.board.getEnPassantTargetAsFen()).isEqualTo("b3");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - - 1 22
         // 2r3k1/1q1nbppp/r3p3/3pP3/1P1P4/PpQ2N2/2RN1PPP/2R4K b - - 1 22
@@ -209,7 +209,7 @@ public class GameTest {
         game.move("c5"); // from c7 to c5 - creating an en passant situation
 
         assertThat(game.board.getCastlingRightsForFen()).isEqualTo("KQkq");
-        assertThat(game.getEnPassantTargetAsFen()).isEqualTo("c6");
+        assertThat(game.board.getEnPassantTargetAsFen()).isEqualTo("c6");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         assertThat(game.getPiecePlacement()).isEqualTo("rnbqkbnr/pp1pppp1/8/1PpP4/8/2P4p/P3PPPP/RNBQKBNR");
     }
@@ -226,7 +226,7 @@ public class GameTest {
         game.move("f4");  // initial position - two square pawn advance
         // move from g4 to f3 would be possible IF it didn't put the black king in check.
         // therefore this is NOT an en passant move.
-        assertThat(game.getEnPassantTarget()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
+        assertThat(game.board.getEnPassantTarget()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
         assertThat(game.generateMoves().asLongSan()).doesNotContain("g4f3");
     }
 
@@ -309,6 +309,7 @@ public class GameTest {
             assertThat(game.asFenNoCounters()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R w KQ -");
         }
     }
+
     public static class WhenPassingThroughCheck {
         @Test
         public void kingDoesNotPassThroughCheckFromBishop() {

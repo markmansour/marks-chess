@@ -5,13 +5,12 @@ import com.stateofflux.chess.model.Board;
 public class KnightMoves implements PieceMovesInterface {
     public static final long[] KNIGHT_MOVES = new long[64];
 
-    protected long nonCaptureMoves;
-    protected long captureMoves;
+    private long nonCaptureMoves;
+    private long captureMoves;
 
-    protected final Board board;
-    protected final int location;
-    protected final Piece piece;
-    protected final boolean isWhite;
+    private final Board board;
+    private final int location;
+    private final boolean isWhite;
 
     static {
         int rank;
@@ -40,7 +39,6 @@ public class KnightMoves implements PieceMovesInterface {
         this.board = board;
         this.location = location;
         this.isWhite = (((1L << location) & board.getWhite()) != 0);
-        this.piece = isWhite ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
 
         findCaptureAndNonCaptureMoves();
     }
