@@ -54,42 +54,42 @@ public class PawnMoves implements PieceMovesInterface {
 
     public void findCaptureAndNonCaptureWhiteMoves() {
         long oneStep, twoStep;
-        long occupiedBoard = this.board.getOccupied();
+        long occupiedBoard = board.getOccupied();
         long pawns;
         long opponentBoard = board.getBlack();
 
         // one step forward
-        pawns = board.getWhitePawns() & (1L << this.location);
+        pawns = board.getWhitePawns() & (1L << location);
         oneStep = (pawns << 8L) & ~occupiedBoard;
 
         // two steps forward
         twoStep = ((oneStep & Board.RANK_3) << 8L) & ~occupiedBoard;
 
-        this.nonCaptureMoves = oneStep | twoStep;
+        nonCaptureMoves = oneStep | twoStep;
 
         // capture
-        this.captureMoves |= PAWN_ATTACKS[0][this.location] & opponentBoard;
+        captureMoves |= PAWN_ATTACKS[0][location] & opponentBoard;
 
         findEnPassantCaptures();
     }
 
     public void findCaptureAndNonCaptureBlackMoves() {
         long oneStep, twoStep;
-        long occupiedBoard = this.board.getOccupied();
+        long occupiedBoard = board.getOccupied();
         long pawns;
         long opponentBoard = board.getWhite();
 
         // one step forward
-        pawns = board.getBlackPawns() & (1L << this.location);
+        pawns = board.getBlackPawns() & (1L << location);
         oneStep = (pawns >> 8L) & ~occupiedBoard;
 
         // two steps forward
         twoStep = ((oneStep & Board.RANK_6) >> 8L) & ~occupiedBoard;
 
-        this.nonCaptureMoves = oneStep | twoStep;
+        nonCaptureMoves = oneStep | twoStep;
 
         // capture
-        this.captureMoves |= PAWN_ATTACKS[1][this.location] & opponentBoard;
+        captureMoves |= PAWN_ATTACKS[1][location] & opponentBoard;
 
         findEnPassantCaptures();
     }
@@ -97,7 +97,7 @@ public class PawnMoves implements PieceMovesInterface {
 
     private void findEnPassantCaptures() {
         // if there is n en passant target, then exit
-        if (this.enPassantTarget == -1) {
+        if (enPassantTarget == -1) {
             return;
         }
 
@@ -108,28 +108,28 @@ public class PawnMoves implements PieceMovesInterface {
     }
 
     private void findWhiteEnPassantCaptures() {
-        int file = Board.file(this.enPassantTarget);
+        int file = Board.file(enPassantTarget);
 
-        if (file > 0 && this.enPassantTarget == (this.location + 9))  // white left
-            this.captureMoves |= (1L << this.enPassantTarget);
-        else if (file < 7 && this.enPassantTarget == (this.location + 7))  // white right
-            this.captureMoves |= (1L << this.enPassantTarget);
+        if (file > 0 && enPassantTarget == (location + 9))  // white left
+            captureMoves |= (1L << enPassantTarget);
+        else if (file < 7 && enPassantTarget == (location + 7))  // white right
+            captureMoves |= (1L << enPassantTarget);
     }
 
     private void findBlackEnPassantCaptures() {
-        int file = Board.file(this.enPassantTarget);
+        int file = Board.file(enPassantTarget);
 
-        if (file > 0 && this.enPassantTarget == (this.location - 9))  // black left
-            this.captureMoves |= (1L << this.enPassantTarget);
-        else if (file < 7 && this.enPassantTarget == (this.location - 7))  // black right
-            this.captureMoves |= (1L << this.enPassantTarget);
+        if (file > 0 && enPassantTarget == (location - 9))  // black left
+            captureMoves |= (1L << enPassantTarget);
+        else if (file < 7 && enPassantTarget == (location - 7))  // black right
+            captureMoves |= (1L << enPassantTarget);
     }
 
     public long getCaptureMoves() {
-        return this.captureMoves;
+        return captureMoves;
     };
 
     public long getNonCaptureMoves() {
-        return this.nonCaptureMoves;
+        return nonCaptureMoves;
     }
 }

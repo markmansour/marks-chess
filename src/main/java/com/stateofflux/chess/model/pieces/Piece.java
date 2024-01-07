@@ -55,42 +55,6 @@ public enum Piece {
         return EMPTY;
     }
 
-    public static int getPieceIndexByPieceChar(String c) {
-        for (Piece piece : Piece.values()) {
-            if (piece.getPieceChar() == c.charAt(0)) {
-                return piece.getIndex();
-            }
-        }
-
-        throw new IllegalArgumentException("piece character not found: " + c);
-    }
-
-    public static Piece getPieceByAlgebraicPieceChar(char algebraicPiece, PlayerColor color) {
-        if(color == PlayerColor.BLACK) {
-            return switch(algebraicPiece) {
-                case KING_ALGEBRAIC -> BLACK_KING;
-                case QUEEN_ALGEBRAIC -> BLACK_QUEEN;
-                case BISHOP_ALGEBRAIC -> BLACK_BISHOP;
-                case KNIGHT_ALGEBRAIC -> BLACK_KNIGHT;
-                case ROOK_ALGEBRAIC -> BLACK_ROOK;
-                default -> BLACK_PAWN;
-            };
-        }
-
-        if(color == PlayerColor.WHITE) {
-            return switch(algebraicPiece) {
-                case KING_ALGEBRAIC -> WHITE_KING;
-                case QUEEN_ALGEBRAIC -> WHITE_QUEEN;
-                case BISHOP_ALGEBRAIC -> WHITE_BISHOP;
-                case KNIGHT_ALGEBRAIC -> WHITE_KNIGHT;
-                case ROOK_ALGEBRAIC -> WHITE_ROOK;
-                default -> WHITE_PAWN;
-            };
-        }
-
-        throw new IllegalArgumentException("piece character not found: " + algebraicPiece);
-    }
-
     public static Piece getPieceByPieceChar(String c) {
         for (Piece piece : Piece.values()) {
             if (piece.getPieceChar() == c.charAt(0)) {
