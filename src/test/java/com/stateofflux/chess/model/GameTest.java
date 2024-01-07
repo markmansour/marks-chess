@@ -1,6 +1,8 @@
 package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.pieces.PawnMoves;
+import com.stateofflux.chess.model.player.Player;
+import com.stateofflux.chess.model.player.RandomMovePlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
@@ -611,33 +613,6 @@ public class GameTest {
             Game game = Game.fromSan("1. e4 Nf6 2. e5 d5 3. Bc4 Nc6 4. Bf1 Nb8 5. Bc4 Nc6 6. Bf1 Nb8");
             assertThat(game.isRepetition()).isFalse();
         }
-    }
-
-    @Test public void canPlayAFullGame() {
-        fail("too long");
-        Game game = new Game();
-        game.disable50MovesRule();
-        int counter = 0;
-
-        while(!game.isOver() && counter++ < 1055) {
-            LOGGER.info("--------------------------");
-            MoveList<Move> moves = game.generateMoves();
-            var move = moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
-            LOGGER.info("move: " + move);
-            game.move(move);
-            game.printOccupied();
-            LOGGER.info(game.asFen());
-        }
-
-        LOGGER.info("--------------------------");
-        LOGGER.info("isOver: {}", game.isOver());
-        LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
-        LOGGER.info("hasResigned: {}", game.hasResigned());
-        LOGGER.info("isStalemate: {}", game.isStalemate());
-        LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
-        LOGGER.info("exceededMoves: {}", game.exceededMoves());
-        LOGGER.info("hasRepeated: {}", game.isRepetition());
-        assertThat(game.isOver()).isTrue();
     }
 
     @Test public void twoPlayersWithRandomMoves() {

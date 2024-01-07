@@ -1,9 +1,9 @@
 package com.stateofflux.chess.model;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.stateofflux.chess.model.pieces.*;
+import com.stateofflux.chess.model.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;

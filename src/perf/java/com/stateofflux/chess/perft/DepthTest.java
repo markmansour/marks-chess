@@ -206,6 +206,7 @@ public class DepthTest {
 
     // after magic bitboards - 20 seconds.
     // after more optimizations - 6.5 seconds
+    // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(4, perftRecords);
