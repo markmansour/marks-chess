@@ -640,6 +640,25 @@ public class GameTest {
         assertThat(game.isOver()).isTrue();
     }
 
+    @Test public void twoPlayersWithRandomMoves() {
+        Player one = new RandomMovePlayer(PlayerColor.WHITE);
+        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        Game game = new Game();
+        game.disable50MovesRule();
+        game.setPlayers(one, two);
+        game.play();
+
+        LOGGER.info("--------------------------");
+        LOGGER.info("isOver: {}", game.isOver());
+        LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
+        LOGGER.info("hasResigned: {}", game.hasResigned());
+        LOGGER.info("isStalemate: {}", game.isStalemate());
+        LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
+        LOGGER.info("exceededMoves: {}", game.exceededMoves());
+        LOGGER.info("hasRepeated: {}", game.isRepetition());
+        assertThat(game.isOver()).isTrue();
+    }
+
     public static class PgnGame {
         @Test public void playToCheckmate() {
             String pgnString = """

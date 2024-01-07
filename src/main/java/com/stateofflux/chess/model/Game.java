@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.stateofflux.chess.model.pieces.*;
 import org.jetbrains.annotations.NotNull;
@@ -112,6 +113,43 @@ public class Game {
         }
 
         return g;
+    }
+
+    private Player[] players;
+
+    // --------------------------- Playing ---------------------------
+    public void setPlayers(Player one, Player two) {
+        this.players = new Player[] { one, two};
+    }
+
+    public void play() {
+        int playerIndex = 0;
+        Player currentPlayer;
+
+        while(!isOver()) {
+            currentPlayer = players[playerIndex % 2];
+            Move move = currentPlayer.getNextMove(this);
+            move(move);
+
+/*
+            LOGGER.info("move: " + move);
+            // printOccupied();
+            LOGGER.info(asFen());
+*/
+            playerIndex++;
+        }
+
+        LOGGER.info("Winner is: {}", players[(playerIndex - 1) % 2]);
+        printOccupied();
+    }
+
+    public String getWinner() {
+        if(players == null) return "No Players Set";
+        if(isDraw()) return "Draw";
+        if(isStalemate()) return "Stalemate";
+        if(isCheckmated(getActivePlayerColor())) return "Checkmate: " + players[(clock - 1) % 2];
+        if(exceededMoves()) return "Moves exceeded";
+        return "unknown";
     }
 
     // --------------------------- Instance Methods ---------------------------
@@ -422,6 +460,17 @@ public class Game {
         return removed;
     }
 
+    public String getMoveHistory() {
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < historyOfMoves.size(); i++) {
+            if(i % 2 == 0) sb.append((i / 2) + 1).append(". ");
+            sb.append(historyOfMoves.get(i).move.toLongSan()).append(" ");
+        }
+
+        return sb.toString();
+    }
+
     @NotNull
     private Move extractMoveFromAlgebraicNotation(String action) {
         int destination = FenString.squareToLocation(action);
@@ -625,7 +674,7 @@ public class Game {
     // TODO: Can isChecked be removed and replaced with isPlayerInCheck?
 
     public boolean isDraw() {
-        return getFullMoveCounter() * 50 >= 100 ||
+        return exceededMoves() ||
             isStalemate() ||
             hasInsufficientMaterials() ||
             isRepetition();
@@ -768,14 +817,21 @@ public class Game {
         }
 
         LOGGER.info("   abcdefgh");
+        LOGGER.info("--------------------------");
         LOGGER.info("FEN: {}", asFen());
         LOGGER.info("isOver: {}", isOver());
+        LOGGER.info("Winner is: {}", getWinner());
+        LOGGER.info("move count: {}", historyOfMoves.size());
+        LOGGER.info("moves: {}", getMoveHistory());
+        LOGGER.info("");
         LOGGER.info("isCheckmated: {}", isCheckmated(activePlayerColor));
+        LOGGER.info("isDraw?: {}", isDraw());
         LOGGER.info("hasResigned: {}", hasResigned());
         LOGGER.info("isStalemate: {}", isStalemate());
-        LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
-        LOGGER.info("exceededMoves: {}", exceededMoves());
         LOGGER.info("hasRepeated: {}", isRepetition());
+        LOGGER.info("");
+        LOGGER.info("exceededMoves: {}", exceededMoves());
+        LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
         LOGGER.info("--------------------------");
     }
 
