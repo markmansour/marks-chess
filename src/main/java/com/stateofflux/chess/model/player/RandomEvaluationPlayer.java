@@ -21,25 +21,47 @@ public class RandomEvaluationPlayer extends Player {
         this.color = color;
     }
 
+    /*
+      // Example picking best move in a chess game using negamax function above
+      // https://en.wikipedia.org/wiki/Negamax
+
+      function think(boardState) is
+          allMoves := generateLegalMoves(boardState)
+          bestMove := null
+          bestEvaluation := -∞
+
+          for each move in allMoves
+              board.apply(move)
+              evaluateMove := -negamax(boardState, depth=3)
+              board.undo(move)
+              if evaluateMove > bestEvaluation
+                  bestMove := move
+                  bestEvaluation := evaluateMove
+
+          return bestMove
+       */
     public Move getNextMove(Game game) {
-        LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
+        // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
 
         this.game = game;
 
         MoveList<Move> moves = game.generateMoves();
-        Map<Move, Integer> results = new HashMap<>();
+        Move bestMove = null;
+        int bestEvaluation = Integer.MIN_VALUE;
 
         for(Move move: moves) {
             game.move(move);
-
-            int result = negaMax(DEFAULT_SEARCH_DEPTH - 1);
-            results.put(move, result);
-
+            int result = -negaMax(DEFAULT_SEARCH_DEPTH - 1);
             game.undo();
+
+            if(result > bestEvaluation) {
+                bestMove = move;
+                bestEvaluation = result;
+            }
         }
 
         // return the move with the largest value
-        return Collections.max(results.entrySet(), Map.Entry.comparingByValue()).getKey();
+        return bestMove;
     }
 
     /*
@@ -52,10 +74,8 @@ public class RandomEvaluationPlayer extends Player {
      *     return value
      */
     protected int negaMax(int depth) {
-        PlayerColor pc = game.getActivePlayerColor();
-
         if(depth == 0)
-            return (pc.isWhite() ? 1 : -1) * evaluate();
+            return evaluate();
 
        int result = Integer.MIN_VALUE;
         MoveList<Move> moves = game.generateMoves();
@@ -106,11 +126,11 @@ public class RandomEvaluationPlayer extends Player {
             LOGGER.info("pawnEval : {}", pawnEvaluation);
 */
 
-        int result = 200 * c(b.getWhiteKingBoard()) - c(b.getBlackKingBoard())
-            + 9 * c(b.getWhiteQueenBoard()) - c(b.getBlackQueenBoard())
-            + 5 * c(b.getWhiteRookBoard()) - c(b.getBlackRookBoard())
-            + 3 * c(b.getWhiteBishopBoard()) - c(b.getBlackBishopBoard())
-            + 3 * c(b.getWhiteKnightBoard()) - c(b.getBlackKnightBoard())
+        int result = 200 * (c(b.getWhiteKingBoard()) - c(b.getBlackKingBoard()))
+            + 9 * (c(b.getWhiteQueenBoard()) - c(b.getBlackQueenBoard()))
+            + 5 * (c(b.getWhiteRookBoard()) - c(b.getBlackRookBoard()))
+            + 3 * (c(b.getWhiteBishopBoard()) - c(b.getBlackBishopBoard()))
+            + 3 * (c(b.getWhiteKnightBoard()) - c(b.getBlackKnightBoard()))
             + c(b.getWhitePawns()) - c(b.getBlackPawns())
             - pawnEvaluation
             + mobility;

@@ -7,11 +7,23 @@ import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RandomEvaluationPlayerTest {
-    @Test public void randomGameDepthOne() {
+    @Test public void randomGameDefaultDepthOnePlayerWithEvaluation() {
         Game game = new Game();
         game.disable50MovesRule();
         Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
         Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        game.setPlayers(one, two);
+
+        game.play();
+
+        assertThat(game.isOver()).isTrue();
+    }
+
+    @Test public void randomGameDefaultDepthTwiPlayersWithEvaluation() {
+        Game game = new Game();
+        game.disable50MovesRule();
+        Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
+        Player two = new RandomEvaluationPlayer(PlayerColor.BLACK);
         game.setPlayers(one, two);
 
         game.play();
