@@ -803,18 +803,7 @@ public class Game {
     }
 
     public void printOccupied() {
-        StringBuilder prettyBoard = new StringBuilder(64);
-
-        for (int i = 0; i < 64; i++) {
-            prettyBoard.insert(i, board.get(i));
-        }
-
-        CharSequence[] ranks = new CharSequence[8];
-
-        for (int i = 7; i >= 0; i--) {
-            ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8);
-            LOGGER.info("{}: {}", i + 1, ranks[i]);
-        }
+        board.printOccupiedBoard();
 
         LOGGER.info("   abcdefgh");
         LOGGER.info("--------------------------");

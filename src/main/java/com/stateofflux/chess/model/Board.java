@@ -133,7 +133,65 @@ public class Board {
         return result;
     }
 
+    // --------------------------- Static Debugging Methods ---------------------------
+    public static void printOccupied(long board) {
+        StringBuilder rankString;
+        List<String> ranks = new ArrayList<>();
+
+        for (int rank = 8; rank > 0; rank--) {
+            rankString = new StringBuilder(8);
+            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
+                rankString.append((board & (1L << location)) == 0 ? '.' : '1');
+            }
+
+            ranks.add(rankString.toString());
+        }
+
+        int i = 0;
+        for (String r : ranks) {
+            LOGGER.info("{}: {}", 8 - i, r);
+            i++;
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    public static void printBoard(long board) {
+        String reversedLong = longToReversedBinaryString(board);
+
+        for (int rank = 7; rank >= 0; rank--) {
+            LOGGER.info("{}: {}",
+                rank + 1,
+                reversedLong.substring(rank * 8, (rank + 1) * 8).replace('0', '.'));
+        }
+
+        LOGGER.info("   abcdefgh");
+    }
+
+    public static String longToReversedBinaryString(long l) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("0".repeat(Long.numberOfLeadingZeros(l)));
+        sb.append(Long.toBinaryString(l));
+
+        return sb.reverse().toString();
+    }
+
     // --------------------------- Instance Methods ---------------------------
+
+    void printOccupiedBoard() {
+        StringBuilder prettyBoard = new StringBuilder(64);
+
+        for (int i = 0; i < 64; i++) {
+            prettyBoard.insert(i, get(i));
+        }
+
+        CharSequence[] ranks = new CharSequence[8];
+
+        for (int i = 7; i >= 0; i--) {
+            ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8);
+            LOGGER.info("{}: {}", i + 1, ranks[i]);
+        }
+    }
 
     public void setBoards(long[] boards) {
         this.boards = Arrays.copyOf(boards, boards.length);
@@ -170,6 +228,7 @@ public class Board {
     }
 
     public long setByBoard(Piece piece, int boardIndex, int location) {
+        assert location >= 0;
         long temp = this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
         pieceCache[location] = Piece.getPieceByIndex(boardIndex);
@@ -227,6 +286,20 @@ public class Board {
 
         throw new AssertionError("Location not found: " + location);
     }
+
+    public long getBlackKingBoard()   { return boards[Piece.BLACK_KING.getIndex()]; }
+    public long getBlackQueenBoard()  { return boards[Piece.BLACK_QUEEN.getIndex()]; }
+    public long getBlackBishopBoard() { return boards[Piece.BLACK_BISHOP.getIndex()]; }
+    public long getBlackKnightBoard() { return boards[Piece.BLACK_KNIGHT.getIndex()]; }
+    public long getBlackRookBoard()   { return boards[Piece.BLACK_ROOK.getIndex()]; }
+    public long getBlackPawnBoard()   { return boards[Piece.BLACK_PAWN.getIndex()]; }
+
+    public long getWhiteKingBoard()   { return boards[Piece.WHITE_KING.getIndex()]; }
+    public long getWhiteQueenBoard()  { return boards[Piece.WHITE_QUEEN.getIndex()]; }
+    public long getWhiteBishopBoard() { return boards[Piece.WHITE_BISHOP.getIndex()]; }
+    public long getWhiteKnightBoard() { return boards[Piece.WHITE_KNIGHT.getIndex()]; }
+    public long getWhiteRookBoard()   { return boards[Piece.WHITE_ROOK.getIndex()]; }
+    public long getWhitePawnBoard()   { return boards[Piece.WHITE_PAWN.getIndex()]; }
 
 
     /*
