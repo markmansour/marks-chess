@@ -152,12 +152,44 @@ public class PawnMovesTest {
         assertThat(game.asFen()).isEqualTo("rnbqkbnr/pp1ppp2/6p1/1PpP4/8/2P4P/P3PP1P/RNBQKBNR w KQkq - 0 2");
     }
 
-    // history commands
-    // is the game in a state of check?
-    // is the game in a state of check mate?
-    // is the game a draw?
-    // is the game over?
-    // is the game a stalemate?
-    // is the game a threefold repetition?
+    @Test public void whitePawnEvaluationTest() {
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        long whitePawns = b.getWhitePawns();
+        long blackPawns = b.getBlackPawns();
 
+        assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(0);
+        assertThat(PawnMoves.pawnEvaluation(blackPawns, whitePawns, false)).isEqualTo(0);
+    }
+
+    @Test public void whitePawnEvaluationDoubleTest() {
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/1P6/1PPPPPPP/RNBQKBNR");
+        long whitePawns = b.getWhitePawns();
+        long blackPawns = b.getBlackPawns();
+
+        assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(1);
+        assertThat(PawnMoves.pawnEvaluation(blackPawns, whitePawns, false)).isEqualTo(0);
+    }
+
+    @Test public void whitePawnEvaluationIsolatedTest() {
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RNBQKBNR");
+        long whitePawns = b.getWhitePawns();
+        long blackPawns = b.getBlackPawns();
+
+        assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(1);
+
+        b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1P1PP1P/RNBQKBNR");
+        whitePawns = b.getWhitePawns();
+        blackPawns = b.getBlackPawns();
+        assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(3);
+        assertThat(PawnMoves.pawnEvaluation(blackPawns, whitePawns, false)).isEqualTo(0);
+    }
+
+    @Test public void whitePawnEvaluationBlockedTest() {
+        Board b = new Board("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR");
+        long whitePawns = b.getWhitePawns();
+        long blackPawns = b.getBlackPawns();
+
+        assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(1);
+        assertThat(PawnMoves.pawnEvaluation(blackPawns, whitePawns, false)).isEqualTo(1);
+    }
 }

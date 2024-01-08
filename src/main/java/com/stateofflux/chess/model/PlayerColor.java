@@ -19,4 +19,12 @@ public enum PlayerColor {
             case NONE -> NONE;
         };
     }
+
+    public boolean isWhite() {
+        return this == WHITE;
+    }
+
+    public boolean isBlack() {
+        return this == BLACK;
+    }
 }

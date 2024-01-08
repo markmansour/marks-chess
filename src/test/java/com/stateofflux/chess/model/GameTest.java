@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.*;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import static org.assertj.core.api.Assertions.*;
 
 public class GameTest {

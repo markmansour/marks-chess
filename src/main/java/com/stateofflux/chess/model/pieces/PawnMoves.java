@@ -32,6 +32,46 @@ public class PawnMoves implements PieceMovesInterface {
         findCaptureAndNonCaptureMoves();
     }
 
+    public static int pawnEvaluation(long pawns, long otherPawns, boolean isWhite) {
+        int pawnCount = Long.bitCount(pawns);
+
+        if(pawnCount <= 1)
+            return pawnCount;
+
+        int dsi = 0; // doubles, blocked, isolated
+
+        // doubles
+        long mask = Board.FILE_A;
+        for(int i = 0; i < 8; i++) {
+            dsi += Long.bitCount(pawns & mask) >=2 ? 1 : 0;  // two pawns in the same file
+            mask <<= 1L;
+        }
+
+        // blocked
+        mask = Board.FILE_A;
+        for(int i = 0; i < 8; i++) {
+            if(isWhite && (pawns & mask) != 0 && (otherPawns & mask) != 0 && (((pawns & mask) << 8) & otherPawns) != 0)
+                dsi++;
+            if(!isWhite && (pawns & mask) != 0 && (otherPawns & mask) != 0 && (((pawns & mask) >> 8) & otherPawns) != 0)
+                dsi++;
+
+            mask <<= 1L;
+        }
+
+        // isolated pawns
+        mask = Board.FILE_A | Board.FILE_C;
+        long active = Board.FILE_B;
+        for(int i = 0; i < 6; i++) {
+            dsi += (pawns & mask) == 0 && (pawns & active) != 0 ? 1 : 0;
+            mask <<= 1L;
+            active <<= 1L;
+        }
+        if((pawns & Board.FILE_A) != 0 && (pawns & Board.FILE_B) == 0) dsi++;
+        if((pawns & Board.FILE_H) != 0 && (pawns & Board.FILE_G) == 0) dsi++;
+
+        return dsi;
+    }
+
     private static void initializePawnAttacks() {
         for(int location = 0; location < 64; location++) {
             long start = 1L << location;
