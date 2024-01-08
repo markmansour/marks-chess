@@ -5,9 +5,7 @@ import com.stateofflux.chess.model.pieces.PawnMoves;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomEvaluationPlayer extends Player {
@@ -48,20 +46,30 @@ public class RandomEvaluationPlayer extends Player {
         MoveList<Move> moves = game.generateMoves();
         Move bestMove = null;
         int bestEvaluation = Integer.MIN_VALUE;
+        List<Move> bestMoves = new ArrayList<Move>();
 
         for(Move move: moves) {
             game.move(move);
             int result = -negaMax(DEFAULT_SEARCH_DEPTH - 1);
             game.undo();
 
-            if(result > bestEvaluation) {
+            if(result == bestEvaluation) {
+                bestMoves.add(move);
+            } else if(result > bestEvaluation) {
+                bestMoves.clear();
+                bestMoves.add(move);
                 bestMove = move;
                 bestEvaluation = result;
             }
         }
 
         // return the move with the largest value
-        return bestMove;
+//        return bestMove;
+        assert !bestMoves.isEmpty();
+
+        Move m = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+
+        return m;
     }
 
     /*

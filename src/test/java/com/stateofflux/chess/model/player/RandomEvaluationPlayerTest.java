@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RandomEvaluationPlayerTest {
     @Test public void randomGameDefaultDepthOnePlayerWithEvaluation() {
         Game game = new Game();
-        game.disable50MovesRule();
+        // game.disable50MovesRule();
         Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
         Player two = new RandomMovePlayer(PlayerColor.BLACK);
         game.setPlayers(one, two);
@@ -21,7 +21,7 @@ public class RandomEvaluationPlayerTest {
 
     @Test public void randomGameDefaultDepthTwiPlayersWithEvaluation() {
         Game game = new Game();
-        game.disable50MovesRule();
+        // game.disable50MovesRule();
         Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
         Player two = new RandomEvaluationPlayer(PlayerColor.BLACK);
         game.setPlayers(one, two);

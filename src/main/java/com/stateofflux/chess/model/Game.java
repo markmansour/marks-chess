@@ -28,6 +28,7 @@ public class Game {
     private int depth = 0;
     private int clock;
     private boolean outOfTime = false;
+    private int movesWithoutCaptureOrPawnMove = 0;
 
     private final LinkedList<Long> historyAsHashes = new LinkedList<>();
     private final LinkedList<History> historyOfMoves = new LinkedList<>();
@@ -404,6 +405,7 @@ public class Game {
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
+        update50MoveRule(move);
     }
 
     public void undo() {
@@ -418,6 +420,14 @@ public class Game {
         switchActivePlayer();
         decrementClock();
     }
+
+    private void update50MoveRule(Move move) {
+        if(move.isCapture() || move.getPiece().equals(Piece.WHITE_PAWN) || move.getPiece().equals(Piece.BLACK_PAWN))
+            movesWithoutCaptureOrPawnMove = 0;
+        else
+            movesWithoutCaptureOrPawnMove++;
+    }
+
     void updateMoveForCastling(Move m) {
         int from = m.getFrom();
         int to = m.getTo();
@@ -688,6 +698,8 @@ public class Game {
         this.limitMovesTo50 = false;
     }
 
+    // 3-fold repetition
+    // https://en.wikipedia.org/wiki/Threefold_repetition
     public boolean isRepetition() {
         int n = 3;
 
@@ -706,7 +718,11 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmated(getActivePlayerColor()) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition();
+        return isCheckmated(getActivePlayerColor()) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition() || isSpinning();
+    }
+
+    private boolean isSpinning() {
+        return this.clock > 4000;
     }
 
     public boolean exceededMoves() {
@@ -714,7 +730,7 @@ public class Game {
     }
 
     public boolean past50moves() {
-        return clock > 50;
+        return movesWithoutCaptureOrPawnMove >= 50;
     }
 
     public boolean hasInsufficientMaterials() {
@@ -807,19 +823,20 @@ public class Game {
 
         LOGGER.info("   abcdefgh");
         LOGGER.info("--------------------------");
-        LOGGER.info("FEN: {}", asFen());
-        LOGGER.info("isOver: {}", isOver());
-        LOGGER.info("Winner is: {}", getWinner());
-        LOGGER.info("move count: {}", historyOfMoves.size());
-        LOGGER.info("moves: {}", getMoveHistory());
+        LOGGER.info("FEN:           {}", asFen());
+        LOGGER.info("isOver:        {}", isOver());
+        LOGGER.info("Winner is:     {}", getWinner());
+        LOGGER.info("move count:    {}", historyOfMoves.size());
+        LOGGER.info("moves:         {}", getMoveHistory());
         LOGGER.info("");
-        LOGGER.info("isCheckmated: {}", isCheckmated(activePlayerColor));
-        LOGGER.info("isDraw?: {}", isDraw());
-        LOGGER.info("hasResigned: {}", hasResigned());
-        LOGGER.info("isStalemate: {}", isStalemate());
-        LOGGER.info("hasRepeated: {}", isRepetition());
+        LOGGER.info("isCheckmated:  {}", isCheckmated(activePlayerColor));
+        LOGGER.info("isDraw?:       {}", isDraw());
+        LOGGER.info("hasResigned:   {}", hasResigned());
+        LOGGER.info("isStalemate:   {}", isStalemate());
+        LOGGER.info("hasRepeated:   {}", isRepetition());
         LOGGER.info("");
         LOGGER.info("exceededMoves: {}", exceededMoves());
+        LOGGER.info("is spinning:   {}", isSpinning());
         LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
         LOGGER.info("--------------------------");
     }
