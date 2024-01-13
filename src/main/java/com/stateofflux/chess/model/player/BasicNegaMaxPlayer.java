@@ -13,8 +13,8 @@ import static java.lang.Long.bitCount;
  * Example picking best move in a chess game using negamax function above
  * https://en.wikipedia.org/wiki/Negamax
 */
-public class RandomEvaluationPlayer extends Player {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RandomEvaluationPlayer.class);
+public class BasicNegaMaxPlayer extends Player {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayer.class);
 
     protected static final int DEFAULT_SEARCH_DEPTH = 2;
     protected static final int KING_VALUE = 20000;
@@ -26,7 +26,7 @@ public class RandomEvaluationPlayer extends Player {
 
     protected Game game;
 
-    public RandomEvaluationPlayer(PlayerColor color) {
+    public BasicNegaMaxPlayer(PlayerColor color) {
         this.color = color;
     }
 

@@ -10,7 +10,7 @@ public class RandomEvaluationPlayerTest {
     @Test public void randomGameDefaultDepthOnePlayerWithEvaluation() {
         Game game = new Game();
         // game.disable50MovesRule();
-        Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
         Player two = new RandomMovePlayer(PlayerColor.BLACK);
         game.setPlayers(one, two);
 
