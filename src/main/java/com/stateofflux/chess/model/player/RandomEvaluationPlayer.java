@@ -7,22 +7,30 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import static java.lang.Long.bitCount;
 
+/*
+ * Example picking best move in a chess game using negamax function above
+ * https://en.wikipedia.org/wiki/Negamax
+*/
 public class RandomEvaluationPlayer extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomEvaluationPlayer.class);
 
-    static final int DEFAULT_SEARCH_DEPTH = 2;
+    protected static final int DEFAULT_SEARCH_DEPTH = 2;
+    protected static final int KING_VALUE = 20000;
+    protected static final int KNIGHT_VALUE = 320;
+    protected static final int BISHOP_VALUE = 330;
+    protected static final int ROOK_VALUE = 500;
+    protected static final int QUEEN_VALUE = 900;
+    protected static final int PAWN_VALUE = 100;
+
     protected Game game;
-    boolean resultChanges = false;
 
     public RandomEvaluationPlayer(PlayerColor color) {
         this.color = color;
     }
 
     /*
-      // Example picking best move in a chess game using negamax function above
-      // https://en.wikipedia.org/wiki/Negamax
-
       function think(boardState) is
           allMoves := generateLegalMoves(boardState)
           bestMove := null
@@ -63,10 +71,10 @@ public class RandomEvaluationPlayer extends Player {
             }
         }
 
-        // return the move with the largest value
-//        return bestMove;
         assert !bestMoves.isEmpty();
 
+        // There are many values with the same score so randomly pick a value.  By randomly picking a value
+        // we don't continue to pick the "first" result.
         Move m = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
         return m;
@@ -86,7 +94,7 @@ public class RandomEvaluationPlayer extends Player {
             return evaluate();
 
        int result = Integer.MIN_VALUE;
-        MoveList<Move> moves = game.generateMoves();
+        MoveList<Move> moves = game.pseudoLegalMovesFor();
 
         for(Move move: moves) {
             game.move(move);
@@ -129,25 +137,14 @@ public class RandomEvaluationPlayer extends Player {
         int pawnEvaluation = (PawnMoves.pawnEvaluation(pawns, otherPawns, true) -
             PawnMoves.pawnEvaluation(otherPawns, pawns, false)) / 2;
 
-/*
-        if(pawnEvaluation != 0)
-            LOGGER.info("pawnEval : {}", pawnEvaluation);
-*/
-
-        int result = 200 * (c(b.getWhiteKingBoard()) - c(b.getBlackKingBoard()))
-            + 9 * (c(b.getWhiteQueenBoard()) - c(b.getBlackQueenBoard()))
-            + 5 * (c(b.getWhiteRookBoard()) - c(b.getBlackRookBoard()))
-            + 3 * (c(b.getWhiteBishopBoard()) - c(b.getBlackBishopBoard()))
-            + 3 * (c(b.getWhiteKnightBoard()) - c(b.getBlackKnightBoard()))
-            + c(b.getWhitePawns()) - c(b.getBlackPawns())
+        return
+            KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
+            + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
+            + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
+            + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
+            + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
+            + PAWN_VALUE * (bitCount(b.getWhitePawns()) - bitCount(b.getBlackPawns()))
             - pawnEvaluation
             + mobility;
-
-     return result;
     }
-
-    protected int c(long l) {
-        return Long.bitCount(l);
-    }
-
 }

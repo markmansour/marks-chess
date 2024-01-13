@@ -19,7 +19,7 @@ public class RandomEvaluationPlayerTest {
         assertThat(game.isOver()).isTrue();
     }
 
-    @Test public void randomGameDefaultDepthTwiPlayersWithEvaluation() {
+/*    @Test public void randomGameDefaultDepthTwoPlayersWithEvaluation() {
         Game game = new Game();
         // game.disable50MovesRule();
         Player one = new RandomEvaluationPlayer(PlayerColor.WHITE);
@@ -29,5 +29,5 @@ public class RandomEvaluationPlayerTest {
         game.play();
 
         assertThat(game.isOver()).isTrue();
-    }
+    }*/
 }

@@ -255,8 +255,23 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-
     private MoveList<Move> generateMovesFor(PlayerColor playerColor) {
+        MoveList<Move> playerMoves = pseudoLegalMovesFor(playerColor);
+
+        if (depth > 0)
+            return playerMoves;
+
+        cleanUpMoves(playerMoves);
+
+        return playerMoves;
+    }
+
+    public MoveList<Move> pseudoLegalMovesFor() {
+        return pseudoLegalMovesFor(getActivePlayerColor());
+    }
+
+    @NotNull
+    public MoveList<Move> pseudoLegalMovesFor(PlayerColor playerColor) {
         MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>(MOVE_LIST_CAPACITY));
 
         board.rookMoves(playerMoves, playerColor);
@@ -266,13 +281,10 @@ public class Game {
         board.kingMoves(playerMoves, playerColor);
         board.pawnMoves(playerMoves, playerColor);
 
-        if (depth > 0)
-            return playerMoves;
-
-        cleanUpMoves(playerMoves);
-
         return playerMoves;
     }
+
+
     @Nullable
     private void cleanUpMoves(MoveList<Move> playerMoves) {
         // if in check, make sure any move takes the player out of check.
