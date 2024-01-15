@@ -115,7 +115,7 @@ public class BasicNegaMaxPlayer extends Player {
         -50,-30,-30,-30,-30,-30,-30,-50
     };
 
-    protected static final int[][] LOOKUP_TABLES = new int[12][];
+    protected static final int[][] LOOKUP_TABLES = new int[14][];
 
     static {
         LOOKUP_TABLES[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
@@ -130,6 +130,8 @@ public class BasicNegaMaxPlayer extends Player {
         LOOKUP_TABLES[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(reverse(ROOK_TABLE));
         LOOKUP_TABLES[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
         LOOKUP_TABLES[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(reverse(PAWN_TABLE));
+        LOOKUP_TABLES[12]                            = visualToArrayLayout(KING_ENDGAME_TABLE);
+        LOOKUP_TABLES[13]                            = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
     }
 
     private boolean endGame = false;
@@ -219,14 +221,8 @@ public class BasicNegaMaxPlayer extends Player {
     private void checkForEndGame() {
         if (endGame) return;
 
-        if(bitCount(game.getBoard().getBlack()) < 4) {
+        if(bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
             this.endGame = true;
-            LOOKUP_TABLES[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
-        }
-
-        if(bitCount(game.getBoard().getWhite()) < 4) {
-            this.endGame = true;
-            LOOKUP_TABLES[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
         }
     }
 
@@ -247,8 +243,12 @@ public class BasicNegaMaxPlayer extends Player {
         if(depth == 0)  // can the king count be 0 here?  Should we be checking?
             return evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
 
-       int result = Integer.MIN_VALUE;
-        MoveList<Move> moves = game.pseudoLegalMovesFor();
+        int result = Integer.MIN_VALUE;
+        MoveList<Move> moves = game.generateMoves();
+
+        // node is terminal
+        if(moves.isEmpty() && game.isChecked())
+            return evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
 
         for(Move move: moves) {
             game.move(move);
@@ -333,7 +333,12 @@ public class BasicNegaMaxPlayer extends Player {
 
 //            LOGGER.info("square {} = {}", i, LOOKUP_TABLES[p.getIndex()][i]);
             try {
-                score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
+                if(isEndGame() && (p == Piece.WHITE_KING) && bitCount(game.getBoard().getWhite()) < 4)
+                    score += LOOKUP_TABLES[11][i];
+                else if(isEndGame() && (p == Piece.BLACK_KING) && bitCount(game.getBoard().getBlack()) < 4)
+                    score += LOOKUP_TABLES[12][i] * -1;
+                else
+                    score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
             } catch(ArrayIndexOutOfBoundsException e) {
                 LOGGER.info("pause");
             }

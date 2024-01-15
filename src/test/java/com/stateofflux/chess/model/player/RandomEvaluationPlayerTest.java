@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model.player;
 
+import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
@@ -35,6 +36,23 @@ public class RandomEvaluationPlayerTest {
         assertThat(move.getPiece()).isEqualTo(Piece.WHITE_KNIGHT);
         assertThat(move.getFrom()).isEqualTo(28);
         assertThat(move.getTo()).isEqualTo(43);
+    }
+
+    @Test public void testPickingTheBestNextMoveEndGame() {
+        Game game = new Game("4k3/6R1/3Q4/3BN3/2B1P3/6B1/1PP2PPP/3R2K1 w - -");
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
+        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        game.setPlayers(one, two);
+
+        one.setSearchDepth(1);
+        assertThat(game.getActivePlayer()).isEqualTo(one);
+        Move move = one.getNextMove(game);
+        assertThat(move.toLongSan()).containsAnyOf("g7e7", "d6c6", "d6e6");
+
+        one.setSearchDepth(2);
+        assertThat(game.getActivePlayer()).isEqualTo(one);
+        move = one.getNextMove(game);
+        assertThat(move.toLongSan()).containsAnyOf("d5c6", "c4b5", "d6e7");
     }
 
 
