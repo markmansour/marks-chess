@@ -1,12 +1,14 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
-import com.stateofflux.chess.model.pieces.PawnMoves;
+import com.stateofflux.chess.model.pieces.Piece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
+
 import static java.lang.Long.bitCount;
 
 /*
@@ -16,7 +18,6 @@ import static java.lang.Long.bitCount;
 public class BasicNegaMaxPlayer extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayer.class);
 
-    protected static final int DEFAULT_SEARCH_DEPTH = 2;
     protected static final int KING_VALUE = 20000;
     protected static final int KNIGHT_VALUE = 320;
     protected static final int BISHOP_VALUE = 330;
@@ -26,8 +27,137 @@ public class BasicNegaMaxPlayer extends Player {
 
     protected Game game;
 
+    /*
+     Tables from: https://www.chessprogramming.org/Simplified_Evaluation_Function
+     But!  The tables listed are in the wrong order (really!?) as they are in visual order rather than array order.
+     e.g.  Bottom left represents index 0, but if copied straight into an array would be index 54.  Therefore reverse
+     the line order so the bottom line (bottom 8 values) becomes the top line (the first 8 values).
+     */
+    protected static final int[] PAWN_TABLE = {
+         0,  0,  0,  0,  0,  0,  0,  0,
+        50, 50, 50, 50, 50, 50, 50, 50,
+        10, 10, 20, 30, 30, 20, 10, 10,
+         5,  5, 10, 25, 25, 10,  5,  5,
+         0,  0,  0, 20, 20,  0,  0,  0,
+         5, -5,-10,  0,  0,-10, -5,  5,
+         5, 10, 10,-20,-20, 10, 10,  5,
+         0,  0,  0,  0,  0,  0,  0,  0
+    };
+
+    protected static final int[] KNIGHT_TABLE = {
+        -50,-40,-30,-30,-30,-30,-40,-50,
+        -40,-20,  0,  0,  0,  0,-20,-40,
+        -30,  0, 10, 15, 15, 10,  0,-30,
+        -30,  5, 15, 20, 20, 15,  5,-30,
+        -30,  0, 15, 20, 20, 15,  0,-30,
+        -30,  5, 10, 15, 15, 10,  5,-30,
+        -40,-20,  0,  5,  5,  0,-20,-40,
+        -50,-40,-30,-30,-30,-30,-40,-50,
+    };
+
+    protected static final int[] BISHOP_TABLE = {
+        -20,-10,-10,-10,-10,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5, 10, 10,  5,  0,-10,
+        -10,  5,  5, 10, 10,  5,  5,-10,
+        -10,  0, 10, 10, 10, 10,  0,-10,
+        -10, 10, 10, 10, 10, 10, 10,-10,
+        -10,  5,  0,  0,  0,  0,  5,-10,
+        -20,-10,-10,-10,-10,-10,-10,-20,
+    };
+
+    protected static final int[] ROOK_TABLE = {
+         0,  0,  0,  0,  0,  0,  0,  0,
+         5, 10, 10, 10, 10, 10, 10,  5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+         0,  0,  0,  5,  5,  0,  0,  0
+    };
+
+    protected static final int[] QUEEN_TABLE = {
+        -20,-10,-10, -5, -5,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5,  5,  5,  5,  0,-10,
+         -5,  0,  5,  5,  5,  5,  0, -5,
+          0,  0,  5,  5,  5,  5,  0, -5,
+        -10,  5,  5,  5,  5,  5,  0,-10,
+        -10,  0,  5,  0,  0,  0,  0,-10,
+        -20,-10,-10, -5, -5,-10,-10,-20
+    };
+
+    protected static final int[] KING_MIDGAME_TABLE = {
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20,
+        -10,-20,-20,-20,-20,-20,-20,-10,
+         20, 20,  0,  0,  0,  0, 20, 20,
+         20, 30, 10,  0,  0, 10, 30, 20
+    };
+
+    /*
+     * Additionally we should define where the ending begins. For me it might be either if:
+     * - Both sides have no queens or
+     * - Every side which has a queen has additionally no other pieces or one minorpiece maximum.
+     */
+    protected static final int[] KING_ENDGAME_TABLE = {
+        -50,-40,-30,-20,-20,-30,-40,-50,
+        -30,-20,-10,  0,  0,-10,-20,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-30,  0,  0,  0,  0,-30,-30,
+        -50,-30,-30,-30,-30,-30,-30,-50
+    };
+
+    protected static final int[][] LOOKUP_TABLES = new int[12][];
+
+    static {
+        LOOKUP_TABLES[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_MIDGAME_TABLE));
+        LOOKUP_TABLES[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(reverse(QUEEN_TABLE));
+        LOOKUP_TABLES[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(reverse(BISHOP_TABLE));
+        LOOKUP_TABLES[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(reverse(KNIGHT_TABLE));
+        LOOKUP_TABLES[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(reverse(ROOK_TABLE));
+        LOOKUP_TABLES[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
+        LOOKUP_TABLES[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(reverse(PAWN_TABLE));
+    }
+
+    private boolean endGame = false;
+
+    /*
+     * Assumes size of 64.
+     */
+    private static int[] visualToArrayLayout(int[] visualLayout) {
+        assert visualLayout.length == 64;
+
+        int[] arrayLayout = new int[visualLayout.length];
+        for(int i = 7; i >= 0; i--) {
+            System.arraycopy(
+                visualLayout, i * 8,
+                arrayLayout, (7-i)*8,
+                8);
+        }
+
+        return arrayLayout;
+    }
+
+    private static int[] reverse(int[] a) {
+        return IntStream.rangeClosed(1, a.length).map(i -> a[a.length - i]).toArray();
+    }
+
     public BasicNegaMaxPlayer(PlayerColor color) {
         this.color = color;
+        this.searchDepth = DEFAULT_SEARCH_DEPTH;
     }
 
     /*
@@ -58,17 +188,23 @@ public class BasicNegaMaxPlayer extends Player {
 
         for(Move move: moves) {
             game.move(move);
-            int result = -negaMax(DEFAULT_SEARCH_DEPTH - 1);
+            int score = -negaMax(searchDepth - 1);
             game.undo();
 
-            if(result == bestEvaluation) {
+            // LOGGER.info("Move ({}): {}", move, score);
+
+            if(score == bestEvaluation) {
                 bestMoves.add(move);
-            } else if(result > bestEvaluation) {
+            } else if(score > bestEvaluation) {
                 bestMoves.clear();
                 bestMoves.add(move);
                 bestMove = move;
-                bestEvaluation = result;
+                bestEvaluation = score;
             }
+        }
+
+        if(!isEndGame()) {
+            checkForEndGame();
         }
 
         assert !bestMoves.isEmpty();
@@ -78,6 +214,24 @@ public class BasicNegaMaxPlayer extends Player {
         Move m = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
         return m;
+    }
+
+    private void checkForEndGame() {
+        if (endGame) return;
+
+        if(bitCount(game.getBoard().getBlack()) < 4) {
+            this.endGame = true;
+            LOOKUP_TABLES[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
+        }
+
+        if(bitCount(game.getBoard().getWhite()) < 4) {
+            this.endGame = true;
+            LOOKUP_TABLES[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
+        }
+    }
+
+    private boolean isEndGame() {
+        return this.endGame;
     }
 
     /*
@@ -90,8 +244,8 @@ public class BasicNegaMaxPlayer extends Player {
      *     return value
      */
     protected int negaMax(int depth) {
-        if(depth == 0)
-            return evaluate();
+        if(depth == 0)  // can the king count be 0 here?  Should we be checking?
+            return evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
 
        int result = Integer.MIN_VALUE;
         MoveList<Move> moves = game.pseudoLegalMovesFor();
@@ -134,17 +288,57 @@ public class BasicNegaMaxPlayer extends Player {
         long pawns = b.getWhitePawns();
         long otherPawns = b.getBlackPawns();
 
+/*
         int pawnEvaluation = (PawnMoves.pawnEvaluation(pawns, otherPawns, true) -
             PawnMoves.pawnEvaluation(otherPawns, pawns, false)) / 2;
+*/
 
-        return
+        if(bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()) == 1)
+            LOGGER.info("attempting to take a king");
+
+        int boardScore = boardScore();
+
+        int score =
             KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
             + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
             + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
             + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
             + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
             + PAWN_VALUE * (bitCount(b.getWhitePawns()) - bitCount(b.getBlackPawns()))
-            - pawnEvaluation
+//            - pawnEvaluation
+            + boardScore
             + mobility;
+
+        if(game.isChecked()) {
+            // LOGGER.info("Game in check ({}): {}", score, game.asFen());
+            score += 500;
+        }
+
+        if(game.isRepetition()) {
+            score -= 500;
+        }
+
+        return score;
+    }
+
+    protected int boardScore() {
+        int score = 0;
+        Board b = game.getBoard();
+
+        // LOGGER.info(game.asFen());
+
+        for(int i = 0; i < 64; i++) {
+            Piece p = b.get(i);
+            if(p.isEmpty()) continue;
+
+//            LOGGER.info("square {} = {}", i, LOOKUP_TABLES[p.getIndex()][i]);
+            try {
+                score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
+            } catch(ArrayIndexOutOfBoundsException e) {
+                LOGGER.info("pause");
+            }
+        }
+
+        return score;
     }
 }

@@ -64,6 +64,8 @@ public class Game {
         board.setEnPassantTarget(game.board.getEnPassantTarget());
         setClock(game.getClock());
         board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget());
+        historyOfMoves.addAll(game.historyOfMoves);
+        historyAsHashes.addAll(game.historyAsHashes);
 
         setActivePlayerIsInCheck();
     }
@@ -198,6 +200,10 @@ public class Game {
         }
     }
     // --------------------------- Players ---------------------------
+
+    public Player getActivePlayer() {
+        return activePlayerColor.isWhite() ? players[0] : players[1];
+    }
 
     private void setActivePlayerColor(PlayerColor activePlayerColor) {
         if(this.activePlayerColor != null)
@@ -851,6 +857,22 @@ public class Game {
         LOGGER.info("is spinning:   {}", isSpinning());
         LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
         LOGGER.info("--------------------------");
+
+        if(historyOfMoves.size() > 6) {
+            Game dupe = new Game(this);
+            for (int i = 0; i < 6; i++) {
+                dupe.undo();
+            }
+            LOGGER.info("Fen at Moves - 6: {}", dupe.asFen());
+            List<History> x = historyOfMoves.subList(historyOfMoves.size() - 6, historyOfMoves.size());
+            LOGGER.info("Final Moves: {}, {}, {}, {}, {}, {}",
+                x.get(0).move,
+                x.get(1).move,
+                x.get(2).move,
+                x.get(3).move,
+                x.get(4).move,
+                x.get(5).move);
+        }
     }
 
 }
