@@ -207,10 +207,12 @@ public class DepthTest {
     // after magic bitboards - 20 seconds.
     // after more optimizations - 6.5 seconds
     // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
+/*
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(4, perftRecords);
     }
+*/
 
     // about 2 seconds
     @Test public void startingPositionDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -244,10 +246,12 @@ public class DepthTest {
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
     // ran for 61093 ms and reviewed 119060324 nodes.  1948837 nodes/second - after incremental zobrist hashing update
+/*
     @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         fail("too long");
         depthHelper(6, defaultBoard());
     }
+*/
 
 
     /*@Test public void debugPerft6() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -261,7 +265,7 @@ public class DepthTest {
     }*/
 
     @Test public void testContextBetweenGames() {
-        fail("too long");
+        // fail("too long");
         SortedMap<String, Integer> actual;
 
         // uci

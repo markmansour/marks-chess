@@ -247,8 +247,12 @@ public class BasicNegaMaxPlayer extends Player {
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal
-        if(moves.isEmpty() && game.isChecked())
-            return evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
+        if(moves.isEmpty()) {
+            result = evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
+
+            if(!game.isChecked())
+                result += (game.getActivePlayerColor().isWhite() ? -1 : +1);  // stalemates worth less than checkmate
+        }
 
         for(Move move: moves) {
             game.move(move);

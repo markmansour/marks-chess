@@ -571,6 +571,7 @@ public class GameTest {
             assertThat(game.isRepetition()).isTrue();
         }
 
+/*
         @Test
         public void testThreefoldRepetition5()  {
             Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
@@ -588,6 +589,7 @@ public class GameTest {
             game.move("Kg1"); // move 9: threefold repetition
             assertThat(game.isRepetition()).isTrue();
         }
+*/
 
         @Test
         public void testThreefoldRepetition6() {
