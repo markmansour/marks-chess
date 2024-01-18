@@ -214,6 +214,11 @@ public class GameTest {
         assertThat(game.generateMoves().asLongSan()).containsOnly("a1a2", "a1a3", "a1a4", "a5b6", "b1a3", "b1c3", "b2b3", "b2b4", "c2c3", "c2c4", "d2d3", "d2d4", "e2e3", "e2e4", "f2f3", "f2f4", "g1f3", "g1h3", "g2g3", "g2g4", "h2h3", "h2h4");
     }
 
+    @Test public void doubleEnPassant() {
+        Game game = new Game("r1b1kbnr/ppp1pppp/2n1q3/3pP1P1/3P4/8/PPP2P1P/RNBQKBNR b KQkq -");
+        game.generateMoves();
+        // move p : f7f5 was crashing - it would put the white king in check.
+    }
 
     @Test public void initialTwoSquareOpeningNextToPawnButNoEnPassant() {
         Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");

@@ -227,6 +227,9 @@ public class Board {
     }
 
     public void setByBoard(Piece piece, int boardIndex, int location) {
+        if(location < 0)
+            LOGGER.info("gah!");
+
         assert location >= 0;
         long temp = this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
@@ -249,6 +252,11 @@ public class Board {
                 boards[i] &= ~bitToClear;
             }
         }
+
+        if(location == -1)
+            LOGGER.info("break here");
+
+        pieceCache[location] = Piece.EMPTY;
     }
 
     public int set(char element, int location) {
@@ -295,7 +303,6 @@ public class Board {
     public long getWhiteKnightBoard() { return boards[Piece.WHITE_KNIGHT.getIndex()]; }
     public long getWhiteRookBoard()   { return boards[Piece.WHITE_ROOK.getIndex()]; }
     public long getWhitePawnBoard()   { return boards[Piece.WHITE_PAWN.getIndex()]; }
-
 
     /*
      * Move a piece on the board, but do not perform validation.
@@ -452,14 +459,6 @@ public class Board {
     // ------------------------ Get Pieces methods -------------------------------
     public long getPieceLocations(Piece p) {
         return this.boards[p.getIndex()];
-    }
-
-    public long getWhitePawns() {
-        return this.boards[Piece.WHITE_PAWN.getIndex()];
-    }
-
-    public long getBlackPawns() {
-        return this.boards[Piece.BLACK_PAWN.getIndex()];
     }
 
     public long getPawns(PlayerColor playerColor) {
@@ -774,7 +773,7 @@ public class Board {
     }
 
     private long whitePawnOneStep(MoveList<Move> playerMoves) {
-        long oneStep = (getWhitePawns() << 8L) & ~getOccupied();
+        long oneStep = (getWhitePawnBoard() << 8L) & ~getOccupied();
         int diff = -8;
         Piece piece = Piece.WHITE_PAWN;
 
@@ -797,7 +796,7 @@ public class Board {
     }
 
     private long blackPawnOneStep(MoveList<Move> playerMoves) {
-        long oneStep = (getBlackPawns() >> 8L) & ~getOccupied();
+        long oneStep = (getBlackPawnBoard() >> 8L) & ~getOccupied();
         int diff = 8;
         Piece piece = Piece.BLACK_PAWN;
 
@@ -821,7 +820,7 @@ public class Board {
     private void blackPawnAttacks(MoveList<Move> playerMoves) {
         int attackCount;
         long attackBoard;
-        long pawns = getBlackPawns();
+        long pawns = getBlackPawnBoard();
         long opponentBoard = getWhite();
         boolean hasEnPassantTarget = hasEnPassantTarget();
         Piece piece = Piece.BLACK_PAWN;
@@ -858,7 +857,7 @@ public class Board {
     private void whitePawnAttacks(MoveList<Move> playerMoves) {
         int attackCount;
         long attackBoard;
-        long pawns = getWhitePawns();
+        long pawns = getWhitePawnBoard();
         long opponentBoard = getBlack();
         boolean hasEnPassantTarget = hasEnPassantTarget();
         Piece piece = Piece.WHITE_PAWN;
@@ -1308,7 +1307,7 @@ public class Board {
 
     void setEnPassantTarget(int target) {
         // if there is a new en passant target OR the current enPassant target needs resetting
-        if(target >= 0 || enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE)
+        if(target >= 0 || enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE) // todo: is this check needed?  Can I just update the zobrist key?
             updateZobristKeyWithEnPassant(target);
 
         enPassantTarget = target;

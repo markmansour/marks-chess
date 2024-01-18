@@ -307,7 +307,7 @@ public class BasicNegaMaxPlayer extends Player {
             + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
             + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
             + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
-            + PAWN_VALUE * (bitCount(b.getWhitePawns()) - bitCount(b.getBlackPawns()))
+            + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()))
 //            - pawnEvaluation
             + boardScore
             + mobility;

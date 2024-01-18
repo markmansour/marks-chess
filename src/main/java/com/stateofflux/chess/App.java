@@ -25,9 +25,9 @@ public class App
     /*
      * To run this from the command line:
      * $ cd /Users/markmansour/IdeaProjects/marks-chess
-     * $ mvn compile exec:java -Dexec.mainClass=com.stateofflux.chess.App
+     * $ mvn package assembly:single
      */
-    public static void main( String[] args )
+    public static void main(String[] args)
     {
         Logger.info("Mark's Chess Program");
         StringBuilder sb = new StringBuilder();
@@ -37,6 +37,10 @@ public class App
         Game game = null;
         Player whitePlayer = new BasicNegaMaxPlayer(PlayerColor.WHITE);
         Player blackPlayer = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+
+        // give the players a reasonable chance of winning.
+        whitePlayer.setSearchDepth(5);
+        blackPlayer.setSearchDepth(5);
 
         for (String line = scanner.nextLine().strip(); !line.equals("quit"); line = scanner.nextLine()) {
             String[] lineParts = line.split("\\s+");
@@ -102,6 +106,7 @@ public class App
                         Logger.info("using default board setup");
 
                     game = new Game(fen);
+                    Logger.info("fresh game object");
                     game.setPlayers(whitePlayer, blackPlayer);
 
                     if (lineParts.length >= 4 && lineParts[2].equals("moves")) {

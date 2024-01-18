@@ -162,35 +162,59 @@ public class Game {
         if(move.getEnPassantTarget() == PawnMoves.NO_EN_PASSANT_VALUE)
             return;
 
-        willEnPassantLeaveKingInCheck(move, move.getTo() - 1); // west
-        willEnPassantLeaveKingInCheck(move, move.getTo() + 1); // east
+        boolean enPassantToTheEast = doesEnPassantPieceExist(move, move.getTo() - 1);
+        boolean enPassantToTheWest = doesEnPassantPieceExist(move, move.getTo() + 1);
+        boolean eastEnPassantExposesCheck = enPassantToTheEast && doesMoveExposeCheck(move, move.getTo() - 1);
+        boolean westEnPassantExposesCheck = enPassantToTheWest && doesMoveExposeCheck(move, move.getTo() + 1);
+
+        if(eastEnPassantExposesCheck && westEnPassantExposesCheck) { // two en passant and they both expose check
+            move.clearEnPassant();
+            board.clearEnPassantTarget();
+            // board.setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
+            // board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget()); // redundant?
+        } else if(enPassantToTheEast && !enPassantToTheWest && eastEnPassantExposesCheck) {  // west only en passant
+            move.clearEnPassant();
+            board.clearEnPassantTarget();
+        } else if(!enPassantToTheEast && enPassantToTheWest && westEnPassantExposesCheck) {  // east only en passant
+            move.clearEnPassant();
+            board.clearEnPassantTarget();
+        }
     }
 
-    private void willEnPassantLeaveKingInCheck(Move move, int location) {
-        Move enPassantMove;
+    private boolean doesMoveExposeCheck(Move move, int location) {
+        boolean exposesCheck = false;
+
+        Piece enPassantPiece = getBoard().get(location);
+        Move enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
+
+        long[] boardsBackup = getBoard().getCopyOfBoards();
+        Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
+
+        this.getBoard().update(enPassantMove, board.getEnPassantTarget());
+        if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
+            exposesCheck = true;
+        }
+
+        this.getBoard().setBoards(boardsBackup);
+        this.getBoard().setPieceCache(piecesBackup);
+        board.calculateAllCacheBoards();  // this could also be backed up and restored rather than recalculated.
+
+        return exposesCheck;
+    }
+
+    private boolean doesEnPassantPieceExist(Move move, int location) {
         Piece enPassantPiece;
 
         if (Board.rank(location) == Board.rank(move.getTo())) { // same rank
             enPassantPiece = getBoard().get(location);
 
-            if(enPassantPiece.isPawn() &&
-                enPassantPiece.getColor() != move.getPiece().getColor()) {
-                enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
-
-                long[] boardsBackup = getBoard().getCopyOfBoards();
-                Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
-
-                this.getBoard().update(enPassantMove, board.getEnPassantTarget());
-                if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
-                    move.clearEnPassant();
-                    board.setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
-                }
-                this.getBoard().setBoards(boardsBackup);
-                this.getBoard().setPieceCache(piecesBackup);
-                board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget());
-            }
+            return (enPassantPiece.isPawn() &&
+                enPassantPiece.getColor() != move.getPiece().getColor());
         }
+
+        return false;
     }
+
     // --------------------------- Players ---------------------------
 
     public Player getActivePlayer() {
@@ -329,7 +353,7 @@ public class Game {
             m.setPromotion(promotion);
         else {
             updateMoveForCastling(m);
-            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            m.updateForEnPassant(getBoard().getWhitePawnBoard(), getBoard().getBlackPawnBoard());
             removeEnPassantIfAttackingPieceIsPinned(m);
         }
 
@@ -385,7 +409,7 @@ public class Game {
 
             move = extractMoveFromAlgebraicNotation(action);
             move.setPromotion(promotionPiece);  // ok to set to null
-            move.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            move.updateForEnPassant(getBoard().getWhitePawnBoard(), getBoard().getBlackPawnBoard());
         }
 
         move(move);

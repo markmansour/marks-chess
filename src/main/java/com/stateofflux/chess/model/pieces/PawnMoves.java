@@ -99,7 +99,7 @@ public class PawnMoves implements PieceMovesInterface {
         long opponentBoard = board.getBlack();
 
         // one step forward
-        pawns = board.getWhitePawns() & (1L << location);
+        pawns = board.getWhitePawnBoard() & (1L << location);
         oneStep = (pawns << 8L) & ~occupiedBoard;
 
         // two steps forward
@@ -120,7 +120,7 @@ public class PawnMoves implements PieceMovesInterface {
         long opponentBoard = board.getWhite();
 
         // one step forward
-        pawns = board.getBlackPawns() & (1L << location);
+        pawns = board.getBlackPawnBoard() & (1L << location);
         oneStep = (pawns >> 8L) & ~occupiedBoard;
 
         // two steps forward

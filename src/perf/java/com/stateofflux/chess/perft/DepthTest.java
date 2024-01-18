@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 /*
  * See JMH repo for examples on how to use the profiler:
@@ -27,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DepthTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);
-    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {};
+    record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {}
 
     private ArrayList<PerftRecord> perftRecords;
     AsyncProfiler asyncProfiler;
@@ -147,12 +148,11 @@ public class DepthTest {
     // after magic bitboards - 20 seconds.
     // after more optimizations - 6.5 seconds
     // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
-/*
+
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        fail("too long");
+        // fail("too long");
         depthHelper(4, perftRecords);
     }
-*/
 
     // about 2 seconds
     @Test public void startingPositionDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -306,7 +306,6 @@ public class DepthTest {
     }
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;
-        int counter = 1;
         String profile = "EMPTY";
         String methodName = "depthOf" + depth;
         long startTime = System.nanoTime();
@@ -344,18 +343,20 @@ public class DepthTest {
 
             profile = asyncProfiler.dumpFlat(100);
         } finally {
-            endTime = System.nanoTime();
             asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
             LOGGER.info(profile);
         }
 
         endTime = System.nanoTime();
+        long timeDiff = endTime - startTime;
+        if(timeDiff == 0) timeDiff = 1; // eliminate the divided by 0 error that occasionally pops up below.
+
         LOGGER.info("profile{}-{}.html: ran for {} ms and reviewed {} nodes.  {} nodes/second",
             methodName,
             startTime,
-            TimeUnit.NANOSECONDS.toMillis(endTime - startTime),
+            TimeUnit.NANOSECONDS.toMillis(timeDiff),
             perftCount,
-            (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(endTime - startTime)
+            (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(timeDiff)
             );
     }
 }
