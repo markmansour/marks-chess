@@ -24,11 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /*
  * See JMH repo for examples on how to use the profiler:
  * https://github.com/openjdk/jmh/tree/master/jmh-samples/src/main/java/org/openjdk/jmh/samples
- *
- * TODO: Instead of using Unit Test annotations to run performance tests, conver this to
- *       JMH annotations.
- * TODO: Move from the unit test package to a performance test package.
- * TODO: Utilize IntelliJ plugin - https://github.com/artyushov/idea-jmh-plugin
  */
 public class DepthTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);

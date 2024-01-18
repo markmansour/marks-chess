@@ -20,7 +20,6 @@ public class MoveList<E> extends ForwardingList<E> {
         return delegate;
     }
 
-    // TODO: Memoize this result
     public List<String> asLongSan() {
         List<String> sans = new ArrayList<>();
         delegate.forEach(move -> sans.add(((Move) move).toLongSan()));

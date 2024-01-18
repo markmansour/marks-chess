@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
  * validation layer of the Board object.
  */
 public class Game {
-    // TODO replace most integers with bytes to save space
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
     private static final int MOVE_LIST_CAPACITY = 220;
 
@@ -171,7 +170,6 @@ public class Game {
         Move enPassantMove;
         Piece enPassantPiece;
 
-        // TODO:
         if (Board.rank(location) == Board.rank(move.getTo())) { // same rank
             enPassantPiece = getBoard().get(location);
 
@@ -296,9 +294,7 @@ public class Game {
 
             move(move);
 
-            // if the player remains in check after the move, then it is not valid.  Remove it from the moves list.
-            // isPlayerInCheck(activePlayer) looks at the current players check state, whereas getChecked looks at the
-            // checked state as if the turn was over so it looks at the opponents check state.
+            // is the other play in check?
             if(isPlayerInCheck(getActivePlayerColor().otherColor()))  // move() changes the color of the player, so check to see if the previous move was valid
                 toRemove.add(move);
 
@@ -309,6 +305,7 @@ public class Game {
 
 
     }
+
     /*
      * Long Alegbraic notation without piece names is in the format
      * <FROM_AS_SQUARE_COORDS><TO_AS_SQUARE_COORDS><PROMOTION>
@@ -316,10 +313,28 @@ public class Game {
      * - c2c3  <-- move pawn one space
      * - b7b8Q <-- queen promotion
      */
-    // using chess algebraic notation
-    // this method executes most moves sent to it.  It isn't checking for correctness.
-    // TODO: Instead of setting sourceLocation and destinationLocation, make an object to hold the move data.  Why am
-    // I not using the exiting Move class?
+    public void moveLongNotation(String action) {
+        String from, to;
+        from = action.substring(0,2);
+        to = action.substring(2, 4);
+        Piece promotion = (action.length() == 5) ? Piece.getPieceByPieceChar(action.substring(4,5)) : null;
+
+        int fromSquare = FenString.squareToLocation(from);
+        int toSquare = FenString.squareToLocation(to);
+        Piece piece = board.get(fromSquare);
+
+        Move m = new Move(piece, fromSquare, toSquare, false);
+
+        if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
+            m.setPromotion(promotion);
+        else {
+            updateMoveForCastling(m);
+            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
+            removeEnPassantIfAttackingPieceIsPinned(m);
+        }
+
+        move(m);
+    }
 
     /*
      * This method simply finds the source and target positions.  It doesn't check if the
@@ -352,29 +367,6 @@ public class Game {
      *    3. the complete origin square coordinate otherwise
      *
      */
-    public void moveLongNotation(String action) {
-        String from, to;
-        from = action.substring(0,2);
-        to = action.substring(2, 4);
-        Piece promotion = (action.length() == 5) ? Piece.getPieceByPieceChar(action.substring(4,5)) : null;
-
-        int fromSquare = FenString.squareToLocation(from);
-        int toSquare = FenString.squareToLocation(to);
-        Piece piece = board.get(fromSquare);
-
-        Move m = new Move(piece, fromSquare, toSquare, false);
-
-        if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
-            m.setPromotion(promotion);
-        else {
-            updateMoveForCastling(m);
-            m.updateForEnPassant(getBoard().getWhitePawns(), getBoard().getBlackPawns());
-            removeEnPassantIfAttackingPieceIsPinned(m);
-        }
-
-        move(m);
-    }
-
     public void move(String action) {
         LOGGER.debug("action ({}): {}", getActivePlayerColor(), action);
         Piece promotionPiece = null;
@@ -692,7 +684,6 @@ public class Game {
     public boolean isChecked() {
         return check;
     }
-    // TODO: Can isChecked be removed and replaced with isPlayerInCheck?
 
     public boolean isDraw() {
         return exceededMoves() ||

@@ -25,7 +25,7 @@ public enum Piece {
     public final static char BISHOP_ALGEBRAIC = 'B';
     public final static char KNIGHT_ALGEBRAIC = 'N';
 
-    private final int index; // TODO: can this be replaced by .ordinal()?
+    private final int index;
     private final PlayerColor color;
     private final char pieceChar;
 
@@ -46,7 +46,6 @@ public enum Piece {
     public char getPieceChar() { return this.pieceChar; }
 
     public static Piece getPieceByIndex(int index) {
-        // TODO: pregenerate the lookup.
         for (Piece piece : Piece.values()) {
             if (piece.getIndex() == index) {
                 return piece;

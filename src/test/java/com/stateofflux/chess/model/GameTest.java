@@ -234,8 +234,6 @@ public class GameTest {
     // https://www.chessprogramming.org/Castling
     public static class Castling {
         /*
-         * TODO: finish writing the castling validation code.
-         *
          * Current State:
          * I've implemented the castling move, but I haven't implemented validation.
          *

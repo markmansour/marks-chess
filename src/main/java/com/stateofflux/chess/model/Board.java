@@ -123,7 +123,6 @@ public class Board {
         int[] result = new int[bitsSet];
         int counter = 0;
 
-        // todo - short circuit the loop if the
         for (int i = 0; i < 64 && counter < bitsSet; i++) {
             if ((l & (1L << i)) != 0) {
                 result[counter++] = i;
@@ -235,7 +234,7 @@ public class Board {
     }
 
     public void clearByBoard(Piece piece, int boardIndex, int location) {
-        this.boards[boardIndex] ^= (1L << location);  // TODO: should be this.boards[boardIndex] &= ~(1L << location);  ??
+        this.boards[boardIndex] &= ~(1L << location);
         updateZobristKeyWhenSetting(piece, location);
         pieceCache[location] = Piece.EMPTY;
     }
@@ -306,10 +305,9 @@ public class Board {
         boolean standardMove = true;
         int removed;
 
-        int fromBoardIndex = this.getBoardIndex(m.getFrom());  // TODO: replace fromBoardIndex = m.getPiece().getIndex();
+        int fromBoardIndex = this.getBoardIndex(m.getFrom());
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
-
-        removed = m.getTo();  // TODO: replace with pieceCache[m.getTo()].getIndex();
+        removed = m.getTo();
         this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
 
         // if promotion
@@ -321,9 +319,8 @@ public class Board {
 
         if(m.isEnPassant()) {
             int target = m.getEnPassantTarget();
-            // boardIndex doesn't change (pawn to pawn)
             removed = target;
-            this.clearLocation(target);  // clear en passant target - TODO: this is not the right time to do this so delete this line.
+            this.clearLocation(target);  // clear en passant target
             setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set new pawn location
             standardMove = false;
         }
@@ -1071,7 +1068,7 @@ public class Board {
 
     // implement a Forsyth-Edwards toString() method
     public String toFen() {
-        StringBuilder f = new StringBuilder(100); // TODO - initialize with size.
+        StringBuilder f = new StringBuilder(100);
 
         int rank = 7;
         int location = 56;
@@ -1243,8 +1240,6 @@ public class Board {
         long hash = 0;
 
         hash = getCastlingRights(hash);
-
-        // TODO: I think it will be faster to iterate over each board's bits so replace this algo.
 
         for (int i = 0; i < 64; i++) {
             Piece piece = get(i);
