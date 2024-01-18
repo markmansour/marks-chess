@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Hello world!
@@ -57,11 +59,37 @@ public class App
                     System.out.println("later");
                 }
                 case "go" -> {
-                    assert game != null;
-                    Logger.info("Ignoring all go commands");
-                    Player p = game.getActivePlayerColor().isWhite() ? whitePlayer : blackPlayer;
-                    Move m = p.getNextMove(game);
-                    System.out.println("bestmove " + m.toLongSan());
+                    if(game == null) {
+                        game = new Game();
+                    }
+
+                    if(lineParts.length == 3 && lineParts[1].equals("perft")) {
+                        int depth = Integer.parseInt(lineParts[2]);
+                        long startTime = System.nanoTime();
+                        SortedMap<String, Integer> actual = game.perftAtRoot(depth);
+                        long endTime = System.nanoTime();
+                        game.printPerft(actual);
+                        int perftCount = actual.values()
+                            .stream()
+                            .reduce(0, Integer::sum);
+
+                        long nodesPerSecond;
+                        if(TimeUnit.NANOSECONDS.toMillis(endTime - startTime) > 0)
+                            nodesPerSecond = (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
+                        else
+                            nodesPerSecond = 0;
+
+                        Logger.info("ran for {} ms and reviewed {} nodes.  {} nodes/second",
+                            TimeUnit.NANOSECONDS.toMillis(endTime - startTime),
+                            perftCount, nodesPerSecond
+                        );
+
+                    } else {
+                        Logger.info("Ignoring all go commands");
+                        Player p = game.getActivePlayerColor().isWhite() ? whitePlayer : blackPlayer;
+                        Move m = p.getNextMove(game);
+                        System.out.println("bestmove " + m.toLongSan());
+                    }
                 }
                 case "ucinewgame" -> {
                     game = new Game();
