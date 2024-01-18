@@ -11,11 +11,11 @@ The project contains a chess engine with following abilities:
   * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
     (values in centipawns) and [Piece-Square Tables](https://www.chessprogramming.org/Simplified_Evaluation_Function#Piece-Square_Tables).
 
-I do not know the ELO score for my bot.
 
-Features to add
+Next steps
 * opening books
 * end games
+* calculate the rough ELO for my engine
 * Player with alpha/beta pruning
 * move ordering
 * multi-threading
