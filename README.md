@@ -41,7 +41,7 @@ $ mvn package
 
 ## Goals
 * Have fun!  It's been years since I've regularly programmed and this project is my way of re-engaging with programming.  And there are 1000s of chess engines in existence so I have absolutely no intention of commercializing this code.
-* Refamiliarize myself with the Java ecosystem.
+* Refamiliarize myself with the Java ecosystem (including AssertJ, JUnit, TestNG, Google Guava, SpotBugs, Maven, etc).
 * Experiment with benchmarking frameworks (using [async profiler](https://github.com/async-profiler/async-profiler)).
 * Experiment with 3rd party services (such as github actions)
 * Move from theory to practice with Neural Nets.
