@@ -1,4 +1,6 @@
 # Mark's Chess
+This is a straight forward chess engine written in Java.  The chess engine comes with a basic UCI interface.  
+There are thorough unit tests.  There is *no* GUI.
 
 ## Chess Engine Capabilities
 The project contains a chess engine with following abilities:
@@ -54,7 +56,7 @@ shell script can be called from a chess engine.
 
 Create a package:
 ```bash
-$ mvn compile exec:java -Dexec.mainClass=com.stateofflux.chess.App
+$ mvn package assembly:single
 ```
 
 Create a OS launcher (shell script) containing..
