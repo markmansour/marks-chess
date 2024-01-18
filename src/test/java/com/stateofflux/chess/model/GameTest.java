@@ -3,9 +3,10 @@ package com.stateofflux.chess.model;
 import com.stateofflux.chess.model.pieces.PawnMoves;
 import com.stateofflux.chess.model.player.Player;
 import com.stateofflux.chess.model.player.RandomMovePlayer;
+import org.junit.jupiter.api.Nested;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.*;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -237,7 +238,8 @@ public class GameTest {
     }
 
     // https://www.chessprogramming.org/Castling
-    public static class Castling {
+    @Nested
+    class Castling {
         /*
          * Current State:
          * I've implemented the castling move, but I haven't implemented validation.
@@ -377,7 +379,8 @@ public class GameTest {
         }
     }
 
-    public static class Promotion {
+    @Nested
+    class Promotion {
         @Test
         public void basicPromotion() {
             Game game = new Game("8/Pk6/8/8/8/8/6Kp/8 w - - 0 1");
@@ -413,7 +416,8 @@ public class GameTest {
         assertThat(game.asFenNoCounters()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq -");
     }
 
-    public static class InsufficientMaterialsTest {
+    @Nested
+    class InsufficientMaterialsTest {
         // Insufficient Materials
         @Test
         public void kingVsKing() {
@@ -476,7 +480,8 @@ public class GameTest {
         }
     }
 
-    public static class CheckTest {
+    @Nested
+    class CheckTest {
         @Test public void nextMoveGetsOutOfCheck() {
             Game game = new Game("8/5k1p/1p2b1PP/4K3/1P6/P7/8/2q5 b - -");
             assertThat(game.isChecked()).isTrue();
@@ -529,7 +534,8 @@ public class GameTest {
         LOGGER.info(game.asFen());
     }
 
-    public static class Repetition {
+    @Nested
+    class Repetition {
         @Test public void getGameState() {
             Game g = new Game();
             long hash = g.board.getZobristKey();
@@ -632,7 +638,8 @@ public class GameTest {
         assertThat(game.isOver()).isTrue();
     }
 
-    public static class PgnGame {
+    @Nested
+    class PgnGame {
         @Test public void playToCheckmate() {
             String pgnString = """
                 [Event "FICS rated standard game"]

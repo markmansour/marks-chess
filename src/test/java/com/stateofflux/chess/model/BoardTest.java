@@ -1,7 +1,8 @@
 package com.stateofflux.chess.model;
 
-import org.testng.annotations.*;
+import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BoardTest {
   @Test
@@ -20,9 +21,10 @@ public class BoardTest {
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
   }
 
-  @Test(expectedExceptions = IllegalArgumentException.class)
   public void IllegalFenBoardNotEnoughPiecesInRow() {
-    new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR"); // only 7P on rank 2
+    assertThrows(IllegalArgumentException.class,
+        () -> new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR")
+    ); // only 7P on rank 2
   }
 
   @Test

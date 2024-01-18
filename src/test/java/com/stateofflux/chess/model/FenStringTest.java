@@ -1,6 +1,6 @@
 package com.stateofflux.chess.model;
 
-import org.testng.annotations.*;
+import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 public class FenStringTest {

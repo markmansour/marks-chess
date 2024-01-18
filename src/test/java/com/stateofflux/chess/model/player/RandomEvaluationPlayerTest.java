@@ -4,7 +4,7 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

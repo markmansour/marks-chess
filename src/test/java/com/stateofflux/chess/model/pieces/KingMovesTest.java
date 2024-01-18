@@ -3,7 +3,7 @@ package com.stateofflux.chess.model.pieces;
 import com.stateofflux.chess.model.Game;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 

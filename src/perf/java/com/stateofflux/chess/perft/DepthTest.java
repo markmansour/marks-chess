@@ -5,10 +5,11 @@ import one.profiler.AsyncProfiler;
 import one.profiler.Events;
 
 import com.stateofflux.chess.model.Game;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
+
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
+import org.junit.jupiter.api.Test;
 
 /*
  * See JMH repo for examples on how to use the profiler:
@@ -30,11 +32,11 @@ public class DepthTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);
     record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {}
 
-    private ArrayList<PerftRecord> perftRecords;
-    AsyncProfiler asyncProfiler;
+    private static ArrayList<PerftRecord> perftRecords;
+    private static AsyncProfiler asyncProfiler;
 
-    @BeforeSuite
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         // from http://www.rocechess.ch/perft.html
         // see Perft-testsuite - http://www.rocechess.ch/perftsuite.zip
         // 126 test cases
@@ -43,7 +45,7 @@ public class DepthTest {
         perftRecords = new ArrayList<>();
         asyncProfiler = AsyncProfiler.getInstance();
 
-        try(InputStream contents = getClass().getClassLoader().getResourceAsStream(resourceName)) {
+        try(InputStream contents = DepthTest.class.getClassLoader().getResourceAsStream(resourceName)) {
             assert contents != null;
             BufferedReader reader = new BufferedReader(new InputStreamReader(contents));
             String text = reader.readLine();
@@ -148,6 +150,7 @@ public class DepthTest {
     // after magic bitboards - 20 seconds.
     // after more optimizations - 6.5 seconds
     // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
+    // 4 seconds
 
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");

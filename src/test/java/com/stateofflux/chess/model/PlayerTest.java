@@ -1,6 +1,6 @@
 package com.stateofflux.chess.model;
 
-import org.testng.annotations.*;
+import org.junit.jupiter.api.Test;
 
 public class PlayerTest {
     @Test

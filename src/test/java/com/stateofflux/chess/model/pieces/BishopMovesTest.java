@@ -3,10 +3,10 @@ package com.stateofflux.chess.model.pieces;
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
-import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

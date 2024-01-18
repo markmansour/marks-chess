@@ -1,7 +1,7 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
