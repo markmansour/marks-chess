@@ -1,26 +1,30 @@
 # Mark's Chess
 
+## Chess Engine Capabilities
 The project contains a chess engine with following abilities:
-* understands all valid moves including castling, en passant, and promotion
-* understands checkmate, stalemate, the 50 rule move, insufficient materials, and repetition.
-* basic UCI interface
-* perft to depth 6 tested and valid
-* uses bitboards for speed, with perft 6 running at 2.9MM node/second on my M2 macbook air.
+* Understands all valid moves including castling, en passant, and promotion.
+* Understands checkmate, stalemate, the 50 rule move, insufficient materials, and repetition.
+* Basic UCI interface.
+* Perft to depth 6 tested and valid.
+* Uses bitboards for speed (and it's a lot of fun to write).
+* With perft 6 running at 2.9MM node/second on my M2 macbook air.
 * Two working players.  
-  * RandomMovePlayer - generates moves to a depth of 1 and randomly picks
+  * RandomMovePlayer - generates moves to a depth of 1 and randomly picks a move.
   * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
     (values in centipawns) and [Piece-Square Tables](https://www.chessprogramming.org/Simplified_Evaluation_Function#Piece-Square_Tables).
 
 
-Next steps
-* opening books
-* end games
-* calculate the rough ELO for my engine
+### Next steps
+* Opening books
+* End games
+* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine
+* Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (too high).
 * Player with alpha/beta pruning
-* move ordering
-* multi-threading
+* Move ordering
+* Multi-threading
+* Time management
 * AI chess player (neural nets)
-* resignations
+* Resignations
 
 ## Build
 IntelliJ project included.  
@@ -34,7 +38,15 @@ $ mvn package
 ```
 
 ## Goals
+* Have fun!  It's been years since I've regularly programmed and this project is my way of re-engaging with programming.  And there are 1000s of chess engines in existence so I have absolutely no intention of commercializing this code.
+* Refamiliarize myself with the Java ecosystem.
+* Experiment with benchmarking frameworks (using [async profiler](https://github.com/async-profiler/async-profiler)).
+* Experiment with 3rd party services (such as github actions)
+* Move from theory to practice with Neural Nets.
+
 ## Non-goals
+* Make a competitive chess engine.  If it happens, then that's a nice (but unexpected) bonus.
+* Write production quality code.  This is for fun and I'm *sure* my classes could be factored in a much cleaner way.
 
 ## Playing against other engines
 Build a single jar file with all dependencies, and call it from a shell script.  That
