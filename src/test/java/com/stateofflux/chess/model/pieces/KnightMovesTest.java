@@ -3,9 +3,6 @@ package com.stateofflux.chess.model.pieces;
 import com.stateofflux.chess.model.Board;
 import org.testng.annotations.Test;
 
-import com.stateofflux.chess.model.pieces.PieceMoves;
-import com.stateofflux.chess.model.pieces.KnightMoves;
-
 import static org.assertj.core.api.Assertions.*;
 
 public class KnightMovesTest {

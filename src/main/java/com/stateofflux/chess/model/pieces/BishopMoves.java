@@ -1,7 +1,6 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
-import com.stateofflux.chess.model.Direction;
 
 public class BishopMoves extends StraightLineMoves {
     public BishopMoves(Board board, int location) {

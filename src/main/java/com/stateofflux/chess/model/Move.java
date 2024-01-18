@@ -135,11 +135,9 @@ public class Move {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder()
-            .append(piece.getPieceChar())
-            .append(" : ")
-            .append(toLongSan());
-        return sb.toString();
+        return piece.getPieceChar() +
+            " : " +
+            toLongSan();
     }
 
     public void clearEnPassant() {

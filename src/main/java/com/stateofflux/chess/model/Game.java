@@ -4,8 +4,8 @@ import java.util.*;
 
 import com.stateofflux.chess.model.pieces.*;
 import com.stateofflux.chess.model.player.Player;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +20,12 @@ public class Game {
 
     record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache) {}
 
-    protected Board board;
+    protected final Board board;
     protected PlayerColor activePlayerColor;
 
     private boolean check = false;
     private boolean limitMovesTo50 = true;
-    private int depth = 0;
+    private final int depth;
     private int clock;
     private boolean outOfTime = false;
     private int movesWithoutCaptureOrPawnMove = 0;
@@ -133,12 +133,6 @@ public class Game {
             currentPlayer = players[playerIndex % 2];
             Move move = currentPlayer.getNextMove(this);
             move(move);
-
-/*
-            LOGGER.info("move: " + move);
-            // printOccupied();
-            LOGGER.info(asFen());
-*/
             playerIndex++;
         }
 
@@ -276,9 +270,8 @@ public class Game {
         return pseudoLegalMovesFor(getActivePlayerColor());
     }
 
-    @NotNull
     public MoveList<Move> pseudoLegalMovesFor(PlayerColor playerColor) {
-        MoveList<Move> playerMoves = new MoveList<Move>(new ArrayList<Move>(MOVE_LIST_CAPACITY));
+        MoveList<Move> playerMoves = new MoveList<>(new ArrayList<>(MOVE_LIST_CAPACITY));
 
         board.rookMoves(playerMoves, playerColor);
         board.knightMoves(playerMoves, playerColor);
@@ -290,11 +283,9 @@ public class Game {
         return playerMoves;
     }
 
-
-    @Nullable
     private void cleanUpMoves(MoveList<Move> playerMoves) {
         // if in check, make sure any move takes the player out of check.
-        MoveList<Move> toRemove = new MoveList<Move>(new ArrayList<Move>(playerMoves.size()));
+        MoveList<Move> toRemove = new MoveList<>(new ArrayList<>(playerMoves.size()));
 
         for (var move : playerMoves) {
             // can't use castling to get out of check
@@ -385,7 +376,7 @@ public class Game {
     }
 
     public void move(String action) {
-        LOGGER.info("action ({}): {}", getActivePlayerColor(), action);
+        LOGGER.debug("action ({}): {}", getActivePlayerColor(), action);
         Piece promotionPiece = null;
         Move move;
 
@@ -500,6 +491,7 @@ public class Game {
     }
 
     @NotNull
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "sourceHintWithoutPiece may not be present")
     private Move extractMoveFromAlgebraicNotation(String action) {
         int destination = FenString.squareToLocation(action);
         int source = -1;
@@ -638,6 +630,7 @@ public class Game {
         return null;
     }
 
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "the default case is a no-op")
     private void removeCastlingRightsFor(Move m, int removedLocation) {
         if(m.isCapture()) {
             switch(removedLocation) {
@@ -790,7 +783,7 @@ public class Game {
         SortedMap<String, Integer> perftResults = new TreeMap<>();
 
         MoveList<Move> moves = this.generateMoves();
-        int moveCounter = 0;
+        int moveCounter;
 
         for (var move : moves) {
 //            LOGGER.info("root move: {}", move);
@@ -829,8 +822,8 @@ public class Game {
     public void printPerft(SortedMap<String, Integer> perftResults) {
         LOGGER.info("Perft Results");
         LOGGER.info("-------------");
-        for(var r : perftResults.keySet()) {
-            LOGGER.info("{} {}", r, perftResults.get(r));
+        for(var r : perftResults.entrySet()) {
+            LOGGER.info("{} {}", r.getKey(), r.getValue());
         }
 
         LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0, Integer::sum));

@@ -4,23 +4,18 @@ import org.testng.annotations.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class FenStringTest {
-    @BeforeClass
-    public void setUp() {
-        // code that will be invoked when this test is instantiated
-    }
-
     @Test
     public void locationToAlgebraString() {
         assertThat(FenString.locationToSquare(0)).isEqualTo("a1");
         assertThat(FenString.locationToSquare(63)).isEqualTo("h8");
-        assertThatThrownBy(() -> { FenString.locationToSquare(-1); }).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> FenString.locationToSquare(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void algebraStringToLocation() {
         assertThat(FenString.squareToLocation("a1")).isEqualTo(0);
         assertThat(FenString.squareToLocation("h8")).isEqualTo(63);
-        assertThatThrownBy(() -> { FenString.squareToLocation("a9"); }).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> FenString.squareToLocation("a9")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -31,24 +26,24 @@ public class FenStringTest {
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq -");
         assertThat(fs.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
 
-        assertThatThrownBy(() -> { new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq -"); }).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq -")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void setCastlingRights() {
         FenString fs = new FenString(FenString.INITIAL_BOARD);
-        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'K', 'Q', 'k', 'q'});
+        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k', 'q');
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQk -");
-        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'K', 'Q', 'k'});
+        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k');
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kQK -");
-        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder(new char[] {'K', 'Q', 'k'});
+        assertThat(fs.getCastlingRights().toCharArray()).containsExactlyInAnyOrder('K', 'Q', 'k');
 
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -");
         assertThat(fs.getCastlingRights()).isEqualTo("-");
 
-        assertThatThrownBy(() -> { new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KPkq -"); }).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KPkq -")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -65,8 +60,8 @@ public class FenStringTest {
         fs = new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq a6");
         assertThat(fs.getEnPassantTarget()).isEqualTo("a6");
 
-        assertThatThrownBy(() -> { new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i4"); }).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> { new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq a4"); }).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i4")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FenString("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq a4")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

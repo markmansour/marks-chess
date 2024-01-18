@@ -12,11 +12,6 @@ import static org.assertj.core.api.Assertions.*;
 public class GameTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 
-    @BeforeClass
-    public void setUp() {
-        // code that will be invoked when this test is instantiated
-    }
-
     @Test
     public void scanInitialFenString() {
         Game g = new Game(FenString.INITIAL_BOARD);

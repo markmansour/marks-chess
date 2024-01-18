@@ -11,23 +11,23 @@ import org.slf4j.LoggerFactory;
 public class Board {
     private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
 
-    public static long RANK_1 = 0xffL;
-    public static long RANK_2 = 0xff00L;
-    public static long RANK_3 = 0xff0000L;
-    public static long RANK_4 = 0xff000000L;
-    public static long RANK_5 = 0xff00000000L;
-    public static long RANK_6 = 0xff0000000000L;
-    public static long RANK_7 = 0xff000000000000L;
-    public static long RANK_8 = 0xff00000000000000L;
+    public static final long RANK_1 = 0xffL;
+    public static final long RANK_2 = 0xff00L;
+    public static final long RANK_3 = 0xff0000L;
+    public static final long RANK_4 = 0xff000000L;
+    public static final long RANK_5 = 0xff00000000L;
+    public static final long RANK_6 = 0xff0000000000L;
+    public static final long RANK_7 = 0xff000000000000L;
+    public static final long RANK_8 = 0xff00000000000000L;
 
-    public static long FILE_H = 0x8080808080808080L;
-    public static long FILE_G = 0x4040404040404040L;
-    public static long FILE_F = 0x2020202020202020L;
-    public static long FILE_E = 0x1010101010101010L;
-    public static long FILE_D = 0x808080808080808L;
-    public static long FILE_C = 0x404040404040404L;
-    public static long FILE_B = 0x202020202020202L;
-    public static long FILE_A = 0x101010101010101L;
+    public static final long FILE_H = 0x8080808080808080L;
+    public static final long FILE_G = 0x4040404040404040L;
+    public static final long FILE_F = 0x2020202020202020L;
+    public static final long FILE_E = 0x1010101010101010L;
+    public static final long FILE_D = 0x808080808080808L;
+    public static final long FILE_C = 0x404040404040404L;
+    public static final long FILE_B = 0x202020202020202L;
+    public static final long FILE_A = 0x101010101010101L;
 
     private long[] boards = new long[Piece.SIZE];
 
@@ -227,12 +227,11 @@ public class Board {
         }
     }
 
-    public long setByBoard(Piece piece, int boardIndex, int location) {
+    public void setByBoard(Piece piece, int boardIndex, int location) {
         assert location >= 0;
         long temp = this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
         pieceCache[location] = Piece.getPieceByIndex(boardIndex);
-        return temp;
     }
 
     public void clearByBoard(Piece piece, int boardIndex, int location) {
@@ -256,7 +255,10 @@ public class Board {
     public int set(char element, int location) {
         for (Piece piece : Piece.values()) {
             if (element == piece.getPieceChar()) {
-                set(piece, location);
+                if (piece == Piece.EMPTY)
+                    throw new IllegalArgumentException("Cannot place empty piece");
+
+                setByBoard(piece, piece.getIndex(), location);
                 location++;
                 break;
             }
@@ -264,12 +266,6 @@ public class Board {
         return location;
     }
 
-    public long set(Piece piece, int location) {
-        if (piece == Piece.EMPTY)
-            throw new IllegalArgumentException("Cannot place empty piece");
-
-        return setByBoard(piece, piece.getIndex(), location);
-    }
     /*
      * return the character representing a piece
      */
@@ -308,7 +304,7 @@ public class Board {
      */
     public int update(Move m, int gameEnPassantState) {
         boolean standardMove = true;
-        int removed = -1;
+        int removed;
 
         int fromBoardIndex = this.getBoardIndex(m.getFrom());  // TODO: replace fromBoardIndex = m.getPiece().getIndex();
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
@@ -378,14 +374,14 @@ public class Board {
         return this.occupiedBoard;
     }
 
-    public long calculateOccupied() {
+    public void calculateOccupied() {
         long usedBoard = 0L;
 
         for (long board : boards) {
             usedBoard |= board;
         }
 
-        return this.occupiedBoard = usedBoard;
+        this.occupiedBoard = usedBoard;
     }
 
     public boolean hasBlackKingOnly() {
@@ -1033,29 +1029,29 @@ public class Board {
 
     private long rookCaptures(PlayerColor pc, int targetLocation) {
         long rooks = getRooks(pc);
-        long rooksAttacks = getRookAttacksForSquare(targetLocation, 0L);
+        long rooksAttacks = getRookAttacksForSquare(targetLocation);
         return rooksAttacks & rooks;
     }
 
-    private long getRookAttacksForSquare(int location, long currentPlayerBoard) {
-        return StraightLineMoves.getRookAttacks(location, getOccupied()) & ~currentPlayerBoard;
+    private long getRookAttacksForSquare(int location) {
+        return StraightLineMoves.getRookAttacks(location, getOccupied()) & ~0L;
     }
 
     private long bishopCaptures(PlayerColor pc, int targetLocation) {
         long bishops = getBishops(pc);
-        long bishopAttacks = getBishopAttacksForSquare(targetLocation, 0L);
+        long bishopAttacks = getBishopAttacksForSquare(targetLocation);
         return bishopAttacks & bishops;
     }
 
     private long queenCaptures(PlayerColor pc, int targetLocation) {
         long queens = getQueens(pc);
-        long rooksAttacks = getRookAttacksForSquare(targetLocation, 0L);
-        long bishopAttacks = getBishopAttacksForSquare(targetLocation, 0L);
+        long rooksAttacks = getRookAttacksForSquare(targetLocation);
+        long bishopAttacks = getBishopAttacksForSquare(targetLocation);
         return (rooksAttacks | bishopAttacks) & queens;
     }
 
-    private long getBishopAttacksForSquare(int location, long currentPlayerBoard) {
-        return StraightLineMoves.getBishopAttacks(location, getOccupied()) & ~currentPlayerBoard;
+    private long getBishopAttacksForSquare(int location) {
+        return StraightLineMoves.getBishopAttacks(location, getOccupied()) & ~0L;
     }
 
     private long pawnCaptures(PlayerColor color, int targetLocation) {
@@ -1079,8 +1075,8 @@ public class Board {
 
         int rank = 7;
         int location = 56;
-        int max = 0;
-        int n = 0;
+        int max;
+        int n;
         Piece p;
 
         while (rank >= 0) {
@@ -1244,8 +1240,6 @@ public class Board {
     }
 
     private long calculateFullZorbistKey(PlayerColor color, int epT) {
-        //        PlayerColor color = getActivePlayerColor();
-//        LOGGER.info("zobrist: {}, {}, {}, {}", asFen(), castlingRights, color, getEnPassantTargetAsInt());
         long hash = 0;
 
         hash = getCastlingRights(hash);

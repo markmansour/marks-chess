@@ -186,7 +186,7 @@ public class BasicNegaMaxPlayer extends Player {
         MoveList<Move> moves = game.generateMoves();
         Move bestMove = null;
         int bestEvaluation = Integer.MIN_VALUE;
-        List<Move> bestMoves = new ArrayList<Move>();
+        List<Move> bestMoves = new ArrayList<>();
 
         for(Move move: moves) {
             game.move(move);
@@ -200,7 +200,6 @@ public class BasicNegaMaxPlayer extends Player {
             } else if(score > bestEvaluation) {
                 bestMoves.clear();
                 bestMoves.add(move);
-                bestMove = move;
                 bestEvaluation = score;
             }
         }
@@ -213,9 +212,8 @@ public class BasicNegaMaxPlayer extends Player {
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
-        Move m = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        return m;
+        return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
     }
 
     private void checkForEndGame() {
@@ -289,10 +287,11 @@ public class BasicNegaMaxPlayer extends Player {
     protected int evaluate() {
         Board b = game.getBoard();
         int mobility = 0;  // ignoring for the moment.
+
+/*
         long pawns = b.getWhitePawns();
         long otherPawns = b.getBlackPawns();
 
-/*
         int pawnEvaluation = (PawnMoves.pawnEvaluation(pawns, otherPawns, true) -
             PawnMoves.pawnEvaluation(otherPawns, pawns, false)) / 2;
 */

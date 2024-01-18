@@ -9,6 +9,7 @@ import com.stateofflux.chess.model.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -28,7 +29,9 @@ public class App
     {
         Logger.info("Mark's Chess Program");
         StringBuilder sb = new StringBuilder();
-        final Scanner scanner = new Scanner(System.in);
+
+        final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
+
         Game game = null;
         Player whitePlayer = new BasicNegaMaxPlayer(PlayerColor.WHITE);
         Player blackPlayer = new BasicNegaMaxPlayer(PlayerColor.BLACK);
@@ -69,19 +72,13 @@ public class App
 
                     if(lineParts[1].equals("startpos"))
                         Logger.info("using default board setup");
-/*
-                    else
-                        fen = lineParts[2];
-*/
 
                     game = new Game(fen);
                     game.setPlayers(whitePlayer, blackPlayer);
 
                     if (lineParts.length >= 4 && lineParts[2].equals("moves")) {
-                        int movesOffset = 3;
-                        int i = movesOffset;
+                        int i = 3;
                         while(i < lineParts.length) {
-                            assert game != null;
                             game.moveLongNotation(lineParts[i]);
                             i++;
                         }

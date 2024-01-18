@@ -54,7 +54,7 @@ public class KnightMoves implements PieceMovesInterface {
 
     public long getCaptureMoves() {
         return this.captureMoves;
-    };
+    }
 
     public long getNonCaptureMoves() {
         return this.nonCaptureMoves;

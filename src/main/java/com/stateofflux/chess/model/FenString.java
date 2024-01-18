@@ -4,29 +4,30 @@ import java.util.Scanner;
 
 import com.stateofflux.chess.model.pieces.CastlingHelper;
 import com.stateofflux.chess.model.pieces.PawnMoves;
-import com.stateofflux.chess.model.pieces.Piece;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * See https://www.chessprogramming.org/Algebraic_Chess_Notation#Enpassant
- *
- * This class parses FEN Strings and ensures the values
+ * See <a href="https://www.chessprogramming.org/Algebraic_Chess_Notation#Enpassant">En Passant</a>
+ * <br/>
+ * This class parses <a href="https://www.chessprogramming.org/Forsyth-Edwards_Notation">FEN Strings</a> and ensures the values
  * are valid. The Game class ensures checks if the moves
  * are valid within the context of the game.
- *
- * https://www.chessprogramming.org/Forsyth-Edwards_Notation
+ * <br/>
+ * <code>
  * <FEN> ::= <Piece Placement>
  * ' ' <Side to move>
  * ' ' <Castling ability>
  * ' ' <En passant target square>
  * ' ' <Halfmove clock>
  * ' ' <Fullmove counter>
+ * </code>
  */
 public class FenString {
     public static final String INITIAL_BOARD = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
     public static final char NO_CASTLING = '-';
 
-    private String piecePlacement;
+    private final String piecePlacement;
     private PlayerColor playerTurn;
     private String castlingRights;
     private String enPassantTarget;
@@ -58,11 +59,11 @@ public class FenString {
     }
 
     // https://www.chess.com/terms/chess-notation
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Switch statement is looking for an optional last character")
     public static int squareToLocation(String target) {
         // if the size is 2, then it is a pawn move
         boolean check = false;
         boolean checkmate = false;
-        boolean incomplete = false;
         String square;
 
         switch(target.charAt(target.length() - 1)) {
@@ -70,7 +71,6 @@ public class FenString {
                 check = true;
                 break;
             case '*':
-                incomplete = true;
                 break;
             case '#':
                 checkmate = true;
@@ -88,8 +88,8 @@ public class FenString {
 
     // must be 2 characters
     private static int simpleSquareToLocation(String target) {
-        int file = -1;
-        int rank = 0;
+        int file;
+        int rank;
 
         char fileChar;
         char rankChar;

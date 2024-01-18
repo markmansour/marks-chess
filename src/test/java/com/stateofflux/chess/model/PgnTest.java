@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PgnTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PgnTest.class);

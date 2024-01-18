@@ -33,7 +33,7 @@ public enum Direction {
     }
 
     /**
-     * @brief Moves all set bits in the given bitboard n squares west and returns the new
+     * Moves all set bits in the given bitboard n squares west and returns the new
      * bitboard, discarding those that fall off the edge.
      *
      * @param board Board to move bits west on

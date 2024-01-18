@@ -167,7 +167,7 @@ public class PawnMoves implements PieceMovesInterface {
 
     public long getCaptureMoves() {
         return captureMoves;
-    };
+    }
 
     public long getNonCaptureMoves() {
         return nonCaptureMoves;

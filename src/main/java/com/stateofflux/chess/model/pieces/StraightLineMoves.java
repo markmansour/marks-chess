@@ -68,8 +68,6 @@ public abstract class StraightLineMoves extends PieceMoves {
         initializeRookMagic();
     }
 
-    protected int max = 7; // max number of moves in any direction
-
     protected StraightLineMoves(Board board, int location) {
         super(board, location);
     }

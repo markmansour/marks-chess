@@ -1,7 +1,5 @@
 package com.stateofflux.chess.model;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -20,18 +18,17 @@ public class Pgn {
         //These continuation characters are letter characters ("A-Za-z"), digit characters
         //("0-9"), the underscore ("_"), the plus sign ("+"), the octothorpe sign ("#"),
         //the equal sign ("="), the colon (":"),  and the hyphen ("-").
-        Pattern tagPairsPattern = Pattern.compile("\\s*\\[\\s*([A-Za-z0-9_+#=:-]+)\\s+\"(.+)\"\\s*\\]");
+        Pattern tagPairsPattern = Pattern.compile("\\s*\\[\\s*([A-Za-z0-9_+#=:-]+)\\s+\"(.+)\"\\s*]");
         try (BufferedReader br = new BufferedReader(new StringReader(raw))) {
             line = br.readLine();
 
             // eat leading whitespaces
-            while(line.isBlank())
+            while(line != null && line.isBlank())
                 line = br.readLine();
 
             // phase 1 - read the tag pairs (headers)
-            while(true) {
+            while(line != null && !line.isBlank()) {
                 if ((line.startsWith("%"))) continue;  // escape char for proprietary use - ignore the line
-                if ((line.isBlank())) break;  // exit the tag pair section and start the move text section
                 Matcher m = tagPairsPattern.matcher(line);
                 boolean found = m.find();
                 if (!found) break;
@@ -58,11 +55,11 @@ public class Pgn {
         return moves;
     }
 
-    public static @NotNull List<PgnMove> fromSan(String moveText) {
+    public static List<PgnMove> fromSan(String moveText) {
         return fromSan(moveText, null);
     }
 
-    private static @NotNull List<PgnMove> fromSan(String moveText, String result) {
+    private static List<PgnMove> fromSan(String moveText, String result) {
         if(result != null) {
             moveText = moveText.replaceAll(result + "\\s+$", "");  // remove the result from the end fo the string.
         }
@@ -83,7 +80,7 @@ public class Pgn {
         return moves;
     }
 
-    private static @NotNull String readMoveTextLines(BufferedReader br) throws IOException {
+    private static String readMoveTextLines(BufferedReader br) throws IOException {
         StringBuilder moveTextSb = new StringBuilder();
         String line;
 

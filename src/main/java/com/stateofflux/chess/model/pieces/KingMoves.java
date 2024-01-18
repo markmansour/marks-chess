@@ -1,8 +1,6 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
-import com.stateofflux.chess.model.Direction;
-import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.PlayerColor;
 
 public class KingMoves implements PieceMovesInterface {
@@ -50,7 +48,7 @@ public class KingMoves implements PieceMovesInterface {
 
     public long getCaptureMoves() {
         return this.captureMoves;
-    };
+    }
 
     public long getNonCaptureMoves() {
         return this.nonCaptureMoves;

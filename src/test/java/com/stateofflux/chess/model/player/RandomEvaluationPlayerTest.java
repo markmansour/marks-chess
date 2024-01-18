@@ -1,11 +1,9 @@
 package com.stateofflux.chess.model.player;
 
-import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
-import org.codehaus.plexus.logging.Logger;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

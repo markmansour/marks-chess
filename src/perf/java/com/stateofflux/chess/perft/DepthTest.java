@@ -1,6 +1,5 @@
 package com.stateofflux.chess.perft;
 
-import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.FenString;
 import one.profiler.AsyncProfiler;
 import one.profiler.Events;
@@ -21,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 /*
  * See JMH repo for examples on how to use the profiler:
@@ -72,7 +70,6 @@ public class DepthTest {
 
                 text = reader.readLine();
             }
-            LOGGER.info(text);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,58 +90,6 @@ public class DepthTest {
 
         return list;
     }
-/*
-
-    @Test public void debugPerft() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq -",
-            20,
-            0,0,0,0,0
-        ));
-        depthHelper(1, list);
-    }
-
-    @Test public void debugPerft2() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq -",
-            0,
-            0,9345,0,0,0
-        ));
-        depthHelper(3, list);
-    }
-
-    @Test public void debugPerft3() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "rnbqkbnr/pppp1ppp/8/4p3/8/1P6/P1PPPPPP/RNBQKBNR w KQkq -",
-            0,
-            629,0,0,0,0
-        ));
-        depthHelper(2, list);
-    }
-
-    @Test public void debugPerft4() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "rnbqkbnr/pppp1ppp/8/4p3/8/BP6/P1PPPPPP/RN1QKBNR b KQkq -",
-            29,
-            0,0,0,0, 0
-        ));
-        depthHelper(1, list);
-    }
-
-    @Test public void debugPerft5() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
-            0,
-            568,0,0,0, 0
-        ));
-        depthHelper(2, list);
-    }
-*/
 
     // 3 runs from IntelliJ - 793ms, 770ms, 921ms
     // Stopped using constructor Game(String FenString) and instead used Game(Game g)
@@ -252,17 +197,6 @@ public class DepthTest {
         depthHelper(6, defaultBoard());
     }
 */
-
-
-    /*@Test public void debugPerft6() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ArrayList<PerftRecord> list = new ArrayList<>();
-        list.add(new PerftRecord(
-            "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -",
-            0,
-            568,0,0,0, 0
-        ));
-        depthHelper(2, list);
-    }*/
 
     @Test public void testContextBetweenGames() {
         // fail("too long");
