@@ -28,8 +28,8 @@ public class Game {
     private boolean outOfTime = false;
     private int movesWithoutCaptureOrPawnMove = 0;
 
-    private final LinkedList<Long> historyAsHashes = new LinkedList<>();
-    private final LinkedList<History> historyOfMoves = new LinkedList<>();
+    private final ArrayList<Long> historyAsHashes = new ArrayList<>();
+    private final ArrayList<History> historyOfMoves = new ArrayList<>();
 
     // --------------------------- Constructors ---------------------------
 
@@ -431,10 +431,11 @@ public class Game {
     }
 
     public void undo() {
-        History h = historyOfMoves.pollLast();
+        int size = historyOfMoves.size();
+        History h = historyOfMoves.remove(size - 1);
         getBoard().setBoards(h.boards);
         getBoard().setPieceCache(h.pieceCache);
-        historyAsHashes.pollLast();  // drop the hash
+        historyAsHashes.remove(size - 1);
         board.setEnPassantTarget(h.enPassantTarget());
         this.check = h.check();
         board.setCastlingRights(h.castlingRights());
@@ -695,7 +696,7 @@ public class Game {
             this.board.getEnPassantTargetAsFen();
     }
 
-    public LinkedList<Long> getHistoryAsHashes() {
+    public List<Long> getHistoryAsHashes() {
         return historyAsHashes;
     }
 
