@@ -1,6 +1,6 @@
 # Mark's Chess
 [![CI workflow](https://github.com/markmansour/marks-chess/actions/workflows/maven.yml/badge.svg)](https://github.com/markmansour/marks-chess/actions/workflows/maven.yml)
-
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/markmansour/marks-chess/actions/workflows/build.yml)
 This is a straight forward chess engine written in Java.  The chess engine comes with a basic UCI interface.  
 There are thorough unit tests.  There is *no* GUI.
 
