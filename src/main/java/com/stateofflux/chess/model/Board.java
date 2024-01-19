@@ -1183,13 +1183,14 @@ public class Board {
     // from https://github.com/bhlangonijr/chesslib/blob/49599909c02fc652b15d89048ec88f8b707facf6/src/main/java/com/github/bhlangonijr/chesslib/Board.java
     private static final long RANDOM_SEED = 49109794719L;
     private static final int ZOBRIST_TABLE_SIZE = 2000;
-    private static final List<Long> zorbistRandomKeys = new ArrayList<>(ZOBRIST_TABLE_SIZE);
+    private static final long[] zorbistRandomKeys = new long[ZOBRIST_TABLE_SIZE];
+
 
     static {
         final XorShiftRandom random = new XorShiftRandom(RANDOM_SEED);
         for (int i = 0; i < ZOBRIST_TABLE_SIZE; i++) {
             long key = random.nextLong();
-            zorbistRandomKeys.add(key);
+            zorbistRandomKeys[i] = key;
         }
     }
 
@@ -1239,19 +1240,19 @@ public class Board {
     }
 
     private long getCastleRightKey(int castlingRightOrdinal, PlayerColor color) {
-        return zorbistRandomKeys.get(3 * castlingRightOrdinal + 300 + 3 * color.ordinal());
+        return zorbistRandomKeys[3 * castlingRightOrdinal + 300 + 3 * color.ordinal()];
     }
 
     private long getSideKey(PlayerColor side) {
-        return zorbistRandomKeys.get(3 * side.ordinal() + 500);
+        return zorbistRandomKeys[3 * side.ordinal() + 500];
     }
 
     private long getEnPassantKey(int enPassantTarget) {
-        return zorbistRandomKeys.get(3 * enPassantTarget + 400);
+        return zorbistRandomKeys[3 * enPassantTarget + 400];
     }
 
     private long getPieceSquareKey(Piece piece, int square) {
-        return zorbistRandomKeys.get(57 * piece.getIndex() + 13 * square);
+        return zorbistRandomKeys[57 * piece.getIndex() + 13 * square];
     }
 
     public void clearZorbistMask(long mask) {
