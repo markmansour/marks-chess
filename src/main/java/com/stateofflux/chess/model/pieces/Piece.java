@@ -105,4 +105,22 @@ public enum Piece {
             default -> false;
         };
     }
+
+    public Piece inOpponentsColor() {
+        switch(this) {
+            case WHITE_KING  -> { return BLACK_KING  ; }
+            case WHITE_QUEEN -> { return BLACK_QUEEN ; }
+            case WHITE_ROOK  -> { return BLACK_ROOK  ; }
+            case WHITE_BISHOP-> { return BLACK_BISHOP; }
+            case WHITE_KNIGHT-> { return BLACK_KNIGHT; }
+            case WHITE_PAWN  -> { return BLACK_PAWN  ; }
+            case BLACK_KING  -> { return WHITE_KING  ; }
+            case BLACK_QUEEN -> { return WHITE_QUEEN ; }
+            case BLACK_ROOK  -> { return WHITE_ROOK  ; }
+            case BLACK_BISHOP-> { return WHITE_BISHOP; }
+            case BLACK_KNIGHT-> { return WHITE_KNIGHT; }
+            case BLACK_PAWN  -> { return WHITE_PAWN  ; }
+            default -> { return EMPTY; }
+        }
+    }
 }

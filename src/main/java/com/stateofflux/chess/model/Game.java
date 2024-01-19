@@ -143,7 +143,7 @@ public class Game {
         if(players == null) return "No Players Set";
         if(isDraw()) return "Draw";
         if(isStalemate()) return "Stalemate";
-        if(isCheckmated(getActivePlayerColor())) return "Checkmate: " + players[(clock - 1) % 2];
+        if(isCheckmated()) return "Checkmate: " + players[(clock - 1) % 2];
         if(exceededMoves()) return "Moves exceeded";
         return "unknown";
     }
@@ -170,8 +170,6 @@ public class Game {
         if(eastEnPassantExposesCheck && westEnPassantExposesCheck) { // two en passant and they both expose check
             move.clearEnPassant();
             board.clearEnPassantTarget();
-            // board.setEnPassantTarget(move.getEnPassantTarget());  // clear the game state too.
-            // board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget()); // redundant?
         } else if(enPassantToTheEast && !enPassantToTheWest && eastEnPassantExposesCheck) {  // west only en passant
             move.clearEnPassant();
             board.clearEnPassantTarget();
@@ -331,7 +329,7 @@ public class Game {
     }
 
     /*
-     * Long Alegbraic notation without piece names is in the format
+     * Long Algebraic notation without piece names is in the format
      * <FROM_AS_SQUARE_COORDS><TO_AS_SQUARE_COORDS><PROMOTION>
      * e.g.
      * - c2c3  <-- move pawn one space
@@ -672,8 +670,8 @@ public class Game {
      * ' ' <Side to move>
      * ' ' <Castling ability>
      * ' ' <En passant target square>
-     * ' ' <Halfmove clock>
-     * ' ' <Fullmove counter>
+     * ' ' <HalfMove clock>
+     * ' ' <FullMove counter>
      */
     public String asFen() {
         return this.getPiecePlacement() +
@@ -716,7 +714,7 @@ public class Game {
             isRepetition();
     }
 
-    public boolean isCheckmated(PlayerColor playerColor) {
+    public boolean isCheckmated() {
         return isChecked() && generateMoves().isEmpty();
     }
 
@@ -744,7 +742,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isCheckmated(getActivePlayerColor()) || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition() || isSpinning();
+        return isCheckmated() || hasResigned() || isStalemate() || hasInsufficientMaterials() || exceededMoves() || isRepetition() || isSpinning();
     }
 
     private boolean isSpinning() {
@@ -855,7 +853,7 @@ public class Game {
         LOGGER.info("move count:    {}", historyOfMoves.size());
         LOGGER.info("moves:         {}", getMoveHistory());
         LOGGER.info("");
-        LOGGER.info("isCheckmated:  {}", isCheckmated(activePlayerColor));
+        LOGGER.info("isCheckmated:  {}", isCheckmated());
         LOGGER.info("isDraw?:       {}", isDraw());
         LOGGER.info("hasResigned:   {}", hasResigned());
         LOGGER.info("isStalemate:   {}", isStalemate());
@@ -865,22 +863,6 @@ public class Game {
         LOGGER.info("is spinning:   {}", isSpinning());
         LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
         LOGGER.info("--------------------------");
-
-        if(historyOfMoves.size() > 6) {
-            Game dupe = new Game(this);
-            for (int i = 0; i < 6; i++) {
-                dupe.undo();
-            }
-            LOGGER.info("Fen at Moves - 6: {}", dupe.asFen());
-            List<History> x = historyOfMoves.subList(historyOfMoves.size() - 6, historyOfMoves.size());
-            LOGGER.info("Final Moves: {}, {}, {}, {}, {}, {}",
-                x.get(0).move,
-                x.get(1).move,
-                x.get(2).move,
-                x.get(3).move,
-                x.get(4).move,
-                x.get(5).move);
-        }
     }
 
 }

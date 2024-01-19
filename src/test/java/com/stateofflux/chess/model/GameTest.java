@@ -310,7 +310,8 @@ public class GameTest {
         }
     }
 
-    public static class WhenPassingThroughCheck {
+    @Nested
+    class WhenPassingThroughCheck {
         @Test
         public void kingDoesNotPassThroughCheckFromBishop() {
             Game game = new Game("rnbqk1nr/1pp3pp/5p2/p1bpp3/4P1PP/5P1N/PPPP2B1/RNBQK2R w KQkq -");
@@ -396,6 +397,18 @@ public class GameTest {
             game.move("axb8=Q");
             assertThat(game.asFen()).isEqualTo("1Q6/7k/8/5N1K/8/8/8/8 b - - 1 1");
         }
+
+        @Test void blackPawnPromotion() {
+            Game game = new Game("rnbqkbnr/1ppppppp/8/8/8/8/p1PPPPPP/2BQKBNR b Kkq - 0 1");
+            game.move("a1=b");  // promote to bishop
+            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 1 1");
+        }
+
+        @Test void promotionWithIncorrectReplacement() {
+            Game game = new Game("rnbqkbnr/1ppppppp/8/8/8/8/p1PPPPPP/2BQKBNR b Kkq - 0 1");
+            game.move("a1=B");  // promote to white bishop, which is the wrong color.
+            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 1 1");
+        }
     }
 
     @Test
@@ -413,7 +426,7 @@ public class GameTest {
         game.move("Nxd4");
         game.move("Bb4");
 
-        assertThat(game.asFenNoCounters()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq -");
+        assertThat(game.asFen()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq - 0 5");
     }
 
     @Nested
@@ -464,7 +477,17 @@ public class GameTest {
 
         @Test public void fromFISCGamesDB() {
             String[] fens = new String[]{
-                "8/7k/8/7K/8/8/8/8 w - -"  // black king & black bishop vs white king & white bishop
+                "8/7k/8/7K/8/8/8/8 w - -"  // two kings - whites turn
+            };
+            for (String fen : fens) {
+                Game game = new Game(fen);
+                assertThat(game.hasInsufficientMaterials()).isTrue();
+            }
+        }
+
+        @Test public void fromFISCGamesDBReversed() {
+            String[] fens = new String[]{
+                "8/7k/8/7K/8/8/8/8 b - -"  // two kings - blacks turn
             };
             for (String fen : fens) {
                 Game game = new Game(fen);
@@ -494,14 +517,14 @@ public class GameTest {
                 Game newGame = new Game(game.asFen());
                 newGame.move(move);
                 assertThat(newGame.isChecked()).isFalse();
-                assertThat(game.isCheckmated(PlayerColor.BLACK)).isFalse();
+                assertThat(game.isCheckmated()).isFalse();
             }
         }
 
         @Test public void isCheckmated() {
             Game game = new Game("6Q1/3rk3/4Q3/pp4P1/8/5P2/5PK1/8 b - -");
             assertThat(game.isChecked()).isTrue();
-            assertThat(game.isCheckmated(PlayerColor.BLACK)).isTrue();
+            assertThat(game.isCheckmated()).isTrue();
         }
 
         @Test public void cannotMoveIntoCheck() {
@@ -521,7 +544,7 @@ public class GameTest {
             };
             for (String fen : fens) {
                 Game game = new Game(fen);
-                assertThat(game.isCheckmated(game.activePlayerColor)).isTrue();
+                assertThat(game.isCheckmated()).isTrue();
             }
         }
     }
@@ -575,25 +598,26 @@ public class GameTest {
             assertThat(game.isRepetition()).isTrue();
         }
 
-/*
         @Test
         public void testThreefoldRepetition5()  {
+            // This test make sure that pawns that are unable to en passant are marked as en passant when
+            // generating the zobrist key.
+            // So, for our first move, f4, although it looks like en passant can be performed, it cannot because it
+            // would place the black king in check.
             Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
             // 1. f4 Kf7 2. Kf2 Kg8 3. Kg1 Kh7 4. Kh2 Kg8 5. Kg1
-            game.move("f4");  // initial position - two square pawn advance
+            game.move("f4");  // HASH_1 - initial position - two square pawn advance
             game.move("Kf7"); // move 2: (initial) en passant capture not possible - would expose own king to check
             game.move("Kf2");
             game.move("Kg8");
-            game.move("Kg1"); // move 5: twofold repetition
+            game.move("Kg1"); // HASH_1 - move 5: twofold repetition
             game.move("Kh7");
             game.move("Kh2");
-            game.printOccupied();
             game.move("Kg8");
-            game.printOccupied();
-            game.move("Kg1"); // move 9: threefold repetition
+            game.move("Kg1"); // HASH_1 - move 9: threefold repetition
             assertThat(game.isRepetition()).isTrue();
         }
-*/
+
 
         @Test
         public void testThreefoldRepetition6() {
@@ -629,7 +653,7 @@ public class GameTest {
 
         LOGGER.info("--------------------------");
         LOGGER.info("isOver: {}", game.isOver());
-        LOGGER.info("isCheckmated: {}", game.isCheckmated(game.activePlayerColor));
+        LOGGER.info("isCheckmated: {}", game.isCheckmated());
         LOGGER.info("hasResigned: {}", game.hasResigned());
         LOGGER.info("isStalemate: {}", game.isStalemate());
         LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());

@@ -134,28 +134,6 @@ public class Board {
 
     // --------------------------- Static Debugging Methods ---------------------------
     public static void printOccupied(long board) {
-        StringBuilder rankString;
-        List<String> ranks = new ArrayList<>();
-
-        for (int rank = 8; rank > 0; rank--) {
-            rankString = new StringBuilder(8);
-            for (int location = (rank - 1) * 8; location < rank * 8; location++) {
-                rankString.append((board & (1L << location)) == 0 ? '.' : '1');
-            }
-
-            ranks.add(rankString.toString());
-        }
-
-        int i = 0;
-        for (String r : ranks) {
-            LOGGER.info("{}: {}", 8 - i, r);
-            i++;
-        }
-
-        LOGGER.info("   abcdefgh");
-    }
-
-    public static void printBoard(long board) {
         String reversedLong = longToReversedBinaryString(board);
 
         for (int rank = 7; rank >= 0; rank--) {
@@ -227,9 +205,6 @@ public class Board {
     }
 
     public void setByBoard(Piece piece, int boardIndex, int location) {
-        if(location < 0)
-            LOGGER.info("gah!");
-
         assert location >= 0;
         long temp = this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
@@ -252,9 +227,6 @@ public class Board {
                 boards[i] &= ~bitToClear;
             }
         }
-
-        if(location == -1)
-            LOGGER.info("break here");
 
         pieceCache[location] = Piece.EMPTY;
     }
@@ -668,7 +640,7 @@ public class Board {
     }
 
     public void setCastlingRightsFromFen(String fen) {
-        if(fen.isBlank()) { clearCastlingRights(); }
+        // if(fen.isBlank()) { clearCastlingRights(); }
         if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
         if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
         if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
@@ -690,11 +662,13 @@ public class Board {
 
     public void clearCastlingBlack()          { clearCastling((CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE)); }
 
+/*
     public void clearCastlingRights() {
         this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
         castlingRights = 0;
         this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
     }
+*/
 
     public void addCastlingRights(int value) {
         this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off

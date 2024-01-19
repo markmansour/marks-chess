@@ -121,7 +121,14 @@ public class Move {
     }
 
     public void setPromotion(Piece promotionPiece) {
-        this.promotionPiece = promotionPiece;
+        if(promotionPiece == null)
+            return;
+
+        if((piece.isWhite() && promotionPiece.isWhite()) ||
+            piece.isBlack() && promotionPiece.isBlack())
+            this.promotionPiece = promotionPiece;
+        else
+            this.promotionPiece = promotionPiece.inOpponentsColor();  // the case used for promotion is unexpected.
     }
 
     public int getSecondaryFrom() { return secondaryFrom; }

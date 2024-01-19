@@ -156,4 +156,9 @@ public class BoardTest {
     assertThat(FenString.squareToLocation("h8"))
         .isEqualTo(63);
   }
+
+  @Test void printMethods() {
+    Game game = new Game();
+    Board.printOccupied(game.getBoard().getOccupied());
+  }
 }
