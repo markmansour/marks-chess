@@ -5,7 +5,6 @@ import java.util.*;
 import com.stateofflux.chess.model.pieces.*;
 import com.stateofflux.chess.model.player.Player;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -504,7 +503,6 @@ public class Game {
         return sb.toString();
     }
 
-    @NotNull
     @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "sourceHintWithoutPiece may not be present")
     private Move extractMoveFromAlgebraicNotation(String action) {
         int destination = FenString.squareToLocation(action);
