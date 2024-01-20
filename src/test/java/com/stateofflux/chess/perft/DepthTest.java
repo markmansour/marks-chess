@@ -129,10 +129,9 @@ public class DepthTest {
 
     // TAKES A LONG TIME TO RUN
     // 33 seconds => 4867157 nodes ~= 146 nodes per ms
-    @Disabled
+    // 2922 ms and reviewed 4865609 nodes.  1665163 nodes/second
     @Test public void firstRecordDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(5, perftRecordsSizeOne());
-
     }
 
     // 1.4 seconds
@@ -193,6 +192,7 @@ public class DepthTest {
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
     // ran for 61093 ms and reviewed 119060324 nodes.  1948837 nodes/second - after incremental zobrist hashing update
+    // ran for 30357 ms and reviewed 119060324 nodes.  3922005 nodes/second - improved perft to not process depth 1 moves.
     @Test @Disabled
     public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
 //        fail("too long");

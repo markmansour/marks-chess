@@ -11,7 +11,7 @@ The project contains a chess engine with following abilities:
 * Basic UCI interface.
 * Perft to depth 6 tested and valid.
 * Uses bitboards for speed (and it's a lot of fun to write).
-* With perft 6 running at 2.9MM node/second on my M2 macbook air.
+* With perft 6 running at 4MM nodes/second on my M2 macbook air.
 * Two working players.  
   * RandomMovePlayer - generates moves to a depth of 1 and randomly picks a move.
   * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 

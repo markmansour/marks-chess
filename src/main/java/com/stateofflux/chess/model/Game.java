@@ -781,15 +781,21 @@ public class Game {
         SortedMap<String, Integer> perftResults = new TreeMap<>();
 
         MoveList<Move> moves = this.generateMoves();
+
         int moveCounter;
 
         for (var move : moves) {
 //            LOGGER.info("root move: {}", move);
 
-            move(move);
-            moveCounter = perft(depth - 1);
+            if(depth > 1) {
+                move(move);
+                moveCounter = perft(depth - 1);
 //            LOGGER.info("perft: {} {}", move, moveCounter);
-            undo();
+                undo();
+            } else {
+                moveCounter = 1;
+            }
+
             perftResults.put(move.toLongSan(), moveCounter);
         }
 
@@ -799,11 +805,11 @@ public class Game {
     }
 
     public int perft(int depth) {
-        if (depth == 0)
-            return 1;
-
 //        LOGGER.info("perft FEN: {}", this.asFen());
         MoveList<Move> moves = this.generateMoves();
+
+        if (depth == 1)
+            return moves.size();
 
         int moveCounter = 0;
 
