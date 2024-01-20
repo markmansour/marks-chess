@@ -21,8 +21,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}  # Needed to pull the new jococo commit after the badge is checked in on a previous action.
 
       - uses: actions/setup-java@v4
 
