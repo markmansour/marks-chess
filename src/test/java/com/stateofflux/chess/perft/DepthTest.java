@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
 import org.junit.jupiter.api.Test;
 
 /*
@@ -156,7 +155,6 @@ public class DepthTest {
     // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
     // 4 seconds
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        // fail("too long");
         depthHelper(4, perftRecords);
     }
 
@@ -183,8 +181,20 @@ public class DepthTest {
      2317 ms and reviewed 4865609 nodes.  2099960 nodes/second - use clone instead of Arrays.copyOf for Board.getCopyOfBoards
      */
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        // fail("too long");
         depthHelper(5, defaultBoard());
+    }
+
+    @Test public void startingPositionDepthFiveSimple() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        simplifiedDepthTest(5, FenString.INITIAL_BOARD, 4865609);
+    }
+
+    @Test public void startingPositionDepthSixSimple() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        simplifiedDepthTest(6, FenString.INITIAL_BOARD, 119060324);
+    }
+
+    // ran for 910498 ms and reviewed 3195901860 nodes.  3510059 nodes/second (within IntelliJ, which is slower than on the command line).
+    @Test public void startingPositionDepthSevenSimple() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        simplifiedDepthTest(7, FenString.INITIAL_BOARD, 3195901860L);
     }
 
     // Nodes searched: 119060324
@@ -195,13 +205,11 @@ public class DepthTest {
     // ran for 30357 ms and reviewed 119060324 nodes.  3922005 nodes/second - improved perft to not process depth 1 moves.
     @Test @Disabled
     public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-//        fail("too long");
         depthHelper(6, defaultBoard());
     }
 
     @Test public void testContextBetweenGames() {
-        // fail("too long");
-        SortedMap<String, Integer> actual;
+        SortedMap<String, Long> actual;
 
         // uci
         // position startpos
@@ -209,7 +217,7 @@ public class DepthTest {
         Game depth0 = new Game();
         assertThat(depth0.perftAtRoot(5).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(4865609);
+            .reduce(0L, Long::sum)).isEqualTo(4865609);
 
         // ucinewgame
         // position fen "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -" moves b7b5
@@ -217,7 +225,7 @@ public class DepthTest {
         Game depth4 = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
         assertThat(depth4.perftAtRoot(1).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(22);
+            .reduce(0L, Long::sum)).isEqualTo(22);
 
 
         // ucinewgame
@@ -228,7 +236,7 @@ public class DepthTest {
         assertThat(actual.get("b7b5")).isEqualTo(22);  // stockfish reports 22
         assertThat(actual.values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(380);
+            .reduce(0L, Long::sum)).isEqualTo(380);
 
         // ucinewgame
         // position fen "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq -" moves a7a6
@@ -236,12 +244,12 @@ public class DepthTest {
         Game depth2 = new Game("rnbqkbnr/1ppppppp/p7/8/P7/8/1PPPPPPP/RNBQKBNR w KQkq -");
         assertThat(depth2.perftAtRoot(3).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(9312);
+            .reduce(0L, Long::sum)).isEqualTo(9312);
 
         Game temp2 = new Game("rnbqkbnr/2pppppp/pP6/8/8/8/1PPPPPPP/RNBQKBNR b KQkq -");
         assertThat(temp2.perftAtRoot(1).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(19);
+            .reduce(0L, Long::sum)).isEqualTo(19);
 
         // ucinewgame
         // position fen rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1 moves b7b5 a5b6
@@ -249,13 +257,13 @@ public class DepthTest {
         Game temp = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
         assertThat(temp.perftAtRoot(1).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(22);
+            .reduce(0L, Long::sum)).isEqualTo(22);
         assertThat(temp.perftAtRoot(2).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(398);  // a5b6 for me is 20, for stockfish it is 19
+            .reduce(0L, Long::sum)).isEqualTo(398);  // a5b6 for me is 20, for stockfish it is 19
         assertThat(temp.perftAtRoot(3).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(9432);
+            .reduce(0L, Long::sum)).isEqualTo(9432);
 
         // ucinewgame
         // position fen "rnbqkbnr/1ppppppp/p7/P7/8/8/1PPPPPPP/RNBQKBNR b KQkq -" moves a2a4
@@ -265,7 +273,7 @@ public class DepthTest {
         assertThat(actual.get("b7b5")).isEqualTo(9432);  // stockfish reports 9432, my engine 9456
         assertThat(actual.values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(186257);
+            .reduce(0L, Long::sum)).isEqualTo(186257L);
     }
 
     @Test void returnSameResultsWhenRunTwiceInARow() {
@@ -275,27 +283,43 @@ public class DepthTest {
         Game temp = new Game("rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6");
         assertThat(temp.perftAtRoot(1).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(22);
+            .reduce(0L, Long::sum)).isEqualTo(22);
         assertThat(temp.perftAtRoot(1).values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(22);
+            .reduce(0L, Long::sum)).isEqualTo(22);
     }
 
+    @Disabled
     @Test void harness() {
-        int depth = 5;
-        Game game = new Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        int expected = 217832;
-        game.moveLongNotation("a2a4");  // white move - 217832 - depth 4
-        depth--;
-        game.moveLongNotation("a7a6");  // black move - 9312 - depth 3
-        depth--;
-        game.moveLongNotation("a4a5");  // white move - 379 (should be 380) - depth 2
-        expected = 380;
-        depth--;
-//        game.moveLongNotation("b7b5");  // black move - 22 - depth 1 - en passant!  <-- this works!!!
-//        depth--;
+        int depth = 7;
+        long expected = 3195901860L;
 
-        SortedMap<String, Integer> actual = game.perftAtRoot(depth);
+        Game game = new Game(FenString.INITIAL_BOARD);
+        game.moveLongNotation("a2a3");  // white move - 106743106 - depth 6
+        depth--;
+        expected = 106743106;  // I think actual will be 106743106;
+
+        game.moveLongNotation("d7d5");  // black move - 106743106 - depth 5
+        depth--;
+        expected = 7937327;  // I think actual will be 7937386;
+
+        game.moveLongNotation("a1a2");  // white move - 330675 - depth 4
+        depth--;
+        expected = 330672;  // I think actual will be 7937386;
+
+        game.moveLongNotation("c8h3");  // black move - 330675 - depth 3
+        depth--;
+        expected = 10896;  // I think actual will be 10899;
+
+        game.moveLongNotation("g1h3");  // white move - 330675 - depth 2
+        depth--;
+        expected = 455;  // I think actual will be 456;
+
+        game.moveLongNotation("d8d6");  // black move - 330675 - depth 1
+        depth--;
+        expected = 19;  // I think actual will be 20 - continans e1c8!!! white king to black rook with blockers!
+
+        SortedMap<String, Long> actual = game.perftAtRoot(depth);
 
         game.printPerft(actual);
 
@@ -308,16 +332,16 @@ public class DepthTest {
 
         assertThat(actual.values()
             .stream()
-            .reduce(0, Integer::sum)).isEqualTo(expected);
+            .reduce(0L, Long::sum)).isEqualTo(expected);
     }
 
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-        SortedMap<String, Integer> actual;
+        SortedMap<String, Long> actual;
         String profile = "EMPTY";
         String methodName = "depthOf" + depth;
         long startTime = System.nanoTime();
         long endTime;
-        int perftCount = -1;
+        long perftCount = -1;
 
         try {
             asyncProfiler.start(Events.CPU, 1_000_000);
@@ -328,7 +352,7 @@ public class DepthTest {
                 actual = game.perftAtRoot(depth);
                 perftCount = actual.values()
                     .stream()
-                    .reduce(0, Integer::sum);
+                    .reduce(0L, Long::sum);
 
                 Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
                 Integer expected = (Integer) expectedDepthMethod.invoke(pr);
@@ -365,5 +389,54 @@ public class DepthTest {
             perftCount,
             (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(timeDiff)
             );
+    }
+
+    private void simplifiedDepthTest(int depth, String fen, long expected) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        SortedMap<String, Long> actual;
+        String profile = "EMPTY";
+        String methodName = "depthOf" + depth;
+        long startTime = System.nanoTime();
+        long endTime;
+        long perftCount = -1;
+
+        try {
+            asyncProfiler.start(Events.CPU, 1_000_000);
+
+            // LOGGER.info("{}: {}", counter++, pr.FenString());
+            Game game = new Game(fen);
+            actual = game.perftAtRoot(depth);
+            perftCount = actual.values()
+                .stream()
+                .reduce(0L, Long::sum);
+
+            if(perftCount != expected) {
+                game.printPerft(actual);
+
+                LOGGER.info(
+                    "\n" +
+                        "uci\n" +
+                        "position fen " + game.asFen() + "\n" +
+                        "go perft " + depth + "\n" +
+                        "d\n");
+
+            }
+
+            profile = asyncProfiler.dumpFlat(100);
+        } finally {
+            asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
+            LOGGER.debug(profile);
+        }
+
+        endTime = System.nanoTime();
+        long timeDiff = endTime - startTime;
+        if(timeDiff == 0) timeDiff = 1; // eliminate the divided by 0 error that occasionally pops up below.
+
+        LOGGER.info("profile{}-{}.html: ran for {} ms and reviewed {} nodes.  {} nodes/second",
+            methodName,
+            startTime,
+            TimeUnit.NANOSECONDS.toMillis(timeDiff),
+            perftCount,
+            (perftCount * 1000L) / TimeUnit.NANOSECONDS.toMillis(timeDiff)
+        );
     }
 }

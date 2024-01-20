@@ -74,7 +74,8 @@ public class KingMoves implements PieceMovesInterface {
             return;
 
         // king side - white
-        if( (this.castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0 &&   // castling rights remain
+        if( isWhite &&
+            (this.castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0 &&   // castling rights remain
             (occupiedBoard & WHITE_KING_SIDE_CASTLING_EMPTY_CHECK_BITBOARD) == 0 &&   // no pieces are blocking the castle
             !board.locationUnderAttack(PlayerColor.BLACK, 4) &&               // the king is not under attack
             !board.locationUnderAttack(PlayerColor.BLACK, 5) &&
@@ -84,7 +85,8 @@ public class KingMoves implements PieceMovesInterface {
         }
 
         // queen side - white
-        if( (this.castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0 &&   // castling rights remain
+        if( isWhite &&
+            (this.castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0 &&   // castling rights remain
             (occupiedBoard & WHITE_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD) == 0 &&   // no pieces are blocking the castle
             !board.locationUnderAttack(PlayerColor.BLACK, 4) &&                // the king is not under attack
             !board.locationUnderAttack(PlayerColor.BLACK, 3) &&
@@ -94,7 +96,8 @@ public class KingMoves implements PieceMovesInterface {
         }
 
         // king side - black
-        if( (this.castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0 &&   // castling rights remain
+        if( !isWhite &&
+            (this.castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0 &&   // castling rights remain
             (occupiedBoard & BLACK_KING_SIDE_CASTLING_EMPTY_CHECK_BITBOARD) == 0 &&   // no pieces are blocking the castle
             !board.locationUnderAttack(PlayerColor.WHITE, 60) &&              // the king is not under attack
             !board.locationUnderAttack(PlayerColor.WHITE, 61) &&
@@ -104,7 +107,8 @@ public class KingMoves implements PieceMovesInterface {
         }
 
         // queen side - black
-        if( (this.castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0 &&   // castling rights remain
+        if( !isWhite &&
+            (this.castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0 &&   // castling rights remain
             (occupiedBoard & BLACK_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD) == 0 &&   // no pieces are blocking the castle
             !board.locationUnderAttack(PlayerColor.WHITE, 60) &&               // the king is not under attack
             !board.locationUnderAttack(PlayerColor.WHITE, 59) &&

@@ -9,9 +9,8 @@ The project contains a chess engine with following abilities:
 * Understands all valid moves including castling, en passant, and promotion.
 * Understands checkmate, stalemate, the 50 rule move, insufficient materials, and repetition.
 * Basic UCI interface.
-* Perft to depth 6 tested and valid.
 * Uses bitboards (and [Magic bitboards](https://rhysre.net/fast-chess-move-generation-with-magic-bitboards.html)) for speed.  This was a lot of fun to write.
-* With perft 6 running at 4MM nodes/second on my M2 macbook air.
+* With perft 7 running at 4MM nodes/second on my M2 macbook air.
 * Two working players.  
   * RandomMovePlayer - generates moves to a depth of 1 and randomly picks a move.
   * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
