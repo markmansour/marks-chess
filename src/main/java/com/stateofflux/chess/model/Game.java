@@ -49,12 +49,9 @@ public class Game {
         this(fenString, 0);
     }
 
+/*
     public Game(Game game) {
-        this(game, 0);
-    }
-
-    public Game(Game game, int depth) {
-        this.depth = depth;
+        this.depth = 0;
         this.board = new Board(game.getPiecePlacement());
 
         setActivePlayerColor(game.getActivePlayerColor());
@@ -67,6 +64,7 @@ public class Game {
 
         setActivePlayerIsInCheck();
     }
+*/
 
     // game that can start midway through - used for analysis
     public Game(String fenString, int depth) {
@@ -133,15 +131,6 @@ public class Game {
             move(move);
             playerIndex++;
         }
-    }
-
-    public String getWinner() {
-        if(players == null) return "No Players Set";
-        if(isDraw()) return "Draw";
-        if(isStalemate()) return "Stalemate";
-        if(isCheckmated()) return "Checkmate: " + players[(clock - 1) % 2];
-        if(exceededMoves()) return "Moves exceeded";
-        return "unknown";
     }
 
     // --------------------------- Instance Methods ---------------------------
@@ -861,4 +850,12 @@ public class Game {
         LOGGER.info("--------------------------");
     }
 
+    public String getWinner() {
+        if(players == null) return "No Players Set";
+        if(isDraw()) return "Draw";
+        if(isStalemate()) return "Stalemate";
+        if(isCheckmated()) return "Checkmate: " + players[(clock - 1) % 2];
+        if(exceededMoves()) return "Moves exceeded";
+        return "unknown";
+    }
 }
