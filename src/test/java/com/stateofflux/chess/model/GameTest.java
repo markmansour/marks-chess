@@ -4,12 +4,14 @@ import com.stateofflux.chess.model.pieces.PawnMoves;
 import com.stateofflux.chess.model.player.Player;
 import com.stateofflux.chess.model.player.RandomMovePlayer;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
+@Tag("UnitTest")
 public class GameTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameTest.class);
 

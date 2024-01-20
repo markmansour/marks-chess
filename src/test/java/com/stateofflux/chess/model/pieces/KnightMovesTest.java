@@ -1,10 +1,12 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
+@Tag("UnitTest")
 public class KnightMovesTest {
     @Test
     public void testAllPotentialMovesAreFound() {

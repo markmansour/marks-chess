@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests" type="JUnit" factoryName="JUnit">
+    <module name="demo" />
+    <option name="PACKAGE_NAME" value="com.stateofflux.chess" />
+    <option name="MAIN_CLASS_NAME" value="" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="package" />
+    <tag value="PerformanceTest,UnitTest" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

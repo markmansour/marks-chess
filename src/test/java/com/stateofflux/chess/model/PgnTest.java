@@ -1,10 +1,12 @@
 package com.stateofflux.chess.model;
 
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
+@Tag("UnitTest")
 public class PgnTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PgnTest.class);
 

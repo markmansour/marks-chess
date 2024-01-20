@@ -2,6 +2,7 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -9,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Tag("UnitTest")
 public class PawnMovesTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PawnMovesTest.class);
 

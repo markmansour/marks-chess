@@ -4,10 +4,12 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("UnitTest")
 public class RandomEvaluationPlayerTest {
     @Test public void randomGameDefaultDepthOnePlayerWithEvaluation() {
         Game game = new Game();

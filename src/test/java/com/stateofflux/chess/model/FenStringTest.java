@@ -1,8 +1,10 @@
 package com.stateofflux.chess.model;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
+@Tag("UnitTest")
 public class FenStringTest {
     @Test
     public void locationToAlgebraString() {

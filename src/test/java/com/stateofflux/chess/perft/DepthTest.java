@@ -1,15 +1,16 @@
 package com.stateofflux.chess.perft;
 
 import com.stateofflux.chess.model.FenString;
+import com.stateofflux.chess.model.Game;
+
 import one.profiler.AsyncProfiler;
 import one.profiler.Events;
 
-import com.stateofflux.chess.model.Game;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,10 @@ import org.junit.jupiter.api.Test;
 /*
  * See JMH repo for examples on how to use the profiler:
  * https://github.com/openjdk/jmh/tree/master/jmh-samples/src/main/java/org/openjdk/jmh/samples
+ *
+ * To execute on the command line: mvn test -D groups='PerformanceTest'
  */
+@Tag("PerformanceTest")
 public class DepthTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(DepthTest.class);
     record PerftRecord(String FenString, int d1, int d2, int d3, int d4, int d5, int d6) {}
@@ -40,33 +45,34 @@ public class DepthTest {
         // from http://www.rocechess.ch/perft.html
         // see Perft-testsuite - http://www.rocechess.ch/perftsuite.zip
         // 126 test cases
-        String resourceName = "./perftsuite.epd";
+        String resourceName = "perftsuite.epd";
 
         perftRecords = new ArrayList<>();
         asyncProfiler = AsyncProfiler.getInstance();
 
         try(InputStream contents = DepthTest.class.getClassLoader().getResourceAsStream(resourceName)) {
             assert contents != null;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(contents));
-            String text = reader.readLine();
-            while(text != null) {
-                Pattern p = Pattern.compile("(.+);D1 (\\d+) ;D2 (\\d+) ;D3 (\\d+) ;D4 (\\d+) ;D5 (\\d+) ;D6 (\\d+)");
-                Matcher m = p.matcher(text);
-                if(m.matches()) {
-                    perftRecords.add(
-                        new PerftRecord(
-                            m.group(1).strip(),
-                            Integer.parseInt(m.group(2)),
-                            Integer.parseInt(m.group(3)),
-                            Integer.parseInt(m.group(4)),
-                            Integer.parseInt(m.group(5)),
-                            Integer.parseInt(m.group(6)),
-                            Integer.parseInt(m.group(7))
-                        )
-                    );
-                }
+            try(BufferedReader reader = new BufferedReader(new InputStreamReader(contents, UTF_8))) {
+                String text = reader.readLine();
+                while (text != null) {
+                    Pattern p = Pattern.compile("(.+);D1 (\\d+) ;D2 (\\d+) ;D3 (\\d+) ;D4 (\\d+) ;D5 (\\d+) ;D6 (\\d+)");
+                    Matcher m = p.matcher(text);
+                    if (m.matches()) {
+                        perftRecords.add(
+                            new PerftRecord(
+                                m.group(1).strip(),
+                                Integer.parseInt(m.group(2)),
+                                Integer.parseInt(m.group(3)),
+                                Integer.parseInt(m.group(4)),
+                                Integer.parseInt(m.group(5)),
+                                Integer.parseInt(m.group(6)),
+                                Integer.parseInt(m.group(7))
+                            )
+                        );
+                    }
 
-                text = reader.readLine();
+                    text = reader.readLine();
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -120,15 +126,14 @@ public class DepthTest {
 
     }
 
-/*
+
     // TAKES A LONG TIME TO RUN
     // 33 seconds => 4867157 nodes ~= 146 nodes per ms
+    @Disabled
     @Test public void firstRecordDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(5, perftRecordsSizeOne());
 
     }
-*/
-
 
     // 1.4 seconds
     @Test public void allEpdExamplesToDepthOfOne() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
@@ -151,7 +156,6 @@ public class DepthTest {
     // after more optimizations - 6.5 seconds
     // 5.5 seconds (34595 nodes/second) - but why so slow?  35% of execution time spent in JVM setup! (1/7/24)
     // 4 seconds
-
     @Test public void allEpdExamplesToDepthOfFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         // fail("too long");
         depthHelper(4, perftRecords);
@@ -189,12 +193,11 @@ public class DepthTest {
     // 101805ms => 101 seconds for 119,060,324 nodes => 1,169,493 nodes per second
     // ran for 92295 ms and reviewed 119060324 nodes.  1289997 nodes/second - after en passant and game clock changes
     // ran for 61093 ms and reviewed 119060324 nodes.  1948837 nodes/second - after incremental zobrist hashing update
-/*
-    @Test public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        fail("too long");
+    @Test @Disabled
+    public void startingPositionDepthSix() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+//        fail("too long");
         depthHelper(6, defaultBoard());
     }
-*/
 
     @Test public void testContextBetweenGames() {
         // fail("too long");
@@ -307,6 +310,7 @@ public class DepthTest {
             .stream()
             .reduce(0, Integer::sum)).isEqualTo(expected);
     }
+
     private void depthHelper(int depth, ArrayList<PerftRecord> perftRecords) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         SortedMap<String, Integer> actual;
         String profile = "EMPTY";
@@ -347,7 +351,7 @@ public class DepthTest {
             profile = asyncProfiler.dumpFlat(100);
         } finally {
             asyncProfiler.execute("stop,file=./profile/profile" + methodName + "-" + startTime + ".html");
-            LOGGER.info(profile);
+            LOGGER.debug(profile);
         }
 
         endTime = System.nanoTime();

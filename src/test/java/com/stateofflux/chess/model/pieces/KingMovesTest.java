@@ -4,9 +4,11 @@ import com.stateofflux.chess.model.Game;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import static org.assertj.core.api.Assertions.*;
 
+@Tag("UnitTest")
 public class KingMovesTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KingMovesTest.class);
 
@@ -40,7 +42,6 @@ public class KingMovesTest {
 
         for(String fen : fens) {
             Game game = new Game(fen);
-            LOGGER.info(fen);
             assertThat(game.isChecked()).isTrue();
         }
     }

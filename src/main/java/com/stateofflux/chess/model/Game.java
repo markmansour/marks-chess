@@ -133,9 +133,6 @@ public class Game {
             move(move);
             playerIndex++;
         }
-
-        LOGGER.info("Winner is: {}", players[(playerIndex - 1) % 2]);
-        printOccupied();
     }
 
     public String getWinner() {
@@ -696,7 +693,7 @@ public class Game {
             this.board.getEnPassantTargetAsFen();
     }
 
-    public List<Long> getHistoryAsHashes() {
+    private List<Long> getHistoryAsHashes() {
         return historyAsHashes;
     }
 
