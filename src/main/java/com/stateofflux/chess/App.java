@@ -70,12 +70,12 @@ public class App
                     if(lineParts.length == 3 && lineParts[1].equals("perft")) {
                         int depth = Integer.parseInt(lineParts[2]);
                         long startTime = System.nanoTime();
-                        SortedMap<String, Integer> actual = game.perftAtRoot(depth);
+                        SortedMap<String, Long> actual = game.perftAtRoot(depth);
                         long endTime = System.nanoTime();
                         game.printPerft(actual);
-                        int perftCount = actual.values()
+                        long perftCount = actual.values()
                             .stream()
-                            .reduce(0, Integer::sum);
+                            .reduce(0L, Long::sum);
 
                         long nodesPerSecond;
                         if(TimeUnit.NANOSECONDS.toMillis(endTime - startTime) > 0)

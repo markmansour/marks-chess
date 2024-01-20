@@ -145,6 +145,7 @@
         </pluginManagement>
 
         <plugins>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -189,6 +190,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <groups>UnitTest</groups>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <release>17</release>
                 </configuration>
             </plugin>
         </plugins>

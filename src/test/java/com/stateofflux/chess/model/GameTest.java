@@ -310,6 +310,13 @@ public class GameTest {
             game.move("O-O");
             assertThat(game.asFenNoCounters()).isEqualTo("rnbq1rk1/pppppp1p/5npb/8/5P2/3PB2N/PPP1P1PP/RN1QKB1R w KQ -");
         }
+
+        @Test public void queenSideBlackCastlingWhenBlocked() {
+            Game game = new Game("rn2kbnr/ppp1pppp/3q4/3p4/8/P6N/RPPPPPPP/1NBQKB1R w Kkq -");
+            MoveList<Move> moves = game.generateMoves();
+            assertThat(moves.asLongSan()).doesNotContain("e1c8");  // white king to black rook with blockers
+            assertThat(moves).hasSize(19);
+        }
     }
 
     @Nested

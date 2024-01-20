@@ -777,12 +777,12 @@ public class Game {
     }
 
     // --------------------------- Performance and Debugging ---------------------------
-    public SortedMap<String, Integer> perftAtRoot(int depth) {
-        SortedMap<String, Integer> perftResults = new TreeMap<>();
+    public SortedMap<String, Long> perftAtRoot(int depth) {
+        SortedMap<String, Long> perftResults = new TreeMap<>();
 
         MoveList<Move> moves = this.generateMoves();
 
-        int moveCounter;
+        long moveCounter;
 
         for (var move : moves) {
 //            LOGGER.info("root move: {}", move);
@@ -804,14 +804,14 @@ public class Game {
         return perftResults;
     }
 
-    public int perft(int depth) {
+    public long perft(int depth) {
 //        LOGGER.info("perft FEN: {}", this.asFen());
         MoveList<Move> moves = this.generateMoves();
 
         if (depth == 1)
             return moves.size();
 
-        int moveCounter = 0;
+        long moveCounter = 0;
 
         for (var move : moves) {
 //            LOGGER.info("move: {}", move);
@@ -823,14 +823,14 @@ public class Game {
         return moveCounter;
     }
 
-    public void printPerft(SortedMap<String, Integer> perftResults) {
+    public void printPerft(SortedMap<String, Long> perftResults) {
         LOGGER.info("Perft Results");
         LOGGER.info("-------------");
         for(var r : perftResults.entrySet()) {
             LOGGER.info("{} {}", r.getKey(), r.getValue());
         }
 
-        LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0, Integer::sum));
+        LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0L, Long::sum));
     }
 
     public void printOccupied() {
