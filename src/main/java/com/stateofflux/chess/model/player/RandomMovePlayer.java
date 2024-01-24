@@ -8,16 +8,15 @@ import com.stateofflux.chess.model.PlayerColor;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomMovePlayer extends Player {
-    public RandomMovePlayer(PlayerColor color) {
-        this.color = color;
+    private Game game;
+
+    public RandomMovePlayer(PlayerColor pc) {
+        super(pc);
     }
 
     public Move getNextMove(Game game) {
+        this.game = game;
         MoveList<Move> moves = game.generateMoves();
-        return moves.get(ThreadLocalRandom.current().nextInt(moves.size()));
-    }
-
-    public String toString() {
-        return "RandomMovePlayer: " + color;
+        return moves.get(rand.nextInt(moves.size()));
     }
 }
