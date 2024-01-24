@@ -18,16 +18,20 @@ The project contains a chess engine with following abilities:
 
 
 ### Next steps
-* Opening books
+* Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)   
 * End games
 * Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine
-* Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (too high).
+* Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!)).
 * Player with alpha/beta pruning
 * Move ordering
 * Multi-threading
 * Time management
-* AI chess player (neural nets)
+* AI chess player (neural nets) - see [maia](https://github.com/CSSLab/maia-chess), [sunfish](https://github.com/thomasahle/sunfish), 
 * Resignations
+
+### Maybes
+* Monte Carlo Tree search
+* Tournament Framework
 
 ## Build
 IntelliJ project included.  

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
+import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.*;
 
 @Tag("UnitTest")
@@ -653,22 +654,14 @@ public class GameTest {
     }
 
     @Test public void twoPlayersWithRandomMoves() {
-        Player one = new RandomMovePlayer(PlayerColor.WHITE);
-        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE);
+        Player randomPlayerTwo = new RandomMovePlayer(PlayerColor.BLACK);
         Game game = new Game();
-        game.disable50MovesRule();
-        game.setPlayers(one, two);
+        game.setPlayers(randomPlayerOne, randomPlayerTwo);
         game.play();
 
-        LOGGER.info("--------------------------");
-        LOGGER.info("isOver: {}", game.isOver());
-        LOGGER.info("isCheckmated: {}", game.isCheckmated());
-        LOGGER.info("hasResigned: {}", game.hasResigned());
-        LOGGER.info("isStalemate: {}", game.isStalemate());
-        LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
-        LOGGER.info("exceededMoves: {}", game.exceededMoves());
-        LOGGER.info("hasRepeated: {}", game.isRepetition());
-        assertThat(game.isOver()).isTrue();
+        game.printOccupied();
+        assertTrue(game.isOver());
     }
 
     @Nested

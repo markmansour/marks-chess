@@ -6,9 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
+import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
 import static java.lang.Long.bitCount;
 
 /*
@@ -25,7 +25,7 @@ public class BasicNegaMaxPlayer extends Player {
     protected static final int QUEEN_VALUE = 900;
     protected static final int PAWN_VALUE = 100;
 
-    protected Game game;
+    Deque evaluatingMoves;
 
     /*
      Tables from: https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -135,6 +135,7 @@ public class BasicNegaMaxPlayer extends Player {
     }
 
     private boolean endGame = false;
+    private int bestMoveScore = 0;
 
     /*
      * Assumes size of 64.
@@ -157,114 +158,91 @@ public class BasicNegaMaxPlayer extends Player {
         return IntStream.rangeClosed(1, a.length).map(i -> a[a.length - i]).toArray();
     }
 
-    public BasicNegaMaxPlayer(PlayerColor color) {
-        this.color = color;
+    public BasicNegaMaxPlayer(PlayerColor pc) {
+        super(pc);
         this.searchDepth = DEFAULT_SEARCH_DEPTH;
+        evaluatingMoves = new ArrayDeque<Move>();
     }
 
-    /*
-      function think(boardState) is
-          allMoves := generateLegalMoves(boardState)
-          bestMove := null
-          bestEvaluation := -∞
-
-          for each move in allMoves
-              board.apply(move)
-              evaluateMove := -negamax(boardState, depth=3)
-              board.undo(move)
-              if evaluateMove > bestEvaluation
-                  bestMove := move
-                  bestEvaluation := evaluateMove
-
-          return bestMove
-       */
     public Move getNextMove(Game game) {
-        // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
-
-        this.game = game;
-
         MoveList<Move> moves = game.generateMoves();
-        Move bestMove = null;
-        int bestEvaluation = Integer.MIN_VALUE;
+
+        int max = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
+        evaluatingMoves.clear();
 
         for(Move move: moves) {
+            evaluatingMoves.offerLast(move);
             game.move(move);
-            int score = -negaMax(searchDepth - 1);
+            int score = negaMax(game, searchDepth);
             game.undo();
+            evaluatingMoves.pollLast();
+            // LOGGER.info("{} - move ({}): {}", game.getActivePlayer(), move, score);
 
-            // LOGGER.info("Move ({}): {}", move, score);
-
-            if(score == bestEvaluation) {
+            if(score == max) {
                 bestMoves.add(move);
-            } else if(score > bestEvaluation) {
+            } else if(score > max) {
                 bestMoves.clear();
                 bestMoves.add(move);
-                bestEvaluation = score;
+                max = score;
             }
-        }
-
-        if(!isEndGame()) {
-            checkForEndGame();
         }
 
         assert !bestMoves.isEmpty();
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
+        Move bestMove = bestMoves.get(rand.nextInt(bestMoves.size()));
+        this.bestMoveScore = max;
 
-        return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
-    }
+        // LOGGER.info("{}: {}: best move is {}, score {}", searchDepth, game.asFen(), bestMove, max);
 
-    private void checkForEndGame() {
-        if (endGame) return;
-
-        if(bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
-            this.endGame = true;
-        }
-    }
-
-    private boolean isEndGame() {
-        return this.endGame;
+        return bestMove;
     }
 
     /*
-     * function negamax(node, depth, color) is
-     *     if depth = 0 or node is a terminal node then
-     *         return color × the heuristic value of node
-     *     value := −∞
-     *     for each child of node do
-     *         value := max(value, −negamax(child, depth − 1, −color))
-     *     return value
+     * https://www.chessprogramming.org/Negamax
+     *
+     *   int negaMax( int depth ) {
+     *       if ( depth == 0 ) return evaluate();
+     *       int max = -oo;
+     *       for ( all moves)  {
+     *           score = -negaMax( depth - 1 );
+     *           if( score > max )
+     *               max = score;
+     *       }
+     *       return max;
+     *   }
      */
-    protected int negaMax(int depth) {
+    protected int negaMax(Game game, int depth) {
         if(depth == 0)  // can the king count be 0 here?  Should we be checking?
-            return evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
+            return evaluate(game);
 
-        int result = Integer.MIN_VALUE;
+        int max = Integer.MIN_VALUE;
+        int score;
+        Move bestMove = null; // for debugging.
+
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal
-        if(moves.isEmpty()) {
-            result = evaluate() * (game.getActivePlayerColor().isWhite() ? 1 : -1);
-
-            if(!game.isChecked())
-                result += (game.getActivePlayerColor().isWhite() ? -1 : +1);  // stalemates worth less than checkmate
-        }
+        if(moves.isEmpty())
+            return evaluate(game);
 
         for(Move move: moves) {
+            evaluatingMoves.offerLast(move);
             game.move(move);
-
-            result = Math.max(result, -negaMax(depth - 1));
-
+            score = -negaMax(game,depth - 1);
             game.undo();
+            evaluatingMoves.pollLast();
+
+            if(score > max) {
+                max = score;
+                bestMove = move;
+            }
         }
 
-        return result;
-    }
-
-    public String toString() {
-        return "RandomMovePlayer: " + color;
+        // LOGGER.info("negamax bestmove at depth {}: {}", depth, bestMove);
+        return max;
     }
 
     /*
@@ -284,47 +262,58 @@ public class BasicNegaMaxPlayer extends Player {
      *
      * Always from the white player's perspective
      */
-    protected int evaluate() {
+    public int evaluate(Game game) {
         Board b = game.getBoard();
-        int mobility = 0;  // ignoring for the moment.
+        int bonus = 0;
 
-/*
-        long pawns = b.getWhitePawns();
-        long otherPawns = b.getBlackPawns();
-
-        int pawnEvaluation = (PawnMoves.pawnEvaluation(pawns, otherPawns, true) -
-            PawnMoves.pawnEvaluation(otherPawns, pawns, false)) / 2;
-*/
-
-        if(bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()) == 1)
-            LOGGER.info("attempting to take a king");
-
-        int boardScore = boardScore();
-
-        int score =
+        // from the perspective of the white player
+        int materialScore =
             KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
-            + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
-            + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
-            + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
-            + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
-            + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()))
-//            - pawnEvaluation
-            + boardScore
-            + mobility;
+                + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
+                + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
+                + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
+                + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
+                + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
-        if(game.isChecked()) {
+        int mobilityWeight = 1;
+
+        MoveList<Move> whiteMoves = game.generateMovesFor(PlayerColor.WHITE);
+        MoveList<Move> blackMoves = game.generateMovesFor(PlayerColor.BLACK);
+
+        // from the perspective of the white player
+        int mobilityScore = mobilityWeight *
+            (whiteMoves.size() - blackMoves.size());
+
+        // sideToMove is the value of the move just completed.  The game counter has already moved
+        // on so we need to reverse the player color.  Therefore if the game thinks it is white's turn
+        // then it was black that just moved.
+        int sideToMove = getSideToMove(game);
+
+        // if we have checkmate, then this is the best move so return immediately!
+        // isCheckmated is really expensive!
+        if(game.isCheckmated()) {
+            // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
+            int mateValue = MATE_VALUE - evaluatingMoves.size();  // prioritize mate values that take fewer moves.
+            return game.getActivePlayerColor().isWhite() ? -mateValue : mateValue;
+/*
+        } else if(game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
-            score += 500;
+            // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
+            bonus += (500 * sideToMove);
+*/
         }
 
-        if(game.isRepetition()) {
-            score -= 500;
-        }
+        int value =  (materialScore + mobilityScore + bonus) * sideToMove;
+        value += boardScore(game);  // boardScore already takes side into account
 
-        return score;
+        return value;
     }
 
-    protected int boardScore() {
+    protected int getSideToMove(Game game) {
+        return game.getActivePlayerColor().isWhite() ? -1 : 1;
+    }
+
+    protected int boardScore(Game game) {
         int score = 0;
         Board b = game.getBoard();
 
@@ -334,6 +323,9 @@ public class BasicNegaMaxPlayer extends Player {
             Piece p = b.get(i);
             if(p.isEmpty()) continue;
 
+            score += LOOKUP_TABLES[p.getIndex()][i];
+
+            /*
 //            LOGGER.info("square {} = {}", i, LOOKUP_TABLES[p.getIndex()][i]);
             try {
                 if(isEndGame() && (p == Piece.WHITE_KING) && bitCount(game.getBoard().getWhite()) < 4)
@@ -341,12 +333,34 @@ public class BasicNegaMaxPlayer extends Player {
                 else if(isEndGame() && (p == Piece.BLACK_KING) && bitCount(game.getBoard().getBlack()) < 4)
                     score += LOOKUP_TABLES[12][i] * -1;
                 else
-                    score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
+                    score += LOOKUP_TABLES[p.getIndex()][i];
+//                    score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
             } catch(ArrayIndexOutOfBoundsException e) {
                 LOGGER.info("pause");
             }
+        */
         }
 
         return score;
+    }
+
+    public int getBestMoveScore() {
+        return bestMoveScore;
+    }
+
+    private void checkForEndGame(Game game) {
+        if (endGame) return;
+
+        if(bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
+            this.endGame = true;
+        }
+    }
+
+    private boolean isEndGame() {
+        return this.endGame;
+    }
+
+    public Deque getEvaluatingMoves() {
+        return evaluatingMoves;
     }
 }
