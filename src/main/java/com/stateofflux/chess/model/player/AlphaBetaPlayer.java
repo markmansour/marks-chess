@@ -1,9 +1,6 @@
 package com.stateofflux.chess.model.player;
 
-import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.Move;
-import com.stateofflux.chess.model.MoveList;
-import com.stateofflux.chess.model.PlayerColor;
+import com.stateofflux.chess.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

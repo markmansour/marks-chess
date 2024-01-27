@@ -157,4 +157,9 @@ public class Move {
             gameEnPassantState != PawnMoves.NO_EN_PASSANT_VALUE &&
             getTo() == gameEnPassantState;
     }
+
+    // Capture > NonCapture
+    public int getComparisonValue() {
+        return isCapture() ? 1 : 0;
+    }
 }
