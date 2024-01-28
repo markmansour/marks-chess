@@ -9,14 +9,22 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomMovePlayer extends Player {
     private Game game;
+    private int nodesEvaluted;
 
     public RandomMovePlayer(PlayerColor pc) {
         super(pc);
+        nodesEvaluted = 0;
     }
 
     public Move getNextMove(Game game) {
         this.game = game;
         MoveList<Move> moves = game.generateMoves();
+        nodesEvaluted++;
         return moves.get(rand.nextInt(moves.size()));
+    }
+
+    @Override
+    public int getNodesEvaluated() {
+        return nodesEvaluted;
     }
 }

@@ -29,6 +29,10 @@ public class KingMoves implements PieceMovesInterface {
         }
     }
 
+    public static long surroundingMoves(int location) {
+        return KING_MOVES[location];
+    }
+
     private final Board board;
     private final int location;
     private final boolean isWhite;
@@ -64,6 +68,7 @@ public class KingMoves implements PieceMovesInterface {
 
         addCastlingMoves();
     }
+
 
     /*
      * Neither the king nor the rook has previously moved.

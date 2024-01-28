@@ -40,6 +40,20 @@ public class AlphaBetaPlayerTest {
         assertThat(move.getFrom()).isEqualTo(7);
     }
 
+    @Test public void testFromWinningPosition() {
+        Game game = new Game("1nbq2n1/r3p3/1pp1ppp1/p3k3/8/2r2p2/8/2b3K1 w - - 0 27");
+        Player one = new RandomMovePlayer(PlayerColor.WHITE);
+        Player two = new AlphaBetaPlayer(PlayerColor.BLACK);
+        game.setPlayers(one, two);
+        two.setSearchDepth(6);
+
+        game.play();
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+        assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
+    }
+
     @Disabled(value = "Depth 4 is too slow")
     @Test public void testMoveNotToMake() {
         Game game = new Game("3k4/8/8/p1QK2P1/P5P1/BP6/R2PP2P/1N4NR w - - 0 32");

@@ -31,4 +31,6 @@ public abstract class Player {
     public int getSearchDepth() {
         return searchDepth;
     }
+
+    public abstract int getNodesEvaluated();
 }

@@ -13,4 +13,9 @@ public class HumanPlayer extends Player {
     public Move getNextMove(Game game) {
         return game.generateMoves().get(0);
     }
+
+    @Override
+    public int getNodesEvaluated() {
+        return 0;
+    }
 }

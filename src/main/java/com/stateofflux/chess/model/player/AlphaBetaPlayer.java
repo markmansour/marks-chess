@@ -26,6 +26,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
+            nodesEvaluated++;
+
             // alphaBetaMax(-oo, +oo, depth);
             int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1);
             game.undo();
@@ -99,6 +101,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
+            nodesEvaluated++;
+
             score = alphaBetaMin( game, alpha, beta, depthleft - 1 );
             game.undo();
             evaluatingMoves.pollLast();
@@ -119,11 +123,13 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         int score;
 
         if(moves.isEmpty())
-            return evaluate(game);
+            return -evaluate(game);
 
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
+            nodesEvaluated++;
+
             score = alphaBetaMax( game, alpha, beta, depthleft - 1 );
             game.undo();
             evaluatingMoves.pollLast();

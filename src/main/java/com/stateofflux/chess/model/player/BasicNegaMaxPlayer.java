@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
+import com.stateofflux.chess.model.pieces.KingMoves;
 import com.stateofflux.chess.model.pieces.Piece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,8 @@ public class BasicNegaMaxPlayer extends Player {
     protected static final int QUEEN_VALUE = 900;
     protected static final int PAWN_VALUE = 100;
 
-    Deque evaluatingMoves;
+    protected Deque<Move> evaluatingMoves;
+    protected int nodesEvaluated = 0;
 
     /*
      Tables from: https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -174,6 +176,7 @@ public class BasicNegaMaxPlayer extends Player {
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
+            nodesEvaluated++;
             int score = negaMax(game, searchDepth);
             game.undo();
             evaluatingMoves.pollLast();
@@ -231,6 +234,7 @@ public class BasicNegaMaxPlayer extends Player {
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
+            nodesEvaluated++;
             score = -negaMax(game,depth - 1);
             game.undo();
             evaluatingMoves.pollLast();
@@ -266,6 +270,11 @@ public class BasicNegaMaxPlayer extends Player {
         Board b = game.getBoard();
         int bonus = 0;
 
+        // sideToMove is the value of the move just completed.  The game counter has already moved
+        // on so we need to reverse the player color.  Therefore if the game thinks it is white's turn
+        // then it was black that just moved.
+        int sideToMove = getSideToMove(game);
+
         // from the perspective of the white player
         int materialScore =
             KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
@@ -275,6 +284,9 @@ public class BasicNegaMaxPlayer extends Player {
                 + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
                 + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
+        return (materialScore + bonus) * sideToMove;
+
+/*
         int mobilityWeight = 1;
 
         MoveList<Move> whiteMoves = game.generateMovesFor(PlayerColor.WHITE);
@@ -284,29 +296,37 @@ public class BasicNegaMaxPlayer extends Player {
         int mobilityScore = mobilityWeight *
             (whiteMoves.size() - blackMoves.size());
 
-        // sideToMove is the value of the move just completed.  The game counter has already moved
-        // on so we need to reverse the player color.  Therefore if the game thinks it is white's turn
-        // then it was black that just moved.
-        int sideToMove = getSideToMove(game);
 
         // if we have checkmate, then this is the best move so return immediately!
         // isCheckmated is really expensive!
         if(game.isCheckmated()) {
-            // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
+            LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
             int mateValue = MATE_VALUE - evaluatingMoves.size();  // prioritize mate values that take fewer moves.
             return game.getActivePlayerColor().isWhite() ? -mateValue : mateValue;
-/*
-        } else if(game.isChecked()) {
+        }
+
+        if(game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
-            bonus += (500 * sideToMove);
-*/
+            bonus += (500 * sideToMove);  // from white's perspective
         }
+
+        // if attacking a space next to the king give a bonus
+        PlayerColor pc = game.getActivePlayerColor();
+        long kingAttacks = KingMoves.surroundingMoves(b.getKingLocation(pc));
+        for(int dest: Board.bitboardToArray(kingAttacks)) {
+            if(b.locationUnderAttack(pc, dest)) {
+                bonus += (100 * sideToMove);
+            }
+        }
+
 
         int value =  (materialScore + mobilityScore + bonus) * sideToMove;
         value += boardScore(game);  // boardScore already takes side into account
 
         return value;
+
+ */
     }
 
     protected int getSideToMove(Game game) {
@@ -360,7 +380,11 @@ public class BasicNegaMaxPlayer extends Player {
         return this.endGame;
     }
 
-    public Deque getEvaluatingMoves() {
+    public Deque<Move> getEvaluatingMoves() {
         return evaluatingMoves;
+    }
+
+    public int getNodesEvaluated() {
+        return nodesEvaluated;
     }
 }
