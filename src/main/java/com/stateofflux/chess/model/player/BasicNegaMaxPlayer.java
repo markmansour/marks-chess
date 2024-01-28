@@ -3,6 +3,7 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.*;
 import com.stateofflux.chess.model.pieces.KingMoves;
 import com.stateofflux.chess.model.pieces.Piece;
+import jdk.jshell.execution.JdiDefaultExecutionControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -274,6 +275,12 @@ public class BasicNegaMaxPlayer extends Player {
         // on so we need to reverse the player color.  Therefore if the game thinks it is white's turn
         // then it was black that just moved.
         int sideToMove = getSideToMove(game);
+
+        if(game.isCheckmated()) {
+            LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
+            int mateValue = MATE_VALUE - evaluatingMoves.size();  // prioritize mate values that take fewer moves.
+            return mateValue * sideToMove;
+        }
 
         // from the perspective of the white player
         int materialScore =
