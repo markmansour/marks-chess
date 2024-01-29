@@ -33,4 +33,8 @@ public abstract class Player {
     }
 
     public abstract int getNodesEvaluated();
+
+    public String toString() {
+        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: " + getNodesEvaluated() + ")";
+    }
 }

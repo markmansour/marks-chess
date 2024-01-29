@@ -1,30 +1,29 @@
 package com.stateofflux.chess.model.player;
 
-<<<<<<< HEAD
 import com.stateofflux.chess.model.*;
-=======
-import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.Move;
-import com.stateofflux.chess.model.MoveList;
-import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayer.class);
+    protected Comparator<Move> moveComparator;
 
     public AlphaBetaPlayer(PlayerColor color) {
         super(color);
+        moveComparator = new MoveComparator();
     }
 
     @Override
     public Move getNextMove(Game game) {
         // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
         MoveList<Move> moves = game.generateMoves();
+        moves.sort(moveComparator);
+
         int bestEvaluation = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
         evaluatingMoves.clear();
@@ -99,6 +98,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         if ( depthleft == 0 ) return evaluate(game);
 
         MoveList<Move> moves = game.generateMoves();
+        moves.sort(moveComparator);
         int score;
 
         if(moves.isEmpty())
@@ -126,6 +126,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         if ( depthleft == 0 ) return -evaluate(game);
 
         MoveList<Move> moves = game.generateMoves();
+        moves.sort(moveComparator);
         int score;
 
         if(moves.isEmpty())

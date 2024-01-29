@@ -277,9 +277,8 @@ public class BasicNegaMaxPlayer extends Player {
         int sideToMove = getSideToMove(game);
 
         if(game.isCheckmated()) {
-            LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
-            int mateValue = MATE_VALUE - evaluatingMoves.size();  // prioritize mate values that take fewer moves.
-            return mateValue * sideToMove;
+            // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
+            return (MATE_VALUE - evaluatingMoves.size()) * sideToMove;  // prioritize mate values that take fewer moves.
         }
 
         // from the perspective of the white player

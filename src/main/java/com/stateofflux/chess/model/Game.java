@@ -129,8 +129,9 @@ public class Game {
             currentPlayer = players[playerIndex % 2];
             Move move = currentPlayer.getNextMove(this);
             move(move);
-            LOGGER.info("{}({}): move({}) -> {} ({})",
-                currentPlayer.getClass().getSimpleName(), currentPlayer.getSearchDepth(), move, asFen(), currentPlayer.getNodesEvaluated());
+            LOGGER.info(" .  current player => {}({}): move({}) -> {} ({})",
+//                currentPlayer.getClass().getSimpleName(), currentPlayer.getSearchDepth(), move, asFen(), currentPlayer.getNodesEvaluated());
+                currentPlayer.getClass().getSimpleName(), currentPlayer.getSearchDepth(), move, asFen(), currentPlayer);
             playerIndex++;
         }
     }

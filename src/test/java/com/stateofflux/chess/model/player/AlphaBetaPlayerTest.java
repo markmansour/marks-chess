@@ -81,12 +81,12 @@ public class AlphaBetaPlayerTest {
     }
 
     @Disabled(value = "Depth 4 is too slow")
-    @Test public void alphaBetaDepth4VsAlphaBetaDepth2() {
+    @Test public void alphaBetaDepth2VsAlphaBetaDepth6() {
         Game game = new Game();
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE);
         one.setSearchDepth(2);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK);
-        two.setSearchDepth(4);
+        two.setSearchDepth(6);
         game.setPlayers(one, two);
 
         game.play();
