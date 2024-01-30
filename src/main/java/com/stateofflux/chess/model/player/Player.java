@@ -22,6 +22,10 @@ public abstract class Player {
         this.searchDepth = depth;
     }
 
+    public PlayerColor getColor() {
+        return color;
+    }
+
     public abstract Move getNextMove(Game game);
 
     public int evaluate(Game game) {
@@ -36,5 +40,9 @@ public abstract class Player {
 
     public String toString() {
         return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: " + getNodesEvaluated() + ")";
+    }
+
+    public int getBestMoveScore() {
+        return color.isWhite() ? 1 : -1;
     }
 }

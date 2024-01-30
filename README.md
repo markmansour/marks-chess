@@ -84,3 +84,10 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 ## Non-goals
 * Make a competitive chess engine.  If it happens, then that's a nice (but unexpected) bonus.
 * Write production quality code.  This is for fun, and I'm *sure* my classes could be factored in a much cleaner way.
+
+# Notes
+## Iterative Deepening
+* [Chess Programming Wiki - Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
+* [Iterative Deepening Search(IDS) or Iterative Deepening Depth First Search(IDDFS)](https://www.geeksforgeeks.org/iterative-deepening-searchids-iterative-deepening-depth-first-searchiddfs/)
+* [Iterative deepening depth-first search](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search)
+* 

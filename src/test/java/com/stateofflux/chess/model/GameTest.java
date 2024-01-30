@@ -257,8 +257,6 @@ public class GameTest {
             moves.sort(new MoveComparator());
             assertThat(moves.get(0).toLongSan()).isEqualTo("g5f6");
         }
-
-
     }
 
     // https://www.chessprogramming.org/Castling

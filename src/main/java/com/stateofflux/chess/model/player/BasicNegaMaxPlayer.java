@@ -1,9 +1,7 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
-import com.stateofflux.chess.model.pieces.KingMoves;
 import com.stateofflux.chess.model.pieces.Piece;
-import jdk.jshell.execution.JdiDefaultExecutionControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +18,12 @@ import static java.lang.Long.bitCount;
 public class BasicNegaMaxPlayer extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayer.class);
 
-    protected static final int KING_VALUE = 20000;
+    protected static final int PAWN_VALUE = 100;
+    protected static final int ROOK_VALUE = 500;
     protected static final int KNIGHT_VALUE = 320;
     protected static final int BISHOP_VALUE = 330;
-    protected static final int ROOK_VALUE = 500;
     protected static final int QUEEN_VALUE = 900;
-    protected static final int PAWN_VALUE = 100;
+    protected static final int KING_VALUE = 20_000;
 
     protected Deque<Move> evaluatingMoves;
     protected int nodesEvaluated = 0;
@@ -118,32 +116,30 @@ public class BasicNegaMaxPlayer extends Player {
         -50,-30,-30,-30,-30,-30,-30,-50
     };
 
-    protected static final int[][] LOOKUP_TABLES = new int[14][];
+    protected int[][] PieceSquareTables = new int[12][];
 
-    static {
-        LOOKUP_TABLES[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_MIDGAME_TABLE));
-        LOOKUP_TABLES[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(reverse(QUEEN_TABLE));
-        LOOKUP_TABLES[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(reverse(BISHOP_TABLE));
-        LOOKUP_TABLES[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(reverse(KNIGHT_TABLE));
-        LOOKUP_TABLES[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(reverse(ROOK_TABLE));
-        LOOKUP_TABLES[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
-        LOOKUP_TABLES[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(reverse(PAWN_TABLE));
-        LOOKUP_TABLES[12]                            = visualToArrayLayout(KING_ENDGAME_TABLE);
-        LOOKUP_TABLES[13]                            = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
+    protected void initializePSTs() {
+        PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
+        PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_MIDGAME_TABLE));
+        PieceSquareTables[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
+        PieceSquareTables[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(reverse(QUEEN_TABLE));
+        PieceSquareTables[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
+        PieceSquareTables[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(reverse(BISHOP_TABLE));
+        PieceSquareTables[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
+        PieceSquareTables[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(reverse(KNIGHT_TABLE));
+        PieceSquareTables[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
+        PieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(reverse(ROOK_TABLE));
+        PieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
+        PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(reverse(PAWN_TABLE));
     }
 
-    private boolean endGame = false;
-    private int bestMoveScore = 0;
+    protected boolean endGame = false;
+    protected int bestMoveScore = 0;
 
     /*
      * Assumes size of 64.
      */
-    private static int[] visualToArrayLayout(int[] visualLayout) {
+    protected static int[] visualToArrayLayout(int[] visualLayout) {
         assert visualLayout.length == 64;
 
         int[] arrayLayout = new int[visualLayout.length];
@@ -157,7 +153,7 @@ public class BasicNegaMaxPlayer extends Player {
         return arrayLayout;
     }
 
-    private static int[] reverse(int[] a) {
+    protected static int[] reverse(int[] a) {
         return IntStream.rangeClosed(1, a.length).map(i -> a[a.length - i]).toArray();
     }
 
@@ -165,10 +161,12 @@ public class BasicNegaMaxPlayer extends Player {
         super(pc);
         this.searchDepth = DEFAULT_SEARCH_DEPTH;
         evaluatingMoves = new ArrayDeque<Move>();
+        initializePSTs();
     }
 
     public Move getNextMove(Game game) {
         MoveList<Move> moves = game.generateMoves();
+        moves.sort(new MoveComparator());
 
         int max = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
@@ -177,8 +175,7 @@ public class BasicNegaMaxPlayer extends Player {
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
-            nodesEvaluated++;
-            int score = negaMax(game, searchDepth);
+            int score = negaMax(game, searchDepth - 1);
             game.undo();
             evaluatingMoves.pollLast();
             // LOGGER.info("{} - move ({}): {}", game.getActivePlayer(), move, score);
@@ -235,7 +232,6 @@ public class BasicNegaMaxPlayer extends Player {
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
-            nodesEvaluated++;
             score = -negaMax(game,depth - 1);
             game.undo();
             evaluatingMoves.pollLast();
@@ -251,23 +247,16 @@ public class BasicNegaMaxPlayer extends Player {
     }
 
     /*
-     *   https://www.chessprogramming.org/Evaluation - symmetric evaluation function
+     * https://www.chessprogramming.org/Evaluation - symmetric evaluation function
      *
-     *   f(p) = 200(K-K')
-     *          + 9(Q-Q')
-     *          + 5(R-R')
-     *          + 3(B-B' + N-N')
-     *          + 1(P-P')
-     *          - 0.5(D-D' + S-S' + I-I')
-     *          + 0.1(M-M') + ...
+     * While Minimax usually associates the white side with the max-player and black with the min-player and always
+     * evaluates from the white point of view, NegaMax requires a symmetric evaluation in relation to
+     * the side to move.
      *
-     *   KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
-     *   D,S,I = doubled, blocked and isolated pawns
-     *   M = Mobility (the number of legal moves)
-     *
-     * Always from the white player's perspective
      */
     public int evaluate(Game game) {
+        nodesEvaluated++;
+
         Board b = game.getBoard();
         int bonus = 0;
 
@@ -290,9 +279,6 @@ public class BasicNegaMaxPlayer extends Player {
                 + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
                 + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
-        return (materialScore + bonus) * sideToMove;
-
-/*
         int mobilityWeight = 1;
 
         MoveList<Move> whiteMoves = game.generateMovesFor(PlayerColor.WHITE);
@@ -302,15 +288,6 @@ public class BasicNegaMaxPlayer extends Player {
         int mobilityScore = mobilityWeight *
             (whiteMoves.size() - blackMoves.size());
 
-
-        // if we have checkmate, then this is the best move so return immediately!
-        // isCheckmated is really expensive!
-        if(game.isCheckmated()) {
-            LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
-            int mateValue = MATE_VALUE - evaluatingMoves.size();  // prioritize mate values that take fewer moves.
-            return game.getActivePlayerColor().isWhite() ? -mateValue : mateValue;
-        }
-
         if(game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
@@ -318,30 +295,30 @@ public class BasicNegaMaxPlayer extends Player {
         }
 
         // if attacking a space next to the king give a bonus
-        PlayerColor pc = game.getActivePlayerColor();
-        long kingAttacks = KingMoves.surroundingMoves(b.getKingLocation(pc));
+
+/*
+        long kingAttacks = KingMoves.surroundingMoves(b.getKingLocation(getColor()));
         for(int dest: Board.bitboardToArray(kingAttacks)) {
-            if(b.locationUnderAttack(pc, dest)) {
+            if(b.locationUnderAttack(getColor(), dest)) {
                 bonus += (100 * sideToMove);
             }
         }
+*/
 
-
-        int value =  (materialScore + mobilityScore + bonus) * sideToMove;
-        value += boardScore(game);  // boardScore already takes side into account
-
-        return value;
-
- */
+        /*
+         * In order for NegaMax to work, it is important to return the score relative to the side being evaluated.
+         */
+        return (materialScore + mobilityScore + bonus + boardScore(game)) * sideToMove;
     }
 
     protected int getSideToMove(Game game) {
-        return game.getActivePlayerColor().isWhite() ? -1 : 1;
+        return getColor().isWhite() ? 1 : -1;
     }
 
     protected int boardScore(Game game) {
         int score = 0;
         Board b = game.getBoard();
+        checkForEndGame(game);
 
         // LOGGER.info(game.asFen());
 
@@ -349,22 +326,7 @@ public class BasicNegaMaxPlayer extends Player {
             Piece p = b.get(i);
             if(p.isEmpty()) continue;
 
-            score += LOOKUP_TABLES[p.getIndex()][i];
-
-            /*
-//            LOGGER.info("square {} = {}", i, LOOKUP_TABLES[p.getIndex()][i]);
-            try {
-                if(isEndGame() && (p == Piece.WHITE_KING) && bitCount(game.getBoard().getWhite()) < 4)
-                    score += LOOKUP_TABLES[11][i];
-                else if(isEndGame() && (p == Piece.BLACK_KING) && bitCount(game.getBoard().getBlack()) < 4)
-                    score += LOOKUP_TABLES[12][i] * -1;
-                else
-                    score += LOOKUP_TABLES[p.getIndex()][i];
-//                    score += LOOKUP_TABLES[p.getIndex()][i] * ((p.getColor().isWhite() ? 1 : -1));
-            } catch(ArrayIndexOutOfBoundsException e) {
-                LOGGER.info("pause");
-            }
-        */
+            score += PieceSquareTables[p.getIndex()][i] * (p.isWhite() ? 1 : -1);
         }
 
         return score;
@@ -379,6 +341,9 @@ public class BasicNegaMaxPlayer extends Player {
 
         if(bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
             this.endGame = true;
+            LOGGER.info("Using King Endgame Tables");
+            PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
+            PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
         }
     }
 
