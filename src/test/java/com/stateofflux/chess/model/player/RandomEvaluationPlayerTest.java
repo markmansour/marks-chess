@@ -22,4 +22,23 @@ public class RandomEvaluationPlayerTest {
 
         assertThat(game.isOver()).isTrue();
     }
+
+    @Test public void testChessAi() {
+        Game game = new Game();
+/*
+        Player one = new ChessAIPlayer(PlayerColor.WHITE);
+        one.setSearchDepth(4);
+        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        game.setPlayers(one, two);
+*/
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
+        Player two = new ChessAIPlayer(PlayerColor.BLACK);
+        two.setSearchDepth(4);
+        game.setPlayers(one, two);
+
+        game.play();
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+    }
 }
