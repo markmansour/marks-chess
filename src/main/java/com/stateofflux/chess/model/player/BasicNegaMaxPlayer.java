@@ -120,17 +120,17 @@ public class BasicNegaMaxPlayer extends Player {
 
     protected void initializePSTs() {
         PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
-        PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_MIDGAME_TABLE));
+        PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_MIDGAME_TABLE));
         PieceSquareTables[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
-        PieceSquareTables[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(reverse(QUEEN_TABLE));
+        PieceSquareTables[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(transposeWhiteToBlack(QUEEN_TABLE));
         PieceSquareTables[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
-        PieceSquareTables[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(reverse(BISHOP_TABLE));
+        PieceSquareTables[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(BISHOP_TABLE));
         PieceSquareTables[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
-        PieceSquareTables[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(reverse(KNIGHT_TABLE));
+        PieceSquareTables[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(KNIGHT_TABLE));
         PieceSquareTables[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
-        PieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(reverse(ROOK_TABLE));
+        PieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(ROOK_TABLE));
         PieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
-        PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(reverse(PAWN_TABLE));
+        PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
     }
 
     protected boolean endGame = false;
@@ -153,8 +153,14 @@ public class BasicNegaMaxPlayer extends Player {
         return arrayLayout;
     }
 
-    protected static int[] reverse(int[] a) {
-        return IntStream.rangeClosed(1, a.length).map(i -> a[a.length - i]).toArray();
+    protected static int[] transposeWhiteToBlack(int[] a) {
+        int [] result = new int[a.length];  // 64!
+
+        for(int i = 0; i < 8; i++) {
+            System.arraycopy(a, i * 8, result, 56 - (i * 8), 8);
+        }
+
+        return result;
     }
 
     public BasicNegaMaxPlayer(PlayerColor pc) {
@@ -343,7 +349,7 @@ public class BasicNegaMaxPlayer extends Player {
             this.endGame = true;
             LOGGER.info("Using King Endgame Tables");
             PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
-            PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(reverse(KING_ENDGAME_TABLE));
+            PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
         }
     }
 
