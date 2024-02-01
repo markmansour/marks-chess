@@ -4,6 +4,7 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RandomEvaluationPlayerTest {
     @Test public void randomVsRandom() {
         Game game = new Game();
-        Player one = new RandomMovePlayer(PlayerColor.WHITE);
-        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        Evaluator evaluator = new MinusOneZeroOneEvaluator();
+        Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
+        Player two = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
         game.setPlayers(one, two);
 
         game.play();
@@ -23,18 +25,14 @@ public class RandomEvaluationPlayerTest {
         assertThat(game.isOver()).isTrue();
     }
 
+    @Disabled(value = "Cannot get stdin when running unit tests.  Used for debugging.")
     @Test public void testChessAi() {
         Game game = new Game();
-/*
-        Player one = new ChessAIPlayer(PlayerColor.WHITE);
-        one.setSearchDepth(4);
-        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK);
-        game.setPlayers(one, two);
-*/
-        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
-        Player two = new ChessAIPlayer(PlayerColor.BLACK);
-        two.setSearchDepth(4);
-        game.setPlayers(one, two);
+        Evaluator evaluator = new SimpleEvaluator();
+        Player human = new HumanPlayer(PlayerColor.WHITE, evaluator);
+        Player chessAI = new ChessAIPlayer(PlayerColor.BLACK, evaluator);
+        chessAI.setSearchDepth(3);
+        game.setPlayers(human, chessAI);
 
         game.play();
         game.printOccupied();

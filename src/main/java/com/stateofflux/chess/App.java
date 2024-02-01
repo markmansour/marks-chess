@@ -4,9 +4,7 @@ import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
-import com.stateofflux.chess.model.player.AlphaBetaPlayer;
-import com.stateofflux.chess.model.player.BasicNegaMaxPlayer;
-import com.stateofflux.chess.model.player.Player;
+import com.stateofflux.chess.model.player.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +34,9 @@ public class App
         final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
 
         Game game = null;
-        Player whitePlayer = new AlphaBetaPlayer(PlayerColor.WHITE);
-        Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK);
+        Evaluator evaluator = new SimpleEvaluator();
+        Player whitePlayer = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
+        Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
 
         // give the players a reasonable chance of winning.
         whitePlayer.setSearchDepth(4);

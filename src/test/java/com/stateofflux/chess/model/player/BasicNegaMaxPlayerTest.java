@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model.player;
 
+import com.stateofflux.chess.model.writer.DotWriter;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
@@ -19,48 +20,74 @@ public class BasicNegaMaxPlayerTest {
 
     @Test public void lessMaterialHasLowerEvaluation() {
         Game game;
-        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE);
-        BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        game = new Game("rnbqkbnr/p1pppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"); // black missing a pawn.
+        Evaluator evaluator = new SimpleEvaluator();
+        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, evaluator);
+        BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK, evaluator);
 
         // white is winning - w > b
-        game = new Game("rnbqkbnr/p1pppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"); // black missing a pawn.
         LOGGER.info("white ({})\t\tblack ({})", white.evaluate(game), black.evaluate(game));
         assertThat(white.evaluate(game)).isEqualTo(black.evaluate(game) * -1); // symmetric
         assertThat(white.evaluate(game)).isGreaterThan(black.evaluate(game));
 
         // black is winning - b > w
         game = new Game("rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w KQkq - 0 1"); // white missing a pawn.
+        evaluator = new SimpleEvaluator();
         LOGGER.info("white ({})\t\tblack ({})", white.evaluate(game), black.evaluate(game));
         assertThat(white.evaluate(game)).isEqualTo(black.evaluate(game) * -1); // symmetric
         assertThat(black.evaluate(game)).isGreaterThan(white.evaluate(game));
 
         game = new Game("Bn6/2k4p/6q1/p4p1R/P1P2Kn1/4r1n1/5N2/6N1 b - -"); // black is winning.
-        LOGGER.info("white ({})\t\tblack ({})", white.evaluate(game), black.evaluate(game));
+        evaluator = new SimpleEvaluator();
+        LOGGER.info("white ({})\t\tblack ({})", white.evaluate(game, 0), black.evaluate(game, 0));
         assertThat(white.evaluate(game)).isEqualTo(black.evaluate(game) * -1); // symmetric
     }
 
     @Test public void evaluatePicksMate() {
-        BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         Game game = new Game("Bn6/2k4p/6q1/p4p1R/P1P2Kn1/4r1n1/5N2/6N1 b - -"); // black is winning.
         Move m = black.getNextMove(game); // next move should be mate.  g3h5.
-        assertThat(m.getPiece()).isEqualTo(Piece.BLACK_KNIGHT);
+        DotWriter dw = new DotWriter();
+        String x = dw.write(black.evaluationTree, black.root);
+        assertThat(m.getPiece()).isEqualTo(Piece.BLACK_KNIGHT);  // n : g3g5
         assertThat(m.toLongSan()).isEqualTo("g3h5");
     }
 
-    @Test public void evaluateAllNodes() {
-        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE);
-        BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+    @Test public void generateDotFile() {
+        //BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
+        AlphaBetaPlayer white = new AlphaBetaPlayer(PlayerColor.WHITE, new SimpleEvaluator());
+
         Game game = new Game(); // black is winning.
+        Move m = white.getNextMove(game); // next move should be mate.  g3h5.
+        DotWriter dw = new DotWriter();
+        String x = dw.write(white.evaluationTree, white.root);
+        dw.toFile("./chess.dot");
+        assertThat(x).contains("a1a1 -> a2a4");
+    }
+
+    @Test public void debugNegaMax() {
+        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
+        Game game = new Game("1k6/1p4p1/8/8/8/8/P3P3/4K3 w - - 0 1"); // https://lichess.org/editor/1k6/1p4p1/8/8/8/8/P3P3/4K3_w_-_-_0_1?color=white
+        Move m = white.getNextMove(game); // next move should be mate.  g3h5.
+        DotWriter dw = new DotWriter();
+        String x = dw.write(white.evaluationTree, white.root);
+        dw.toFile("./chess-debug.dot");
+        assertThat(x).contains("a1a1 -> a2a4");
+    }
+
+    @Test public void evaluateAllNodes() {
+        Evaluator se = new SimpleEvaluator();
+        Game game = new Game(); // black is winning.
+        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, se);
         white.getNextMove(game);
-        assertThat(white.getNodesEvaluated()).isEqualTo(20 * 20);
-        assertThat(black.getNodesEvaluated()).isEqualTo(0);
+        assertThat(se.getNodesEvaluated()).isEqualTo(20 * 20);
     }
 
     @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void basicNegaMaxVsRandom() {
         Game game = new Game();
-        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
-        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
+        Player two = new RandomMovePlayer(PlayerColor.BLACK, new SimpleEvaluator());
         game.setPlayers(one, two);
 
         game.play();
@@ -73,8 +100,8 @@ public class BasicNegaMaxPlayerTest {
     @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void basicNegaMaxVsBasicNegaMax() {
         Game game = new Game();
-        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
-        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
+        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         game.setPlayers(one, two);
 
         Move m = one.getNextMove(game);
@@ -84,8 +111,8 @@ public class BasicNegaMaxPlayerTest {
     @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void RandomVsBasicNegaMax() {
         Game game = new Game();
-        Player one = new RandomMovePlayer(PlayerColor.WHITE);
-        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        Player one = new RandomMovePlayer(PlayerColor.WHITE, new SimpleEvaluator());
+        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         game.setPlayers(one, two);
 
         game.play();
@@ -98,9 +125,9 @@ public class BasicNegaMaxPlayerTest {
     @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void negaMaxDepth4VsnegaMaxDepth2() {
         Game game = new Game();
-        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE);
+        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
         one.setSearchDepth(2);
-        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK);
+        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         two.setSearchDepth(4);
         game.setPlayers(one, two);
 

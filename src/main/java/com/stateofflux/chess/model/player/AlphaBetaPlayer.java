@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model.player;
 
+import com.google.common.graph.ValueGraphBuilder;
 import com.stateofflux.chess.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayer.class);
     protected Comparator<Move> moveComparator;
 
-    public AlphaBetaPlayer(PlayerColor color) {
-        super(color);
+    public AlphaBetaPlayer(PlayerColor color, Evaluator evaluator) {
+        super(color, evaluator);
         moveComparator = new MoveComparator();
     }
 
@@ -27,14 +28,18 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         int bestEvaluation = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
         evaluatingMoves.clear();
+        evaluationTree = ValueGraphBuilder.directed().build();
+        evaluationTree.addNode(root);
 
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
-            nodesEvaluated++;
+            evaluationTree.addNode(move);
 
             // alphaBetaMax(-oo, +oo, depth);
-            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1);
+            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, move);
+            evaluationTree.putEdgeValue(root, move, score);
+
             game.undo();
             evaluatingMoves.pollLast();
 
@@ -94,7 +99,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      * @param game
      * @return
      */
-    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft ) {
+    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft, Move parentNode ) {
         if ( depthleft == 0 ) return evaluate(game);
 
         MoveList<Move> moves = game.generateMoves();
@@ -107,9 +112,11 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
-            nodesEvaluated++;
+            evaluationTree.addNode(move);
 
-            score = alphaBetaMin( game, alpha, beta, depthleft - 1 );
+            score = alphaBetaMin( game, alpha, beta, depthleft - 1, move );
+            evaluationTree.putEdgeValue(parentNode, move, score);
+
             game.undo();
             evaluatingMoves.pollLast();
 
@@ -122,7 +129,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         return alpha;
     }
 
-    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft ) {
+    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft, Move parentNode ) {
         if ( depthleft == 0 ) return -evaluate(game);
 
         MoveList<Move> moves = game.generateMoves();
@@ -135,9 +142,10 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
-            nodesEvaluated++;
+            evaluationTree.addNode(move);
 
-            score = alphaBetaMax( game, alpha, beta, depthleft - 1 );
+            score = alphaBetaMax( game, alpha, beta, depthleft - 1, move );
+            evaluationTree.putEdgeValue(parentNode, move, score);
             game.undo();
             evaluatingMoves.pollLast();
 

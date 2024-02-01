@@ -9,13 +9,12 @@ import java.security.SecureRandom;
 public abstract class Player {
     protected static final int DEFAULT_SEARCH_DEPTH = 2;
     protected int searchDepth;
-    protected final SecureRandom rand;
     protected PlayerColor color;
+    protected Evaluator evaluator;
 
-    public Player(PlayerColor pc) {
-        rand = new SecureRandom();
-        rand.setSeed(123456789L);  // for reproducible testing
+    public Player(PlayerColor pc, Evaluator evaluator) {
         color = pc;
+        this.evaluator = evaluator;
     }
 
     public void setSearchDepth(int depth) {
@@ -29,17 +28,19 @@ public abstract class Player {
     public abstract Move getNextMove(Game game);
 
     public int evaluate(Game game) {
-        return color.isWhite() ? 1 : -1;
+        return evaluate(game, 0);
+    }
+
+    public int evaluate(Game game, int depth) {
+        return evaluator.evaluate(game, depth, getColor());
     }
 
     public int getSearchDepth() {
         return searchDepth;
     }
 
-    public abstract int getNodesEvaluated();
-
     public String toString() {
-        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: " + getNodesEvaluated() + ")";
+        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: " + evaluator.getNodesEvaluated() + ")";
     }
 
     public int getBestMoveScore() {

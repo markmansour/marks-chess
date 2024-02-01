@@ -1,8 +1,10 @@
 package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.pieces.PawnMoves;
+import com.stateofflux.chess.model.player.Evaluator;
 import com.stateofflux.chess.model.player.Player;
 import com.stateofflux.chess.model.player.RandomMovePlayer;
+import com.stateofflux.chess.model.player.SimpleEvaluator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
@@ -673,8 +675,9 @@ public class GameTest {
     }
 
     @Test public void twoPlayersWithRandomMoves() {
-        Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE);
-        Player randomPlayerTwo = new RandomMovePlayer(PlayerColor.BLACK);
+        Evaluator evaluator = new SimpleEvaluator();
+        Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
+        Player randomPlayerTwo = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
         Game game = new Game();
         game.setPlayers(randomPlayerOne, randomPlayerTwo);
         game.play();

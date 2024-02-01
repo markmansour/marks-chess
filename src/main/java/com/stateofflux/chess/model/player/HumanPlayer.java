@@ -11,9 +11,11 @@ import java.util.Scanner;
 
 public class HumanPlayer extends Player {
     private static final Logger LOGGER = LoggerFactory.getLogger(HumanPlayer.class);
+    private final Scanner scanner;
 
-    public HumanPlayer(PlayerColor pc) {
-        super(pc);
+    public HumanPlayer(PlayerColor pc, Evaluator evaluator) {
+        super(pc, evaluator);
+        scanner = new Scanner(System.in);  // in IntelliJ - Help / Edit Custom VM options.  Add line: -Deditable.java.test.console=true
     }
 
     public Move getNextMove(Game game) {
@@ -23,7 +25,6 @@ public class HumanPlayer extends Player {
         }
 
         LOGGER.info("Which move number to play?");
-        Scanner scanner = new Scanner(System.in);  // in IntelliJ - Help / Edit Custom VM options.  Add line: -Deditable.java.test.console=true
         int firstNum;
 
         try {
@@ -35,12 +36,6 @@ public class HumanPlayer extends Player {
             firstNum = 1;
         }
 
-        scanner.close();
         return moves.get(firstNum - 1);
-    }
-
-    @Override
-    public int getNodesEvaluated() {
-        return 0;
     }
 }

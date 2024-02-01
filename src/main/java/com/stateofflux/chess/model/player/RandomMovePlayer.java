@@ -5,26 +5,20 @@ import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.MoveList;
 import com.stateofflux.chess.model.PlayerColor;
 
+import java.security.SecureRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomMovePlayer extends Player {
-    private Game game;
-    private int nodesEvaluted;
+    protected final SecureRandom rand;
 
-    public RandomMovePlayer(PlayerColor pc) {
-        super(pc);
-        nodesEvaluted = 0;
+    public RandomMovePlayer(PlayerColor pc, Evaluator evaluator) {
+        super(pc, evaluator);
+        rand = new SecureRandom();
+        rand.setSeed(123456789L);  // for reproducible testing    public RandomMovePlayer(PlayerColor pc, Evaluator evaluator) {
     }
 
     public Move getNextMove(Game game) {
-        this.game = game;
         MoveList<Move> moves = game.generateMoves();
-        nodesEvaluted++;
         return moves.get(rand.nextInt(moves.size()));
-    }
-
-    @Override
-    public int getNodesEvaluated() {
-        return nodesEvaluted;
     }
 }
