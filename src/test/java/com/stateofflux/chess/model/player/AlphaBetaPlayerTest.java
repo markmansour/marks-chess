@@ -24,7 +24,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(one.evaluate(game)).isGreaterThan(two.evaluate(game));
+        assertThat(one.evaluate(game, PlayerColor.WHITE)).isGreaterThan(two.evaluate(game, PlayerColor.BLACK));
     }
 
     @Disabled(value = "Depth 4 is too slow")
@@ -53,7 +53,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
+        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
     @Disabled(value = "Depth 4 is too slow")
@@ -81,7 +81,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
+        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
     @Disabled(value = "Depth 4 is too slow")
@@ -98,7 +98,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
+        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
 }

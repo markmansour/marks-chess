@@ -37,7 +37,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             evaluationTree.addNode(move);
 
             // alphaBetaMax(-oo, +oo, depth);
-            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, move);
+            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, this.getColor(), move);
             evaluationTree.putEdgeValue(root, move, score);
 
             game.undo();
@@ -99,22 +99,22 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      * @param game
      * @return
      */
-    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft, Move parentNode ) {
-        if ( depthleft == 0 ) return evaluate(game);
+    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft, PlayerColor pc, Move parentNode ) {
+        if ( depthleft == 0 ) return evaluate(game, pc);
 
         MoveList<Move> moves = game.generateMoves();
         moves.sort(moveComparator);
         int score;
 
         if(moves.isEmpty())
-            return evaluate(game);
+            return evaluate(game, pc);
 
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
             evaluationTree.addNode(move);
 
-            score = alphaBetaMin( game, alpha, beta, depthleft - 1, move );
+            score = alphaBetaMin( game, alpha, beta, depthleft - 1, pc.otherColor(), move );
             evaluationTree.putEdgeValue(parentNode, move, score);
 
             game.undo();
@@ -129,22 +129,22 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         return alpha;
     }
 
-    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft, Move parentNode ) {
-        if ( depthleft == 0 ) return -evaluate(game);
+    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft, PlayerColor pc, Move parentNode ) {
+        if ( depthleft == 0 ) return -evaluate(game, pc);
 
         MoveList<Move> moves = game.generateMoves();
         moves.sort(moveComparator);
         int score;
 
         if(moves.isEmpty())
-            return -evaluate(game);
+            return -evaluate(game, pc);
 
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
             evaluationTree.addNode(move);
 
-            score = alphaBetaMax( game, alpha, beta, depthleft - 1, move );
+            score = alphaBetaMax( game, alpha, beta, depthleft - 1, pc.otherColor(), move );
             evaluationTree.putEdgeValue(parentNode, move, score);
             game.undo();
             evaluatingMoves.pollLast();

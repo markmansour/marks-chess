@@ -4,8 +4,6 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 
-import java.security.SecureRandom;
-
 public abstract class Player {
     protected static final int DEFAULT_SEARCH_DEPTH = 2;
     protected int searchDepth;
@@ -27,12 +25,12 @@ public abstract class Player {
 
     public abstract Move getNextMove(Game game);
 
-    public int evaluate(Game game) {
-        return evaluate(game, 0);
+    public int evaluate(Game game, PlayerColor pc) {
+        return evaluate(game, pc, 0);
     }
 
-    public int evaluate(Game game, int depth) {
-        return evaluator.evaluate(game, depth, getColor());
+    public int evaluate(Game game, PlayerColor pc, int depth) {
+        return evaluator.evaluate(game, pc, depth);
     }
 
     public int getSearchDepth() {

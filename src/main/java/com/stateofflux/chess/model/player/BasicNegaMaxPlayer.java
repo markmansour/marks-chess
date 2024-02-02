@@ -17,25 +17,27 @@ import static java.lang.Long.bitCount;
  * two-player game.
  *
  * This algorithm relies on the fact that  min(a,b) = −max(−b,−a)  simplify the implementation
- * of the minimax algorithm.
+ * of the minimax algorithm. More precisely, the value of a position to player A in such a
+ * game is the negation of the value to player B.
+ *
+ * The negamax search objective is to find the node score value for the player who is playing
+ * at the root node.  This class assumes we're evaluating for THIS player's perspective.
  *
  * https://en.wikipedia.org/wiki/Negamax
 */
 public class BasicNegaMaxPlayer extends Player {
 
-    static class Node {
-        private final Move move;
-        private int score;
-        public Node(Move move) {this.move = move; }
-        public void setScore(int score) { this.score = score; }
-        @Override public String toString() { return score + " - " + move.toString(); }
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayer.class);
 
     protected Deque<Move> evaluatingMoves;
     protected int bestMoveScore = 0;
+
+    // In this implementation, this value is always calculated from the point
+    // of view of player A, whose color value is one. In other words, higher
+    // heuristic values always represent situations more favorable for white.
     protected Evaluator evaluator;
+
+    // Tree of moves, with scores, for debugging.
     protected MutableValueGraph<Move, Integer> evaluationTree;
     protected Move root;  // fake move as root
 
@@ -61,7 +63,7 @@ public class BasicNegaMaxPlayer extends Player {
             evaluatingMoves.offerLast(move);
             game.move(move);
             evaluationTree.addNode(move);
-            int score = negaMax(game, searchDepth - 1, move);
+            int score = -negaMax(game, searchDepth - 1, color.otherColor(), move);
             evaluationTree.putEdgeValue(root, move, score);
             game.undo();
             evaluatingMoves.pollLast();
@@ -103,25 +105,26 @@ public class BasicNegaMaxPlayer extends Player {
      *       return max;
      *   }
      */
-    protected int negaMax(Game game, int depth, Move parentNode) {
-        if(depth == 0) { // can the king count be 0 here?  Should we be checking?
-            return evaluate(game);
-        }
-        int max = Integer.MIN_VALUE;
-        int score;
-        Move bestMove = null; // for debugging.
+    protected int negaMax(Game game, int depth, PlayerColor pc, Move parentNode) {
+        int sideToMove = pc.isWhite() ? 1 : -1;
+
+        if(depth == 0)
+            return evaluate(game, pc) * sideToMove;
 
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, evaluatingMoves.size());
+            return evaluate(game, pc, evaluatingMoves.size()) * sideToMove;
+
+        int max = Integer.MIN_VALUE;
+        int score;
 
         for(Move move: moves) {
             evaluatingMoves.offerLast(move);
             game.move(move);
             evaluationTree.addNode(move);
-            score = -negaMax(game,depth - 1, move);
+            score = -negaMax(game,depth - 1, pc.otherColor(), move);
             evaluationTree.putEdgeValue(parentNode, move, score);
 
             game.undo();
@@ -129,7 +132,6 @@ public class BasicNegaMaxPlayer extends Player {
 
             if(score > max) {
                 max = score;
-                bestMove = move;
             }
         }
 

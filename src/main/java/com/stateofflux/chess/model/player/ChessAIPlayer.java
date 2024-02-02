@@ -35,11 +35,11 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
             evaluatingMoves.offerLast(move);
             currentMove = move;
             destinationPiece = game.getBoard().get(move.getTo());
-            int currentScore = evaluate(game);
+            int currentScore = evaluate(game, this.getColor());
             game.move(move);
 
             // alphaBetaMax(-oo, +oo, depth);
-            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1);
+            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, this.getColor());
             game.undo();
             evaluatingMoves.pollLast();
 
@@ -100,8 +100,8 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
      * @param game
      * @return
      */
-    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft ) {
-        if ( depthleft == 0 ) return evaluate(game);
+    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft, PlayerColor pc ) {
+        if ( depthleft == 0 ) return evaluate(game, pc);
 
         MoveList<Move> moves = game.generateMoves();
         Collections.shuffle(moves); // Sort moves randomly, so the same move isn't always picked on ties
@@ -109,13 +109,13 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
         int score;
 
         if(moves.isEmpty())
-            return evaluate(game);
+            return evaluate(game, pc);
 
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
 
-            score = alphaBetaMin( game, alpha, beta, depthleft - 1 );
+            score = alphaBetaMin( game, alpha, beta, depthleft - 1, pc.otherColor() );
             game.undo();
             evaluatingMoves.pollLast();
 
@@ -128,21 +128,21 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
         return alpha;
     }
 
-    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft ) {
-        if ( depthleft == 0 ) return -evaluate(game);
+    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft, PlayerColor pc ) {
+        if ( depthleft == 0 ) return -evaluate(game, pc);
 
         MoveList<Move> moves = game.generateMoves();
         Collections.shuffle(moves);  // Sort moves randomly, so the same move isn't always picked on ties
         int score;
 
         if(moves.isEmpty())
-            return -evaluate(game);
+            return -evaluate(game, pc);
 
         for ( var move: moves ) {
             evaluatingMoves.offerLast(move);
             game.move(move);
 
-            score = alphaBetaMax( game, alpha, beta, depthleft - 1 );
+            score = alphaBetaMax( game, alpha, beta, depthleft - 1, pc.otherColor() );
             game.undo();
             evaluatingMoves.pollLast();
 

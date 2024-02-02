@@ -165,7 +165,7 @@ public class Move {
         return isCapture() ? 1 : 0;
     }
 
-    @Override
+/*    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -176,5 +176,5 @@ public class Move {
     @Override
     public int hashCode() {
         return Objects.hash(piece, from, to, capture, castling, secondaryFrom, secondaryTo, promotionPiece, enPassantTarget);
-    }
+    }*/
 }

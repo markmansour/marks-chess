@@ -163,20 +163,20 @@ public class SimpleEvaluator implements Evaluator {
      * the side to move.
      *
      */
-    public int evaluate(Game game, int depth, PlayerColor pc) {
+    public int evaluate(Game game, PlayerColor pc, int depth) {
         nodesEvaluated++;
 
         Board b = game.getBoard();
         int bonus = 0;
 
-        // sideToMove is the value of the move just completed.  The game counter has already moved
+        // sideMoved is the value of the move just completed.  The game counter has already moved
         // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
         // then it was black that just moved.
-        int sideToMove = getSideToMove(pc);
+        int sideMoved = pc.isWhite() ? -1 : 1;
 
         if(game.isCheckmated()) {
             // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
-            return (MATE_VALUE - depth) * sideToMove;  // prioritize mate values that take fewer moves.
+            return (MATE_VALUE - depth) * sideMoved;  // prioritize mate values that take fewer moves.
         }
 
         // from the perspective of the white player
@@ -200,7 +200,7 @@ public class SimpleEvaluator implements Evaluator {
         if(game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
-            bonus += (500 * sideToMove);  // from white's perspective
+            bonus += (500 * sideMoved);  // from white's perspective
         }
 
         // if attacking a space next to the king give a bonus
@@ -217,7 +217,7 @@ public class SimpleEvaluator implements Evaluator {
         /*
          * In order for NegaMax to work, it is important to return the score relative to the side being evaluated.
          */
-        return (materialScore + mobilityScore + bonus + boardScore(game)) * sideToMove;
+        return (materialScore + mobilityScore + bonus + boardScore(game));
     }
 
     protected int boardScore(Game game) {

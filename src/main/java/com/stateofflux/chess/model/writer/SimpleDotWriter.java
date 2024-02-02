@@ -6,14 +6,17 @@ import com.stateofflux.chess.model.Move;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 
-public class DotWriter {
+public class SimpleDotWriter {
     private final StringBuilder sb;
     private final Set<String> visited;
 
-    public DotWriter() {
+    public SimpleDotWriter() {
         sb = new StringBuilder();
         visited = new HashSet<>();
     }
@@ -111,9 +114,35 @@ public class DotWriter {
     public String fromGraph(final MutableValueGraph<Move, Integer> graph, Move root) {
         sb.append("strict digraph G {\n");
         sb.append(moveToString(root)).append(" [label\"root\"];\n");
-        traverseSuccessors(graph, new Move[] {root}, 0);
+        // traverseSuccessors(graph, new Move[] {root}, 0);
+        dfs(graph, root);
         sb.append("}");
         return sb.toString();
+    }
+
+    private String dfs(MutableValueGraph<Move, Integer> graph, Move parent) {
+        Set<Move> children = graph.successors(parent);
+        String parentString = moveToString(parent) + "_" + ThreadLocalRandom.current().nextInt(0, 1000);
+
+        if(children.isEmpty()) {
+            sb.append(parentString)
+                .append(" [label=\"")
+                .append(moveToString(parent))
+                .append("\"];\n");
+            return parentString;
+        }
+
+        for(Move child : children) {
+            String childString = dfs(graph, child);
+            sb.append(parentString)
+                .append(" -> ")
+                .append(childString)
+                .append(" [label=\"")
+                .append(child.toLongSan())
+                .append("\"];\n");
+        }
+
+        return parentString;
     }
 
     @Override

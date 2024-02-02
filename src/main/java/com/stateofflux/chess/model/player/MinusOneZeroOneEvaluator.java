@@ -9,7 +9,7 @@ public class MinusOneZeroOneEvaluator implements Evaluator {
     }
 
     @Override
-    public int evaluate(Game game, int depth, PlayerColor pc) {
+    public int evaluate(Game game, PlayerColor pc, int depth) {
         if(game.isDraw()) return 0;
 
         return pc.isWhite() ? 1 : -1;
