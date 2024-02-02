@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 @Tag("UnitTest")
 public class AlphaBetaPlayerTest {
@@ -24,21 +25,23 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(one.evaluate(game, PlayerColor.WHITE)).isGreaterThan(two.evaluate(game, PlayerColor.BLACK));
+        assertThat(game.getActivePlayer()).isEqualTo(two);  // player two's turn and they can't move.
     }
 
-    @Disabled(value = "Depth 4 is too slow")
+    @Disabled(value = "Has bug and will fail")
     @Test public void testToPlaceInCheck() {
-        Game game = new Game("1n2k1n1/r2p3r/b1p1ppp1/p6p/3K4/8/8/7q w - - 0 30");
+        Game game = new Game("1n2k1n1/r2p3r/b1p1ppp1/p6p/3K4/8/8/7q b - - 0 30");
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-        two.setSearchDepth(8);
+        two.setSearchDepth(4);
         game.setPlayers(one, two);
 
-        // white's turn (player two)
-        Move move = one.getNextMove(game);
-        assertThat(move.getFrom()).isEqualTo(7);
+        // white's turn (player one)
+        // winning move is black:h1e1, white:d4c5 (their only move), black:e1b4 - checkmate
+        fail("Fix this");
+        Move move = two.getNextMove(game);
+        assertThat(move.getFrom()).isEqualTo(27);  // doesn't use the evaluator, so I don't know the dest only the from.
     }
 
     @Test public void testFromWinningPositionForBlack() {
@@ -52,7 +55,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
+        assertThat(game.getActivePlayer()).isEqualTo(one);  // white's turn and they can't move.
     }
 
     @Disabled(value = "Depth 4 is too slow")

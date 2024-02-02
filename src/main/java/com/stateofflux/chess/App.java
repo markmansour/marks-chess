@@ -39,8 +39,8 @@ public class App
         Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
 
         // give the players a reasonable chance of winning.
-        whitePlayer.setSearchDepth(4);
-        blackPlayer.setSearchDepth(4);
+        whitePlayer.setSearchDepth(5);
+        blackPlayer.setSearchDepth(5);
 
         for (String line = scanner.nextLine().strip(); !line.equals("quit"); line = scanner.nextLine()) {
             String[] lineParts = line.split("\\s+");

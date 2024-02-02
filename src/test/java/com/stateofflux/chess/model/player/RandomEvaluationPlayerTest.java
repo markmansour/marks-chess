@@ -48,7 +48,7 @@ public class RandomEvaluationPlayerTest {
         Player chessAI = new AlphaBetaPlayer(PlayerColor.WHITE, chessAiEvaluator);
 
         Evaluator simplaEvaluator = new SimpleEvaluator();
-        Player negaMax = new BasicNegaMaxPlayer(PlayerColor.BLACK, simplaEvaluator);
+        Player negaMax = new AlphaBetaPlayer(PlayerColor.BLACK, simplaEvaluator);
 
         // chessAI.setSearchDepth(3);
         game.setPlayers(chessAI, negaMax);
