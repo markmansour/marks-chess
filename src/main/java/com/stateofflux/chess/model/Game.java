@@ -689,6 +689,10 @@ public class Game {
         return historyAsHashes;
     }
 
+    public Move getLastMove() {
+        return historyOfMoves.get(historyOfMoves.size() - 1).move();
+    }
+
     // --------------------------- check game state ---------------------------
 
     public boolean isChecked() {

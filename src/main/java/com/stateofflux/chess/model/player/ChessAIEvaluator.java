@@ -2,14 +2,19 @@ package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
+import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
 
 import java.util.Map;
 
+import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
 import static java.lang.Long.bitCount;
 
-public class ChessAIEvaluator {
+/*
+ * Implementation of https://github.com/zeyu2001/chess-ai/blob/main/js/main.js
+ */
+public class ChessAIEvaluator extends SimpleEvaluator {
     protected static Map<Character, Integer> PIECE_WEIGHTS = Map.of(
         Piece.PAWN_ALGEBRAIC, 100,
         Piece.KNIGHT_ALGEBRAIC, 280,
@@ -101,39 +106,11 @@ public class ChessAIEvaluator {
         -50, -30, -30, -30, -30, -30, -30, -50,
     };
 
-    /*
-     * Assumes size of 64.
-     */
-    protected static int[] visualToArrayLayout(int[] visualLayout) {
-        assert visualLayout.length == 64;
-
-        int[] arrayLayout = new int[visualLayout.length];
-        for(int i = 7; i >= 0; i--) {
-            System.arraycopy(
-                visualLayout, i * 8,
-                arrayLayout, (7-i)*8,
-                8);
-        }
-
-        return arrayLayout;
+    public ChessAIEvaluator() {
+        super();
     }
 
-    protected static int[] transposeWhiteToBlack(int[] a) {
-        int [] result = new int[a.length];  // 64!
-
-        for(int i = 0; i < 8; i++) {
-            System.arraycopy(a, i * 8, result, 56 - (i * 8), 8);
-        }
-
-        return result;
-    }
-
-
-    protected int nodesEvaluated = 0;
-    protected boolean endGame = false;
-
-    protected int[][] PieceSquareTables = new int[12][];
-
+    @Override
     protected void initializePSTs() {
         PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
         PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_MIDGAME_TABLE));
@@ -149,73 +126,43 @@ public class ChessAIEvaluator {
         PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
     }
 
-    public int evaluate(Game game, int depth, PlayerColor pc) {
+    // view from white's perspective
+    @Override
+    public int evaluate(Game game, PlayerColor pc, int depth) {
         int bonus = 0;
-        int sideMultiplier = getSideToMove(pc);
+        int sideMoved = pc.isWhite() ? -1 : 1;
 
         if(game.isCheckmated()) {
-            return getSideToMove(pc) == -1 ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+            return (MATE_VALUE - depth) * sideMoved;  // prioritize mate values that take fewer moves.
         }
 
         if(game.isDraw() || game.isRepetition() || game.isStalemate())
             return 0;
 
         if(game.isChecked()) {
-            bonus += 50 * sideMultiplier;
+            bonus += 50 * sideMoved;
         }
 
-/*
-        if(currentMove != null && currentMove.isCapture()) {
-            bonus += PIECE_WEIGHTS.get(destinationPiece.getAlgebraicChar()) +
-                PieceSquareTables[destinationPiece.getIndex()][currentMove.getTo()] * sideMultiplier;
+        Move lastMove = game.getLastMove();
+
+        Board b = game.getBoard();
+
+        int materialScore =
+            PIECE_WEIGHTS.get(Piece.KING_ALGEBRAIC) * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
+                + PIECE_WEIGHTS.get(Piece.QUEEN_ALGEBRAIC) * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
+                + PIECE_WEIGHTS.get(Piece.ROOK_ALGEBRAIC) * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
+                + PIECE_WEIGHTS.get(Piece.BISHOP_ALGEBRAIC) * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
+                + PIECE_WEIGHTS.get(Piece.KNIGHT_ALGEBRAIC) * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
+                + PIECE_WEIGHTS.get(Piece.PAWN_ALGEBRAIC) * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
+
+        if(lastMove.isCapture()) {
+            // I don't have the captured piece info - this is the only part of the algo I can't replicate.
         }
 
-*/
+        // this does the same as promotion math and general square math as I'm calculating the
+        // score from scratch, whereas chessai does an incremental update.
         int boardScore = boardScore(game);
 
-        // return (materialScore + mobilityScore + bonus + boardScore(game)) * sideToMove;
-        bonus += boardScore;
-
-        return bonus * sideMultiplier;
+        return bonus + materialScore + boardScore;
     }
-
-    protected int getSideToMove(PlayerColor pc) {
-        return pc.isWhite() ? 1 : -1;
-    }
-
-    protected int boardScore(Game game) {
-        int score = 0;
-        Board b = game.getBoard();
-        checkForEndGame(game);
-
-        // LOGGER.info(game.asFen());
-
-        for(int i = 0; i < 64; i++) {
-            Piece p = b.get(i);
-            if(p.isEmpty()) continue;
-
-            score += PieceSquareTables[p.getIndex()][i] * (p.isWhite() ? 1 : -1);
-        }
-
-        return score;
-    }
-
-    private void checkForEndGame(Game game) {
-        if (endGame) return;
-
-        if(bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
-            this.endGame = true;
-            PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
-            PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
-        }
-    }
-
-    private boolean isEndGame() {
-        return this.endGame;
-    }
-
-    public int getNodesEvaluated() {
-        return nodesEvaluated;
-    }
-
 }

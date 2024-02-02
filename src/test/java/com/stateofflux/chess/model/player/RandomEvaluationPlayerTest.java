@@ -28,11 +28,33 @@ public class RandomEvaluationPlayerTest {
     @Disabled(value = "Cannot get stdin when running unit tests.  Used for debugging.")
     @Test public void testChessAi() {
         Game game = new Game();
-        Evaluator evaluator = new SimpleEvaluator();
+        Evaluator evaluator = new ChessAIEvaluator();
         Player human = new HumanPlayer(PlayerColor.WHITE, evaluator);
-        Player chessAI = new ChessAIPlayer(PlayerColor.BLACK, evaluator);
-        chessAI.setSearchDepth(3);
+        Player chessAI = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+        // chessAI.setSearchDepth(3);
         game.setPlayers(human, chessAI);
+
+        game.play();
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+    }
+
+    @Disabled(value = "Takes too long to run")
+    @Test public void testChessAiVsBasicNegaMax() {
+        Game game = new Game();
+
+        Evaluator chessAiEvaluator = new ChessAIEvaluator();
+        Player chessAI = new AlphaBetaPlayer(PlayerColor.WHITE, chessAiEvaluator);
+
+        Evaluator simplaEvaluator = new SimpleEvaluator();
+        Player negaMax = new BasicNegaMaxPlayer(PlayerColor.BLACK, simplaEvaluator);
+
+        // chessAI.setSearchDepth(3);
+        game.setPlayers(chessAI, negaMax);
+
+        // chessAI.setSearchDepth(3);
+        game.setPlayers(negaMax, chessAI);
 
         game.play();
         game.printOccupied();

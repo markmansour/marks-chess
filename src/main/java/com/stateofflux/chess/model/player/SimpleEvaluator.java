@@ -130,7 +130,7 @@ public class SimpleEvaluator implements Evaluator {
     }
 
 
-    protected int[][] PieceSquareTables = new int[12][];
+    protected int[][] PieceSquareTables;
 
     protected void initializePSTs() {
         PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
@@ -151,10 +151,10 @@ public class SimpleEvaluator implements Evaluator {
     protected boolean endGame = false;
 
     public SimpleEvaluator() {
+        PieceSquareTables = new int[12][];
         initializePSTs();
     }
 
-    @Override
     /*
      * https://www.chessprogramming.org/Evaluation - symmetric evaluation function
      *
@@ -163,6 +163,7 @@ public class SimpleEvaluator implements Evaluator {
      * the side to move.
      *
      */
+    @Override
     public int evaluate(Game game, PlayerColor pc, int depth) {
         nodesEvaluated++;
 
@@ -225,8 +226,6 @@ public class SimpleEvaluator implements Evaluator {
         Board b = game.getBoard();
         checkForEndGame(game);
 
-        // LOGGER.info(game.asFen());
-
         for(int i = 0; i < 64; i++) {
             Piece p = b.get(i);
             if(p.isEmpty()) continue;
@@ -237,10 +236,6 @@ public class SimpleEvaluator implements Evaluator {
         return score;
     }
 
-    protected int getSideToMove(PlayerColor pc) {
-        return pc.isWhite() ? 1 : -1;
-    }
-
     private void checkForEndGame(Game game) {
         if (endGame) return;
 
@@ -249,10 +244,6 @@ public class SimpleEvaluator implements Evaluator {
             PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
             PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
         }
-    }
-
-    private boolean isEndGame() {
-        return this.endGame;
     }
 
     public int getNodesEvaluated() {
