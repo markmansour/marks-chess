@@ -3,7 +3,6 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
-import com.stateofflux.chess.model.writer.DotWriter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -53,14 +52,6 @@ public class SimpleEvaluatorTest {
         int b = black.getBestMoveScore();
 
         long time = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
-
-        DotWriter dw = new DotWriter();
-        dw.fromGraph(white.evaluationTree, white.root);
-        dw.toFile("./chess-" +  time + "-w.dot");
-
-        dw = new DotWriter();
-        dw.fromGraph(black.evaluationTree, black.root);
-        dw.toFile("./chess-" +  time + "-b.dot");
 
         return new Result(a, b);
     }

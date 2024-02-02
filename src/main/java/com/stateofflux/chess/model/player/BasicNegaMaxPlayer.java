@@ -1,16 +1,11 @@
 package com.stateofflux.chess.model.player;
 
-import com.google.common.graph.*;
 import com.stateofflux.chess.model.*;
-import com.stateofflux.chess.model.pieces.Piece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
-import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
-import static java.lang.Long.bitCount;
 
 /*
  * Negamax search is a variant form of minimax search that relies on the zero-sum property of a
@@ -29,44 +24,34 @@ public class BasicNegaMaxPlayer extends Player {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayer.class);
 
-    protected Deque<Move> evaluatingMoves;
     protected int bestMoveScore = 0;
 
     // In this implementation, this value is always calculated from the point
     // of view of player A, whose color value is one. In other words, higher
     // heuristic values always represent situations more favorable for white.
-    protected Evaluator evaluator;
+    protected final Evaluator evaluator;
 
-    // Tree of moves, with scores, for debugging.
-    protected MutableValueGraph<Move, Integer> evaluationTree;
-    protected Move root;  // fake move as root
+    protected final Comparator<Move> moveComparator;
 
     public BasicNegaMaxPlayer(PlayerColor pc, Evaluator evaluator) {
         super(pc, evaluator);
         this.searchDepth = DEFAULT_SEARCH_DEPTH;
         this.evaluator = evaluator;
-        evaluatingMoves = new ArrayDeque<Move>();
-        root = new Move(Piece.EMPTY, 0, 0, false);
+        this.moveComparator = new MoveComparator();
     }
 
     public Move getNextMove(Game game) {
         MoveList<Move> moves = game.generateMoves();
-        moves.sort(new MoveComparator());
+        moves.sort(moveComparator);
 
         int max = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
-        evaluatingMoves.clear();
-        evaluationTree = ValueGraphBuilder.directed().build();
-        evaluationTree.addNode(root);
+
 
         for(Move move: moves) {
-            evaluatingMoves.offerLast(move);
             game.move(move);
-            evaluationTree.addNode(move);
-            int score = -negaMax(game, searchDepth - 1, color.otherColor(), move);
-            evaluationTree.putEdgeValue(root, move, score);
+            int score = -negaMax(game, searchDepth - 1, color.otherColor());
             game.undo();
-            evaluatingMoves.pollLast();
             // LOGGER.info("{} - move ({}): {}", game.getActivePlayer(), move, score);
 
             if(score == max) {
@@ -105,7 +90,7 @@ public class BasicNegaMaxPlayer extends Player {
      *       return max;
      *   }
      */
-    protected int negaMax(Game game, int depth, PlayerColor pc, Move parentNode) {
+    protected int negaMax(Game game, int depth, PlayerColor pc) {
         int sideToMove = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
@@ -115,20 +100,16 @@ public class BasicNegaMaxPlayer extends Player {
 
         // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, pc, evaluatingMoves.size()) * sideToMove;
+            return evaluate(game, pc, depth) * sideToMove;
 
         int max = Integer.MIN_VALUE;
         int score;
 
         for(Move move: moves) {
-            evaluatingMoves.offerLast(move);
             game.move(move);
-            evaluationTree.addNode(move);
-            score = -negaMax(game,depth - 1, pc.otherColor(), move);
-            evaluationTree.putEdgeValue(parentNode, move, score);
+            score = -negaMax(game,depth - 1, pc.otherColor());
 
             game.undo();
-            evaluatingMoves.pollLast();
 
             if(score > max) {
                 max = score;
@@ -141,9 +122,5 @@ public class BasicNegaMaxPlayer extends Player {
 
     public int getBestMoveScore() {
         return bestMoveScore;
-    }
-
-    public Deque<Move> getEvaluatingMoves() {
-        return evaluatingMoves;
     }
 }

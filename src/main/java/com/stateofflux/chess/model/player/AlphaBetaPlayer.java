@@ -12,11 +12,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayer.class);
-    protected Comparator<Move> moveComparator;
+
 
     public AlphaBetaPlayer(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
-        moveComparator = new MoveComparator();
     }
 
     @Override
@@ -27,21 +26,11 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         int bestEvaluation = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
-        evaluatingMoves.clear();
-        evaluationTree = ValueGraphBuilder.directed().build();
-        evaluationTree.addNode(root);
 
         for(Move move: moves) {
-            evaluatingMoves.offerLast(move);
             game.move(move);
-            evaluationTree.addNode(move);
-
-            // alphaBetaMax(-oo, +oo, depth);
-            int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, this.getColor(), move);
-            evaluationTree.putEdgeValue(root, move, score);
-
+            int score = -alphaBeta(game, searchDepth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, this.getColor().otherColor());
             game.undo();
-            evaluatingMoves.pollLast();
 
             // LOGGER.info("Move ({}): {}", move, score);
 
@@ -62,105 +51,51 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
     }
 
-
-    /**
-     * https://www.chessprogramming.org/Alpha-Beta#Implementation
+    /*
+     * NegaMax with alpha-beta pruning.  https://en.wikipedia.org/wiki/Negamax#Negamax_with_alpha_beta_pruning
      *
-     * int alphaBetaMax( int alpha, int beta, int depthleft ) {
-     *    if ( depthleft == 0 ) return evaluate();
-     *    for ( all moves) {
-     *       score = alphaBetaMin( alpha, beta, depthleft - 1 );
-     *       if( score >= beta )
-     *          return beta;   // fail hard beta-cutoff
-     *       if( score > alpha )
-     *          alpha = score; // alpha acts like max in MiniMax
-     *    }
-     *    return alpha;
-     * }
+     * function negamax(node, depth, α, β, color) is
+     *    if depth = 0 or node is a terminal node then
+     *        return color × the heuristic value of node
      *
-     * int alphaBetaMin( int alpha, int beta, int depthleft ) {
-     *    if ( depthleft == 0 ) return -evaluate();
-     *    for ( all moves) {
-     *       score = alphaBetaMax( alpha, beta, depthleft - 1 );
-     *       if( score <= alpha )
-     *          return alpha; // fail hard alpha-cutoff
-     *       if( score < beta )
-     *          beta = score; // beta acts like min in MiniMax
-     *    }
-     *    return beta;
-     * }
-     *
-     * from the root:
-     * score = alphaBetaMax(-oo, +oo, depth);
-     *
-     * NOTE: the algos on chessprogramming.org are very terse.  I believe depthleft incorporates a) the literal
-     *       depth of the search, and also when there a no moves.
-     *
-     * @param game
-     * @return
+     *    childNodes := generateMoves(node)
+     *    childNodes := orderMoves(childNodes)
+     *    value := −∞
+     *    foreach child in childNodes do
+     *        value := max(value, −negamax(child, depth − 1, −β, −α, −color))
+     *        α := max(α, value)
+     *        if α ≥ β then
+     *            break (* cut-off *)
+     *    return value
      */
-    private int alphaBetaMax(Game game, int alpha, int beta, int depthleft, PlayerColor pc, Move parentNode ) {
-        if ( depthleft == 0 ) return evaluate(game, pc);
+    public int alphaBeta(Game game, int depth, int alpha, int beta, PlayerColor pc) {
+        int sideToMove = pc.isWhite() ? 1 : -1;
+
+        if(depth == 0)
+            return evaluate(game, pc) * sideToMove;
 
         MoveList<Move> moves = game.generateMoves();
-        moves.sort(moveComparator);
-        int score;
 
+        // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, pc);
+            return evaluate(game, pc, depth) * sideToMove;
 
-        for ( var move: moves ) {
-            evaluatingMoves.offerLast(move);
+        moves.sort(moveComparator);
+
+        int value = Integer.MIN_VALUE;
+
+        for(Move move: moves) {
             game.move(move);
-            evaluationTree.addNode(move);
-
-            score = alphaBetaMin( game, alpha, beta, depthleft - 1, pc.otherColor(), move );
-            evaluationTree.putEdgeValue(parentNode, move, score);
-
+            value = Math.max(value, -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor()));
             game.undo();
-            evaluatingMoves.pollLast();
 
-            if( score >= beta )
-                return beta;   // fail hard beta-cutoff
-            if( score > alpha )
-                alpha = score; // alpha acts like max in MiniMax
+            alpha = Math.max(alpha, value);
+
+            if(alpha >= beta)
+                break;
         }
 
-        return alpha;
-    }
-
-    private int alphaBetaMin( Game game, int alpha, int beta, int depthleft, PlayerColor pc, Move parentNode ) {
-        if ( depthleft == 0 ) return -evaluate(game, pc);
-
-        MoveList<Move> moves = game.generateMoves();
-        moves.sort(moveComparator);
-        int score;
-
-        if(moves.isEmpty())
-            return -evaluate(game, pc);
-
-        for ( var move: moves ) {
-            evaluatingMoves.offerLast(move);
-            game.move(move);
-            evaluationTree.addNode(move);
-
-            score = alphaBetaMax( game, alpha, beta, depthleft - 1, pc.otherColor(), move );
-            evaluationTree.putEdgeValue(parentNode, move, score);
-            game.undo();
-            evaluatingMoves.pollLast();
-
-            if( score <= alpha )
-                return alpha; // fail hard alpha-cutoff
-            if( score < beta )
-                beta = score; // beta acts like min in MiniMax
-        }
-
-        return beta;
-    }
-
-    // evaluation function always from White's perspective.
-    protected int getSideToMove(Game game) {
-        return game.getActivePlayerColor().isWhite() ? -1 : 1;
+        return value;
     }
 }
 

@@ -41,13 +41,12 @@ public class AlphaBetaPlayerTest {
         assertThat(move.getFrom()).isEqualTo(7);
     }
 
-    @Test public void testFromWinningPosition() {
+    @Test public void testFromWinningPositionForBlack() {
         Game game = new Game("1nbq2n1/r3p3/1pp1ppp1/p3k3/8/2r2p2/8/2b3K1 w - - 0 27");
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         game.setPlayers(one, two);
-        two.setSearchDepth(6);
 
         game.play();
         game.printOccupied();

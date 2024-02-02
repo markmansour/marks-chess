@@ -29,10 +29,8 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
 
         int bestEvaluation = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
-        evaluatingMoves.clear();
 
         for(Move move: moves) {
-            evaluatingMoves.offerLast(move);
             currentMove = move;
             destinationPiece = game.getBoard().get(move.getTo());
             int currentScore = evaluate(game, this.getColor());
@@ -41,7 +39,6 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
             // alphaBetaMax(-oo, +oo, depth);
             int score = alphaBetaMax(game, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth - 1, this.getColor());
             game.undo();
-            evaluatingMoves.pollLast();
 
             // LOGGER.info("Move ({}): {}", move, score);
 
@@ -112,12 +109,10 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
             return evaluate(game, pc);
 
         for ( var move: moves ) {
-            evaluatingMoves.offerLast(move);
             game.move(move);
 
             score = alphaBetaMin( game, alpha, beta, depthleft - 1, pc.otherColor() );
             game.undo();
-            evaluatingMoves.pollLast();
 
             if( score >= beta )
                 return beta;   // fail hard beta-cutoff
@@ -139,12 +134,10 @@ public class ChessAIPlayer extends BasicNegaMaxPlayer {
             return -evaluate(game, pc);
 
         for ( var move: moves ) {
-            evaluatingMoves.offerLast(move);
             game.move(move);
 
             score = alphaBetaMax( game, alpha, beta, depthleft - 1, pc.otherColor() );
             game.undo();
-            evaluatingMoves.pollLast();
 
             if( score <= alpha )
                 return alpha; // fail hard alpha-cutoff

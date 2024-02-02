@@ -1,6 +1,5 @@
 package com.stateofflux.chess.model.player;
 
-import com.stateofflux.chess.model.writer.DotWriter;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
@@ -48,32 +47,8 @@ public class BasicNegaMaxPlayerTest {
         BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         Game game = new Game("Bn6/2k4p/6q1/p4p1R/P1P2Kn1/4r1n1/5N2/6N1 b - -"); // black is winning.
         Move m = black.getNextMove(game); // next move should be mate.  g3h5.
-        DotWriter dw = new DotWriter();
-        String x = dw.fromGraph(black.evaluationTree, black.root);
         assertThat(m.getPiece()).isEqualTo(Piece.BLACK_KNIGHT);  // n : g3g5
         assertThat(m.toLongSan()).isEqualTo("g3h5");
-    }
-
-    @Test public void generateDotFile() {
-        //BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
-        AlphaBetaPlayer white = new AlphaBetaPlayer(PlayerColor.WHITE, new SimpleEvaluator());
-
-        Game game = new Game(); // black is winning.
-        Move m = white.getNextMove(game); // next move should be mate.  g3h5.
-        DotWriter dw = new DotWriter();
-        String x = dw.fromGraph(white.evaluationTree, white.root);
-        dw.toFile("./chess.dot");
-        assertThat(x).contains("a1a1 -> a2a4");
-    }
-
-    @Test public void debugNegaMax() {
-        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
-        Game game = new Game("1k6/1p4p1/8/8/8/8/P3P3/4K3 w - - 0 1"); // https://lichess.org/editor/1k6/1p4p1/8/8/8/8/P3P3/4K3_w_-_-_0_1?color=white
-        Move m = white.getNextMove(game); // next move should be mate.  g3h5.
-        DotWriter dw = new DotWriter();
-        String x = dw.fromGraph(white.evaluationTree, white.root);
-        dw.toFile("./chess-debug.dot");
-        assertThat(x).contains("a1a1 -> a2a4");
     }
 
     @Test public void evaluateAllNodes() {
