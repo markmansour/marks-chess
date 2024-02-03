@@ -1,14 +1,19 @@
 package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.pieces.PawnMoves;
+import com.stateofflux.chess.model.player.Evaluator;
 import com.stateofflux.chess.model.player.Player;
 import com.stateofflux.chess.model.player.RandomMovePlayer;
+import com.stateofflux.chess.model.player.SimpleEvaluator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.*;
 
 @Tag("UnitTest")
@@ -221,6 +226,9 @@ public class GameTest {
         Game game = new Game("r1b1kbnr/ppp1pppp/2n1q3/3pP1P1/3P4/8/PPP2P1P/RNBQKBNR b KQkq -");
         game.generateMoves();
         // move p : f7f5 was crashing - it would put the white king in check.
+        game.move("f5");
+
+        assertThat(game.getBoard().getEnPassantTarget()).isEqualTo(45);
     }
 
     @Test public void initialTwoSquareOpeningNextToPawnButNoEnPassant() {
@@ -237,6 +245,20 @@ public class GameTest {
         Game game = new Game("rnbqkb1r/ppp2ppp/3p4/8/8/2n2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 6");
         game.move("dxc3"); // move from d4 to c3 (but takes from d2)
         assertThat(game.asFen()).isEqualTo("rnbqkb1r/ppp2ppp/3p4/8/8/2P2N2/PPP2PPP/R1BQKB1R b KQkq - 1 6");
+    }
+
+    @Nested
+    class Ordering {
+        @Test public void capturesBeforeNonCapture() {
+            Game game = new Game("r1b1kbnr/ppp1pppp/2n1q3/3pP1P1/3P4/8/PPP2P1P/RNBQKBNR b KQkq -");
+            game.generateMoves();
+            // move p : f7f5 was crashing - it would put the white king in check.
+            game.move("f5");
+            List<Move> moves = game.generateMoves();
+            assertThat(moves.get(0).toLongSan()).isNotEqualTo("g5f6");
+            moves.sort(new MoveComparator());
+            assertThat(moves.get(0).toLongSan()).isEqualTo("g5f6");
+        }
     }
 
     // https://www.chessprogramming.org/Castling
@@ -653,22 +675,15 @@ public class GameTest {
     }
 
     @Test public void twoPlayersWithRandomMoves() {
-        Player one = new RandomMovePlayer(PlayerColor.WHITE);
-        Player two = new RandomMovePlayer(PlayerColor.BLACK);
+        Evaluator evaluator = new SimpleEvaluator();
+        Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
+        Player randomPlayerTwo = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
         Game game = new Game();
-        game.disable50MovesRule();
-        game.setPlayers(one, two);
+        game.setPlayers(randomPlayerOne, randomPlayerTwo);
         game.play();
 
-        LOGGER.info("--------------------------");
-        LOGGER.info("isOver: {}", game.isOver());
-        LOGGER.info("isCheckmated: {}", game.isCheckmated());
-        LOGGER.info("hasResigned: {}", game.hasResigned());
-        LOGGER.info("isStalemate: {}", game.isStalemate());
-        LOGGER.info("hasInsufficientMaterials: {}", game.hasInsufficientMaterials());
-        LOGGER.info("exceededMoves: {}", game.exceededMoves());
-        LOGGER.info("hasRepeated: {}", game.isRepetition());
-        assertThat(game.isOver()).isTrue();
+        game.printOccupied();
+        assertTrue(game.isOver());
     }
 
     @Nested

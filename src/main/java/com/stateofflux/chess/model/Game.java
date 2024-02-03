@@ -130,6 +130,9 @@ public class Game {
             Move move = currentPlayer.getNextMove(this);
             move(move);
             playerIndex++;
+
+            LOGGER.info("{}({}): move({}) -> {} ({}) - advantage ({}:{})",
+                currentPlayer.getClass().getSimpleName(), currentPlayer.getSearchDepth(), move, asFen(), currentPlayer, currentPlayer.getBestMoveScore() > 0 ? "White" : "Black", currentPlayer.getBestMoveScore());
         }
     }
 
@@ -260,7 +263,7 @@ public class Game {
      *
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
-    private MoveList<Move> generateMovesFor(PlayerColor playerColor) {
+    public MoveList<Move> generateMovesFor(PlayerColor playerColor) {
         MoveList<Move> playerMoves = pseudoLegalMovesFor(playerColor);
 
         if (depth > 0)
@@ -686,6 +689,10 @@ public class Game {
         return historyAsHashes;
     }
 
+    public Move getLastMove() {
+        return historyOfMoves.get(historyOfMoves.size() - 1).move();
+    }
+
     // --------------------------- check game state ---------------------------
 
     public boolean isChecked() {
@@ -701,6 +708,10 @@ public class Game {
 
     public boolean isCheckmated() {
         return isChecked() && generateMoves().isEmpty();
+    }
+
+    public boolean isCheckmatedCheap() {
+        return isChecked() && pseudoLegalMovesFor(getActivePlayerColor()).isEmpty();
     }
 
     public void disable50MovesRule() {
@@ -860,8 +871,16 @@ public class Game {
         if(players == null) return "No Players Set";
         if(isDraw()) return "Draw";
         if(isStalemate()) return "Stalemate";
-        if(isCheckmated()) return "Checkmate: " + players[(clock - 1) % 2];
+        if(isCheckmated()) return "Checkmate: " + players[getPreviousPlayerIndex()];
         if(exceededMoves()) return "Moves exceeded";
         return "unknown";
+    }
+
+    public int getCurrentPlayerIndex() {
+        return clock % 2;
+    }
+
+    public int getPreviousPlayerIndex() {
+        return (clock + 1) % 2;
     }
 }

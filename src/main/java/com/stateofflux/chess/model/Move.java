@@ -3,6 +3,8 @@ package com.stateofflux.chess.model;
 import com.stateofflux.chess.model.pieces.PawnMoves;
 import com.stateofflux.chess.model.pieces.Piece;
 
+import java.util.Objects;
+
 public class Move {
     public static final boolean CAPTURE = true;
     public static final boolean NON_CAPTURE = false;
@@ -157,4 +159,22 @@ public class Move {
             gameEnPassantState != PawnMoves.NO_EN_PASSANT_VALUE &&
             getTo() == gameEnPassantState;
     }
+
+    // Capture > NonCapture
+    public int getComparisonValue() {
+        return isCapture() ? 1 : 0;
+    }
+
+/*    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Move move = (Move) o;
+        return from == move.from && to == move.to && capture == move.capture && castling == move.castling && secondaryFrom == move.secondaryFrom && secondaryTo == move.secondaryTo && enPassantTarget == move.enPassantTarget && piece == move.piece && promotionPiece == move.promotionPiece;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(piece, from, to, capture, castling, secondaryFrom, secondaryTo, promotionPiece, enPassantTarget);
+    }*/
 }

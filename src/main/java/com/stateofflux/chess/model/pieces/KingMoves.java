@@ -11,6 +11,8 @@ public class KingMoves implements PieceMovesInterface {
     public static final long BLACK_KING_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 61) | (1L << 62);
     public static final long BLACK_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 58) | (1L << 59);
 
+    public static final int MATE_VALUE = 32000;
+
     static {
         initializeKingAttacks();
     }
@@ -25,6 +27,10 @@ public class KingMoves implements PieceMovesInterface {
 
             KING_MOVES[i] = attackBb;
         }
+    }
+
+    public static long surroundingMoves(int location) {
+        return KING_MOVES[location];
     }
 
     private final Board board;
@@ -62,6 +68,7 @@ public class KingMoves implements PieceMovesInterface {
 
         addCastlingMoves();
     }
+
 
     /*
      * Neither the king nor the rook has previously moved.

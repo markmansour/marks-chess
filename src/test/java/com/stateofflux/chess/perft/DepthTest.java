@@ -188,11 +188,13 @@ public class DepthTest {
         simplifiedDepthTest(5, FenString.INITIAL_BOARD, 4865609);
     }
 
+    @Disabled(value = "Long Running test")
     @Test public void startingPositionDepthSixSimple() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         simplifiedDepthTest(6, FenString.INITIAL_BOARD, 119060324);
     }
 
     // ran for 910498 ms and reviewed 3195901860 nodes.  3510059 nodes/second (within IntelliJ, which is slower than on the command line).
+    @Disabled(value = "Long Running test")
     @Test public void startingPositionDepthSevenSimple() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         simplifiedDepthTest(7, FenString.INITIAL_BOARD, 3195901860L);
     }
@@ -355,7 +357,7 @@ public class DepthTest {
                     .reduce(0L, Long::sum);
 
                 Method expectedDepthMethod = PerftRecord.class.getMethod("d" + depth);
-                Integer expected = (Integer) expectedDepthMethod.invoke(pr);
+                long expected = Long.valueOf((Integer) expectedDepthMethod.invoke(pr));
                 // LOGGER.info("pulling expected out of {}", pr);
                 if(perftCount != expected) {
                     game.printPerft(actual);
@@ -380,7 +382,7 @@ public class DepthTest {
 
         endTime = System.nanoTime();
         long timeDiff = endTime - startTime;
-        if(timeDiff == 0) timeDiff = 1; // eliminate the divided by 0 error that occasionally pops up below.
+        if(timeDiff == 0L) timeDiff = 1; // eliminate the divided by 0 error that occasionally pops up below.
 
         LOGGER.info("profile{}-{}.html: ran for {} ms and reviewed {} nodes.  {} nodes/second",
             methodName,

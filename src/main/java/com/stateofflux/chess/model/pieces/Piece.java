@@ -24,6 +24,7 @@ public enum Piece {
     public final static char ROOK_ALGEBRAIC = 'R';
     public final static char BISHOP_ALGEBRAIC = 'B';
     public final static char KNIGHT_ALGEBRAIC = 'N';
+    public final static char PAWN_ALGEBRAIC = 'P';
 
     private final int index;
     private final PlayerColor color;
@@ -44,6 +45,7 @@ public enum Piece {
     public int getIndex() { return this.index; }
     public PlayerColor getColor() { return this.color; }
     public char getPieceChar() { return this.pieceChar; }
+    public char getAlgebraicChar() { return Character.toUpperCase(this.pieceChar); }
 
     public static Piece getPieceByIndex(int index) {
         for (Piece piece : Piece.values()) {
