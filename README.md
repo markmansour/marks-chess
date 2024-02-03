@@ -86,6 +86,14 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * Write production quality code.  This is for fun, and I'm *sure* my classes could be factored in a much cleaner way.
 
 # Notes
+## Overview of search
+* [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)
+* [Alpha-Beta with Sibling Prediction Pruning in Chess - Jeroen W.T. Carolus](https://homepages.cwi.nl/%7Epaulk/theses/Carolus.pdf)
+
+## Transposition Tables
+* [Wikipedia](https://en.wikipedia.org/wiki/Transposition_table) and [Chessprogramming wiki](https://www.chessprogramming.org/Transposition_Table) (very general) 
+* Implementations: [blunder](https://github.com/algerbrex/blunder/blob/main/engine/transposition.go), [kengine](https://github.com/bhlangonijr/kengine/blob/main/src/main/java/com/github/bhlangonijr/kengine/alphabeta/TranspositionTable.kt),  
+
 ## Iterative Deepening
 * [Chess Programming Wiki - Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 * [Iterative Deepening Search(IDS) or Iterative Deepening Depth First Search(IDDFS)](https://www.geeksforgeeks.org/iterative-deepening-searchids-iterative-deepening-depth-first-searchiddfs/)

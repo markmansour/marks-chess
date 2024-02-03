@@ -32,6 +32,7 @@ public class XorShiftRandom {
      * @return the next pseudorandom long value
      */
     public long nextLong() {
+        /* initial seed must be nonzero, don't use a static variable for the state if multithreaded */
         seed ^= seed >>> 12;
         seed ^= seed << 25;
         seed ^= seed >>> 27;
