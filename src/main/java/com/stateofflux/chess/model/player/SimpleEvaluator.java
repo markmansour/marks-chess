@@ -164,7 +164,7 @@ public class SimpleEvaluator implements Evaluator {
      *
      */
     @Override
-    public int evaluate(Game game, PlayerColor pc, int depth) {
+    public int evaluate(Game game, int depth) {
         nodesEvaluated++;
 
         Board b = game.getBoard();
@@ -173,11 +173,12 @@ public class SimpleEvaluator implements Evaluator {
         // sideMoved is the value of the move just completed.  The game counter has already moved
         // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
         // then it was black that just moved.
-        int sideMoved = pc.isWhite() ? -1 : 1;
+        int sideMoved = game.getActivePlayerColor().isBlack() ? 1 : -1;
 
+        // from white's perspective.
         if(game.isCheckmated()) {
             // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
-            return (MATE_VALUE - depth) * sideMoved;  // prioritize mate values that take fewer moves.
+            return (MATE_VALUE - depth) * sideMoved;
         }
 
         // from the perspective of the white player

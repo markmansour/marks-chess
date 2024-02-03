@@ -3,7 +3,6 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
-import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.Piece;
 
 import java.util.Map;
@@ -128,9 +127,9 @@ public class ChessAIEvaluator extends SimpleEvaluator {
 
     // view from white's perspective
     @Override
-    public int evaluate(Game game, PlayerColor pc, int depth) {
+    public int evaluate(Game game, int depth) {
         int bonus = 0;
-        int sideMoved = pc.isWhite() ? -1 : 1;
+        int sideMoved = game.getActivePlayerColor().isBlack() ? -1 : 1;
 
         if(game.isCheckmated()) {
             return (MATE_VALUE - depth) * sideMoved;  // prioritize mate values that take fewer moves.

@@ -51,6 +51,7 @@ public class BasicNegaMaxPlayer extends Player {
         for(Move move: moves) {
             game.move(move);
             int score = -negaMax(game, searchDepth - 1, color.otherColor());
+            // LOGGER.info("score for move ({}) : {}", move, score);
             game.undo();
             // LOGGER.info("{} - move ({}): {}", game.getActivePlayer(), move, score);
 
@@ -94,13 +95,13 @@ public class BasicNegaMaxPlayer extends Player {
         int sideToMove = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
-            return evaluate(game, pc) * sideToMove;
+            return evaluate(game, depth) * sideToMove;
 
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, pc, depth) * sideToMove;
+            return evaluate(game, depth) * sideToMove;  // I want this evaluated from the perspective of the last turn so flip the color.
 
         int max = Integer.MIN_VALUE;
         int score;

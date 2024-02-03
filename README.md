@@ -26,7 +26,7 @@ The project contains a chess engine with following abilities:
 * Improved move ordering 
 * Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)   
 * End games
-* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html) for tournament simulation.
+* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.
 * Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!))
 * 
 * Multi threaded search and evaluation
@@ -90,4 +90,23 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * [Chess Programming Wiki - Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 * [Iterative Deepening Search(IDS) or Iterative Deepening Depth First Search(IDDFS)](https://www.geeksforgeeks.org/iterative-deepening-searchids-iterative-deepening-depth-first-searchiddfs/)
 * [Iterative deepening depth-first search](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search)
+
+Useful References
+* [Shallow-Blue](https://github.com/GunshipPenguin/shallow-blue) (Java)
+* [Chess AI](https://github.com/zeyu2001/chess-ai/tree/main) (JS)
+* [chesslib](https://github.com/bhlangonijr/chesslib) (Java)
+* [chess.js](https://github.com/jhlywa/chess.js/tree/master) (JavaScript)
+* [Stockfish](https://github.com/official-stockfish/Stockfish/tree/master) (C++)
+* [Leorik](https://github.com/lithander/Leorik/tree/master) (C#)
+
+To look at
+* [Sunfish](https://github.com/thomasahle/sunfish/tree/master)
+* [Mediocre Chess](https://mediocrechess.sourceforge.net/guides/see.html) - [transposition tables](http://mediocrechess.blogspot.com/2007/01/guide-transposition-tables.html)
+* [kengine](https://github.com/bhlangonijr/kengine/tree/main)
+* [Rustic Chess Engine](https://rustic-chess.org/evaluation/psqt.html) docs and [code](https://github.com/mvanthoor/rustic)
+
+Polyglot readers
+* [jchesslib](https://github.com/asdfjkl/jchesslib/tree/main) for Java Polyglot implementation
+* [chesstango](https://github.com/mcoria/chesstango/tree/master/engine/src/main/java/net/chesstango/engine/polyglot)
+* [carballo](https://github.com/albertoruibal/carballo/blob/9d0e08d5d7f6869f05cf986aed263f44d36bf6af/jse/src/main/java/com/alonsoruibal/chess/book/FileBook.java)
 * 

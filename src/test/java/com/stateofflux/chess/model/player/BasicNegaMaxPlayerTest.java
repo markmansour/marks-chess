@@ -74,17 +74,6 @@ public class BasicNegaMaxPlayerTest {
     }
 
     @Disabled(value = "Don't play full game as part of unit test suite")
-    @Test public void basicNegaMaxVsBasicNegaMax() {
-        Game game = new Game();
-        Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
-        Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
-        game.setPlayers(one, two);
-
-        Move m = one.getNextMove(game);
-        assertThat(m).hasToString("adfasdf");
-    }
-
-    @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void RandomVsBasicNegaMax() {
         Game game = new Game();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, new SimpleEvaluator());
@@ -99,18 +88,19 @@ public class BasicNegaMaxPlayerTest {
     }
 
     @Disabled(value = "Don't play full game as part of unit test suite")
-    @Test public void negaMaxDepth4VsnegaMaxDepth2() {
+    @Test public void depth3ShouldBeatDepth2() {
         Game game = new Game();
         Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
         one.setSearchDepth(2);
         Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
-        two.setSearchDepth(4);
+        two.setSearchDepth(3);
         game.setPlayers(one, two);
 
         game.play();
         game.printOccupied();
 
-        Assertions.assertThat(game.isOver()).isTrue();
-        // Assertions.assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
+        assertThat(game.isOver()).isTrue();
+        assertThat(game.isCheckmated() || game.isStalemate()).isTrue();
+        assertThat(game.getActivePlayerColor().otherColor()).isEqualTo(PlayerColor.BLACK);
     }
 }

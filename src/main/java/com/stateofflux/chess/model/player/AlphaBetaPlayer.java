@@ -1,12 +1,13 @@
 package com.stateofflux.chess.model.player;
 
-import com.google.common.graph.ValueGraphBuilder;
-import com.stateofflux.chess.model.*;
+import com.stateofflux.chess.model.Game;
+import com.stateofflux.chess.model.Move;
+import com.stateofflux.chess.model.MoveList;
+import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,22 +25,35 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         MoveList<Move> moves = game.generateMoves();
         moves.sort(moveComparator);
 
-        int bestEvaluation = Integer.MIN_VALUE;
+        int depth = searchDepth;
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
+        PlayerColor pc = this.getColor();
+
         List<Move> bestMoves = new ArrayList<>();
+        int value = Integer.MIN_VALUE;
+        int score;
 
         for(Move move: moves) {
             game.move(move);
-            int score = -alphaBeta(game, searchDepth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, this.getColor().otherColor());
+            score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
 
-            // LOGGER.info("Move ({}): {}", move, score);
-
-            if(score == bestEvaluation) {
+            if(score == value) {
                 bestMoves.add(move);
-            } else if(score > bestEvaluation) {
+            } else if(score > value) {
                 bestMoves.clear();
                 bestMoves.add(move);
-                bestEvaluation = score;
+                value = score;
+            }
+
+            if(value > alpha)
+                alpha = value;
+
+            // at the root beta is always MAX, and therefore alpha can never be greater than MAX.
+            // this condition really not applicable at this level, but leaving for symmetry with alphaBeta()
+            if( alpha >= beta) {
+                break;  // cut off
             }
         }
 
@@ -67,6 +81,9 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      *        if α ≥ β then
      *            break (* cut-off *)
      *    return value
+     *
+     * (* Initial call for Player A's root node *)
+     *    negamax(rootNode, depth, −∞, +∞, 1)
      */
     public int alphaBeta(Game game, int depth, int alpha, int beta, PlayerColor pc) {
         int sideToMove = pc.isWhite() ? 1 : -1;
@@ -78,7 +95,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, pc, depth) * sideToMove;
+            return evaluate(game, depth) * sideToMove;
 
         moves.sort(moveComparator);
 

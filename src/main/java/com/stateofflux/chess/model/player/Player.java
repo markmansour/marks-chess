@@ -26,11 +26,11 @@ public abstract class Player {
     public abstract Move getNextMove(Game game);
 
     public int evaluate(Game game, PlayerColor pc) {
-        return evaluate(game, pc, 0);
+        return evaluate(game, 0);
     }
 
-    public int evaluate(Game game, PlayerColor pc, int depth) {
-        return evaluator.evaluate(game, pc, depth);
+    public int evaluate(Game game, int depth) {
+        return evaluator.evaluate(game, depth);
     }
 
     public int getSearchDepth() {
