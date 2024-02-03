@@ -379,6 +379,12 @@ public class Game {
      */
     public void move(String action) {
         LOGGER.debug("action ({}): {}", getActivePlayerColor(), action);
+        Move move = sanToMove(action);
+
+        move(move);
+    }
+
+    public Move sanToMove(String action) {
         Piece promotionPiece = null;
         Move move;
 
@@ -397,8 +403,7 @@ public class Game {
             move.setPromotion(promotionPiece);  // ok to set to null
             move.updateForEnPassant(getBoard().getWhitePawnBoard(), getBoard().getBlackPawnBoard());
         }
-
-        move(move);
+        return move;
     }
     /*
      * expects en passant, castling, and promotion to be set in the move object.

@@ -206,7 +206,7 @@ public class Board {
 
     public void setByBoard(Piece piece, int boardIndex, int location) {
         assert location >= 0;
-        long temp = this.boards[boardIndex] |= (1L << location);
+        this.boards[boardIndex] |= (1L << location);
         this.updateZobristKeyWhenSetting(piece, location);
         pieceCache[location] = Piece.getPieceByIndex(boardIndex);
     }
@@ -283,10 +283,12 @@ public class Board {
     public int update(Move m, int gameEnPassantState) {
         boolean standardMove = true;
         int removed;
+        Piece removedPiece;
 
         int fromBoardIndex = this.getBoardIndex(m.getFrom());
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
         removed = m.getTo();
+        removedPiece = get(m.getTo());
         this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
 
         // if promotion
@@ -299,13 +301,13 @@ public class Board {
         if(m.isEnPassant()) {
             int target = m.getEnPassantTarget();
             removed = target;
+            removedPiece = get(target);
             this.clearLocation(target);  // clear en passant target
             setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set new pawn location
             standardMove = false;
         }
 
         // remove the piece that created the en passant scenario.
-
         if(m.isEnPassantCapture(gameEnPassantState)) {
             int target = m.getTo();
 
@@ -319,6 +321,7 @@ public class Board {
             else if(sourceFile > destFile)
                 removed = m.getFrom() - 1;
 
+            removedPiece = get(removed);
             this.clearLocation(removed);  // clear en passant target
 
             // boardIndex doesn't change (pawn to pawn)
@@ -342,6 +345,9 @@ public class Board {
         }
 
         calculateAllCacheBoards();
+
+        if(removedPiece != Piece.EMPTY)
+            m.setCapturePiece(removedPiece);
 
         return removed;
     }

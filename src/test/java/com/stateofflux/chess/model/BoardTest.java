@@ -1,5 +1,7 @@
 package com.stateofflux.chess.model;
 
+import com.stateofflux.chess.model.pieces.Piece;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
@@ -162,5 +164,26 @@ public class BoardTest {
   @Test void printMethods() {
     Game game = new Game();
     Board.printOccupied(game.getBoard().getOccupied());
+  }
+
+  @Nested
+  class RemovedPiece {
+    @Test void capturePawn() {
+      Game game = new Game("rnbqkbnr/pppp1ppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq -");
+      MoveList<Move> moves = game.generateMoves();
+      Move move = moves.stream().filter(Move::isCapture).findFirst().get();
+      game.move(move);
+      assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppp1ppp/8/4P3/8/8/PPP1PPPP/RNBQKBNR b KQkq - 1 1");
+      assertThat(move.getCapturePiece()).isEqualTo(Piece.BLACK_PAWN);
+    }
+
+    @Test void enPassant() {
+      Game game = new Game("2r3k1/1q1nbppp/r3p3/3pP3/p1pP4/P1Q2N2/1PRN1PPP/2R4K w - - 0 22");
+      game.move("b4"); // from b2 to b4 - creating an en passant situation
+      Move m = game.sanToMove("cxb3"); // black pawn en passant take remove b4
+      game.move(m);
+      assertThat(m.isCapture()).isTrue();
+      assertThat(m.getCapturePiece()).isEqualTo(Piece.WHITE_PAWN);
+    }
   }
 }

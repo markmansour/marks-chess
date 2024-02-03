@@ -14,6 +14,7 @@ public class Move {
     private final int from;
     private final int to;
     private final boolean capture;
+    private Piece capturePiece;
 
     private boolean castling;
     private int secondaryFrom;
@@ -61,6 +62,14 @@ public class Move {
 
     public boolean isCapture() {
         return capture;
+    }
+
+    public Piece getCapturePiece() {
+        return capturePiece;
+    }
+
+    public void setCapturePiece(Piece capturePiece) {
+        this.capturePiece = capturePiece;
     }
 
     public void updateForEnPassant(long whitePawns, long blackPawns) {
@@ -164,17 +173,4 @@ public class Move {
     public int getComparisonValue() {
         return isCapture() ? 1 : 0;
     }
-
-/*    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Move move = (Move) o;
-        return from == move.from && to == move.to && capture == move.capture && castling == move.castling && secondaryFrom == move.secondaryFrom && secondaryTo == move.secondaryTo && enPassantTarget == move.enPassantTarget && piece == move.piece && promotionPiece == move.promotionPiece;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(piece, from, to, capture, castling, secondaryFrom, secondaryTo, promotionPiece, enPassantTarget);
-    }*/
 }
