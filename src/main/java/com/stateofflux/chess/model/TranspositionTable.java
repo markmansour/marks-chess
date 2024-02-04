@@ -1,14 +1,14 @@
 package com.stateofflux.chess.model;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
+
 public class TranspositionTable {
+
     /**
      * From https://www.chessprogramming.org/Transposition_Table
      *
@@ -23,112 +23,139 @@ public class TranspositionTable {
      *   - All-Node, Score is Upper Bound
      *   - Cut-Node, Score is Lower Bound
      * - Age is used to determine when to overwrite entries from searching previous positions during the game of chess
-     *
-     * @param key
      */
-    public record Entry (long key, Move best, int depth, int score) {}
 
-    private final Map<Long, Entry> table;
+    private final int hashSize;
+    private final long[] data;
+    private final long[] keys;
+    private final int mask;
+
+    public record Entry (long key, Move best, int depth, int score, NodeType nt, int age) {}
 
     public TranspositionTable() {
-        this.table = new HashMap<>();
+        this(128);
     }
 
-    // --------------------- auto generated delegation methods ---------------------
-    public int size() {
-        return table.size();
+    public TranspositionTable(int memoryUsageInMB) {
+        int entrySizeInBytes = 8;  // packing all data into a long (64 bits / 8 bytes);
+        hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes ;  // number of entries
+        mask = hashSize - 1; // m = n & (d - 1) will compute the modulo (base 2) where n -> numerator, d -> denominator, m is modulo.
+        data = new long[hashSize];
+        keys = new long[hashSize];
     }
 
-    public boolean isEmpty() {
-        return table.isEmpty();
+    public enum NodeType {
+        EXACT, LOWER_BOUND, UPPER_BOUND;
     }
 
-    public boolean containsKey(Object key) {
-        return table.containsKey(key);
-    }
+    /*
+        fun get(key: Long, ply: Int): Entry? {
 
-    public boolean containsValue(Object value) {
-        return table.containsValue(value);
-    }
+            val k = keys[key.and(mask).toInt()]
+            val d = data[key.and(mask).toInt()]
+            val entry = buildEntry(k, d, ply)
 
-    public Object get(Object key) {
-        return table.get(key);
-    }
+            return if ((k xor d) == key) entry else null
+        }
+    */
+    public static int long2int(long l) {
+        return (int) (l & 0xFFFFFFFFL); // (1L << 32) - 1 => 0xFFFFFFFFL
 
-    public Object put(Object key, Object value) {
+    }
+    public Entry get(long key, int ply) {
+        long k = keys[Math.toIntExact(key & mask)];
+        long d = data[Math.toIntExact(key & mask)];
+        Entry e = buildEntry(key, d, ply);
+
+        if ((k ^ d) == key) {
+            return e;
+        }
+
         return null;
     }
 
-    public Object put(long key, Entry value) {
-        return table.put(Long.valueOf(key), value);
-    }
+    /*
+        fun put(key: Long, value: Long, depth: Int, nodeType: NodeType, ply: Int): Boolean {
 
-    public Object remove(Object key) {
-        return table.remove(key);
-    }
+            val entry = get(key, ply)
+            if (entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
+                val newValue = when {
+                    value >= MATE_VALUE -> value + ply
+                    value <= -MATE_VALUE -> value - ply
+                    else -> value
+                }
+                val d = buildData(newValue, depth, nodeType)
+                keys[key.and(mask).toInt()] = key xor d
+                data[key.and(mask).toInt()] = d
+                return true
+            }
+            return false
+        }
+    */
+    public boolean put(long key, int score, int depth, NodeType nodeType, int ply) {
+        Entry entry = get(key, ply);
+        if(entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
+            int newScore;
+            if(score >= MATE_VALUE)
+                newScore = score + ply;
+            else if(score <= -MATE_VALUE)
+                newScore = score - ply;
+            else
+                newScore = score;
 
-    public void putAll(Map m) {
-        table.putAll(m);
+            long d = buildData(newScore, depth, nodeType);
+            int index = Math.toIntExact(key & mask); // key & mask modulos the key
+            keys[index] = key ^ d;  // i don't understand why this is xor-ed.  Assuming it is a checksum, but it means the key returned in the Entry object is a corruption of the original key.
+            data[index] = d;
+            return true;
+        }
+
+        return false;
     }
 
     public void clear() {
-        table.clear();
+        Arrays.fill(keys, 0L);
+        Arrays.fill(data, 0L);
     }
 
-    public Set keySet() {
-        return table.keySet();
+    private long buildData(int score, int depth, NodeType nodeType) {
+        // pack score, depth, and node type into a long.  There is quite a lot of spare room in the long to encode
+        // other attributes.
+        return (((long) score & 0xFFFFFFFFL) << 32) |  // (1L << 32) - 1 => 0xFFFFFFFFL
+            (((long) depth & 0xFFFFL) << 16) |         // (1L << 16) - 1 => 0xFFFFL
+            ((long) nodeType.ordinal()) & 0xFFFFL;
     }
 
-    public Collection values() {
-        return table.values();
-    }
 
-    public Set<Map.Entry<Long, Entry>> entrySet() {
-        return table.entrySet();
-    }
+    /*
+        private val nodeValues = NodeType.values()
 
-    public Object getOrDefault(Object key, Entry defaultValue) {
-        return table.getOrDefault(key, defaultValue);
-    }
+        private fun buildEntry(key: Long, data: Long, ply: Int): Entry {
 
-    public void forEach(BiConsumer action) {
-        table.forEach(action);
-    }
+            val value = data.ushr(32).and(0xFFFFFFFFL).toInt().toLong()
+            val depth = data.ushr(16).and(0xFFFFL).toShort().toInt()
+            val nodeType = nodeValues[data.and(0xFFFFL).toInt()]
+            val newValue = when {
+                value > MATE_VALUE -> value - ply
+                value < -MATE_VALUE -> value + ply
+                else -> value
+            }
+            return Entry(key, newValue, depth, nodeType)
+        }
+    */
+    private Entry buildEntry(long key, long data, int ply){
+        int score = ((int) ((data >> 32) & 0xFFFFFFFFL));
+        int depth = ((int) ((data >> 16) & 0xFFFFL));
+        NodeType nodeType = NodeType.values()[(int) (data & 0xFFFFL)];
 
-    public void replaceAll(BiFunction function) {
-        table.replaceAll(function);
-    }
+        int newScore;
+        if(score > MATE_VALUE)
+            newScore = score - ply;
+        else if(score < -MATE_VALUE)
+            newScore = score + ply;
+        else
+            newScore = score;
 
-    public Object putIfAbsent(Long key, Entry value) {
-        return table.putIfAbsent(key, value);
+        return new Entry(key, null, depth, newScore, nodeType, 0);
     }
-
-    public boolean remove(Object key, Object value) {
-        return table.remove(key, value);
-    }
-
-    public boolean replace(Long key, Entry oldValue, Entry newValue) {
-        return table.replace(key, oldValue, newValue);
-    }
-
-    public Object replace(Long key, Entry value) {
-        return table.replace(key, value);
-    }
-
-    public Object computeIfAbsent(Long key, Function mappingFunction) {
-        return table.computeIfAbsent(key, mappingFunction);
-    }
-
-    public Object computeIfPresent(Long key, BiFunction remappingFunction) {
-        return table.computeIfPresent(key, remappingFunction);
-    }
-
-    public Object compute(Long key, BiFunction remappingFunction) {
-        return table.compute(key, remappingFunction);
-    }
-
-    public Object merge(Long key, Entry value, BiFunction remappingFunction) {
-        return table.merge(key, value, remappingFunction);
-    }
-
 }
