@@ -2,6 +2,7 @@ package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
+import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ public class RookMovesTest {
 
     @Test
     public void moveToEdgeOfBoard() {
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR", PlayerColor.WHITE);
         PieceMoves bm = new RookMoves(openingBoard, 24);
 
         assertThat(bm.getNonCaptureMoves())

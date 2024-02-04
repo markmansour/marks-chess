@@ -6,6 +6,7 @@ import com.stateofflux.chess.model.Move;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class BishopMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         // rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR b KQkq -
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR", PlayerColor.WHITE);
 
         PieceMoves bm = new BishopMoves(openingBoard, 26);
 

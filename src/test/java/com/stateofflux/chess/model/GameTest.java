@@ -609,7 +609,7 @@ public class GameTest {
 
         @Test
         public void testThreefoldRepetition2() {
-            // This is not three fold repetition.  Move 47 (g5) creates an en passant move.  Moves 49 and 51 have
+            // This is not three-fold repetition.  Move 47 (g5) creates an en passant move.  Moves 49 and 51 have
             // the same pattern as 47, but due to the en passant are only repeated twice.
             // according to https://support.chess.com/article/1042-i-got-a-draw-by-repetition-how-did-that-happen
             // then a draw occurs as soon as there is third repetition

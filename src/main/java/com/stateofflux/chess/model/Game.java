@@ -36,13 +36,11 @@ public class Game {
     // game with no players - used for analysis
     public Game() {
         this.depth = 0;
+        this.activePlayerColor = PlayerColor.WHITE;  // bypass updating the zobrist key.
         this.board = new Board();
-
-        setActivePlayerColor(PlayerColor.WHITE);
-        board.setInitialCastlingRights();
+        board.initializeCastlingRights();
         board.clearEnPassantTarget();
         setClock(0);
-        board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget());
     }
 
     public Game(String fenString) {
@@ -70,14 +68,12 @@ public class Game {
     public Game(String fenString, int depth) {
         FenString fen = new FenString(fenString);
         this.depth = depth;
-        this.board = new Board(fen.getPiecePlacement());
+        this.board = new Board(fen.getPiecePlacement(), fen.getActivePlayerColor());
 
         setActivePlayerColor(fen.getActivePlayerColor());
         board.setCastlingRightsFromFen(fen.getCastlingRights());
         board.setEnPassantTargetFromFen(fen.getEnPassantTarget());
         setClock(fen.getFullmoveCounter() * 2 + fen.getHalfmoveClock()); // TODO: THis is not right.  We don't know how many moves have been taken.
-        board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget());
-
         setActivePlayerIsInCheck();
     }
 
@@ -85,7 +81,7 @@ public class Game {
         this.depth = 0;
         this.board = new Board();
         this.setActivePlayerColor(PlayerColor.WHITE);
-        this.board.setInitialCastlingRights();
+        this.board.initializeCastlingRights();
         this.board.clearEnPassantTarget();
         this.setClock(0);
 
@@ -173,8 +169,8 @@ public class Game {
         Piece enPassantPiece = getBoard().get(location);
         Move enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
 
-        long[] boardsBackup = getBoard().getCopyOfBoards();
-        Piece[] piecesBackup = getBoard().getCopyOfPieceCache();
+        long[] boardsBackup = getBoard().copyOfBoards();
+        Piece[] piecesBackup = getBoard().copyOfPieceCache();
 
         this.getBoard().update(enPassantMove, board.getEnPassantTarget());
         if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
@@ -466,7 +462,7 @@ public class Game {
     }
 
     private int updateBoard(Move move) {
-        long[] boardsBeforeUpdate = getBoard().getCopyOfBoards();
+        long[] boardsBeforeUpdate = getBoard().copyOfBoards();
         Piece[] copyOfPieceCache = Arrays.copyOf(getBoard().getPieceCache(), getBoard().getPieceCache().length);
 
         int removed = this.getBoard().update(move, board.getEnPassantTarget());

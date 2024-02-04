@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
+import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ public class QueenMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         // Move white queen to 26 (c4)
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR");
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR", PlayerColor.WHITE);
         PieceMoves bm = new QueenMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
@@ -48,7 +49,7 @@ public class QueenMovesTest {
         // Empty slots are a3 (2), a4 (3)
         // d8 (59)
         // rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR b KQkq -
-        Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR");
+        Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR", PlayerColor.WHITE);
 
         PieceMoves bm = new QueenMoves(openingBoard, 26);
 
@@ -68,7 +69,7 @@ public class QueenMovesTest {
 
     @Test void doesNotTakeThroughOpponentsPieces() {
         // rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR w KQkq -
-        Board board = new Board("rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR");
+        Board board = new Board("rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR", PlayerColor.WHITE);
         PieceMoves bm = new QueenMoves(board, 26);
         int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
         // should not contain 42, 50, 58!
