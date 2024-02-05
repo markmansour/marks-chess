@@ -31,18 +31,24 @@ public class BasicNegaMaxPlayer extends Player {
     // heuristic values always represent situations more favorable for white.
     protected final Evaluator evaluator;
 
-    protected final Comparator<Move> moveComparator;
+    protected Comparator<Move> moveComparator;
 
     public BasicNegaMaxPlayer(PlayerColor pc, Evaluator evaluator) {
         super(pc, evaluator);
         this.searchDepth = DEFAULT_SEARCH_DEPTH;
         this.evaluator = evaluator;
-        this.moveComparator = new MoveComparator();
+    }
+
+    protected Comparator<Move> getComparator() {
+        if(this.moveComparator == null)
+            this.moveComparator = new CaptureOnlyMoveComparator();
+
+        return moveComparator;
     }
 
     public Move getNextMove(Game game) {
         MoveList<Move> moves = game.generateMoves();
-        moves.sort(moveComparator);
+        moves.sort(getComparator());
 
         int max = Integer.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();

@@ -86,6 +86,9 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * Write production quality code.  This is for fun, and I'm *sure* my classes could be factored in a much cleaner way.
 
 # Notes
+* [Suggested ordering for improving chess engine](https://www.reddit.com/r/chessprogramming/comments/mctk27/what_are_the_lowest_hanging_fruits_for_greater/), [another suggestion](https://www.reddit.com/r/chessprogramming/comments/fxiz8u/how_much_faster_are_bitboards_as_opposed_to_a_2d/).
+
+
 ## Overview of search
 * [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)
 * [Alpha-Beta with Sibling Prediction Pruning in Chess - Jeroen W.T. Carolus](https://homepages.cwi.nl/%7Epaulk/theses/Carolus.pdf)

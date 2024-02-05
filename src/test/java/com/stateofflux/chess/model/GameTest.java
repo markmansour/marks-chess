@@ -256,7 +256,7 @@ public class GameTest {
             game.move("f5");
             List<Move> moves = game.generateMoves();
             assertThat(moves.get(0).toLongSan()).isNotEqualTo("g5f6");
-            moves.sort(new MoveComparator());
+            moves.sort(new CaptureOnlyMoveComparator());
             assertThat(moves.get(0).toLongSan()).isEqualTo("g5f6");
         }
     }

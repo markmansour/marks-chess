@@ -1,38 +1,52 @@
 package com.stateofflux.chess.model.player;
 
-import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.Move;
-import com.stateofflux.chess.model.MoveList;
-import com.stateofflux.chess.model.PlayerColor;
+import com.stateofflux.chess.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayer.class);
+public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayerWithTT.class);
+    private TranspositionTable tt;
 
-
-    public AlphaBetaPlayer(PlayerColor color, Evaluator evaluator) {
+    public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
+        tt = new TranspositionTable();
+    }
+
+    @Override
+    protected Comparator<Move> getComparator() {
+        if(this.moveComparator == null)
+            this.moveComparator = new MvvLvaMoveComparator();
+
+        return moveComparator;
     }
 
     @Override
     public Move getNextMove(Game game) {
+        int depth = searchDepth;
+        int alpha = Integer.MIN_VALUE;
+        int alphaOrig = alpha;
+        int beta = Integer.MAX_VALUE;
+        PlayerColor pc = this.getColor();
+        int value = Integer.MIN_VALUE;
+        int score;
+        List<Move> bestMoves = new ArrayList<>();
+
+        TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
+        if(existingEntry != null && existingEntry.depth() >= depth) {
+            LOGGER.info("TT hit at root");
+            // TODO: write logic to reassemble a move.
+        }
+
         // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
         MoveList<Move> moves = game.generateMoves();
         moves.sort(getComparator());
 
-        int depth = getSearchDepth();
-        int alpha = Integer.MIN_VALUE;
-        int beta = Integer.MAX_VALUE;
-        PlayerColor pc = this.getColor();
-
-        List<Move> bestMoves = new ArrayList<>();
-        int value = Integer.MIN_VALUE;
-        int score;
 
         for(Move move: moves) {
             game.move(move);
@@ -57,12 +71,27 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             }
         }
 
+        updateTranspositionTable(game, value, alphaOrig, beta, depth);
+
         assert !bestMoves.isEmpty();
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
 
         return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+    }
+
+    private void updateTranspositionTable(Game game, int value, int alphaOrig, int beta, int depth) {
+        TranspositionTable.NodeType nt;
+        if( value <= alphaOrig)
+            nt = TranspositionTable.NodeType.UPPER_BOUND;
+        else if(value >= beta)
+            nt = TranspositionTable.NodeType.LOWER_BOUND;
+        else
+            nt = TranspositionTable.NodeType.EXACT;
+
+        TranspositionTable.Entry newEntry = new TranspositionTable.Entry(game.getZobristKey(), null, depth, value, nt, 0);
+        tt.put(game.getZobristKey(), value, depth, nt, game.getClock());
     }
 
     /*
@@ -86,6 +115,22 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      *    negamax(rootNode, depth, −∞, +∞, 1)
      */
     public int alphaBeta(Game game, int depth, int alpha, int beta, PlayerColor pc) {
+        int alphaOrig = alpha;
+
+        TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
+        if(existingEntry != null && existingEntry.depth() >= depth) {
+            LOGGER.info("TT hit");
+            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT)
+                return existingEntry.score();
+            else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+                alpha = Math.max(alpha, existingEntry.score());
+            else if(existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+                beta = Math.min(beta, existingEntry.score());
+
+            if(alpha >= beta)
+                return existingEntry.score();
+        }
+
         int sideToMove = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
@@ -111,6 +156,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             if(alpha >= beta)
                 break;
         }
+
+        updateTranspositionTable(game, value, alphaOrig, beta, depth);
 
         return value;
     }

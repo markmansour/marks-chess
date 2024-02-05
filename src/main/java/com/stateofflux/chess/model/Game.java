@@ -774,6 +774,10 @@ public class Game {
         return false;
     }
 
+    public long getZobristKey() {
+        return board.getZobristKey();
+    }
+
     // --------------------------- clocks ---------------------------
     public void setClock(int clock) { this.clock = clock; }
     public int getClock() { return this.clock; }

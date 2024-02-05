@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
 
 @Tag("UnitTest")
 public class AlphaBetaPlayerTest {
@@ -89,4 +88,20 @@ public class AlphaBetaPlayerTest {
         assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
+    @Disabled(value = "Full game")
+    @Test public void alphaBetaDepth2VsAlphaBetaDepth6WithTranspositionTable() {
+        Game game = new Game();
+        Evaluator evaluator = new SimpleEvaluator();
+        Player one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+        one.setSearchDepth(6);
+        Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+        two.setSearchDepth(2);
+        game.setPlayers(one, two);
+
+        game.play();
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
+    }
 }
