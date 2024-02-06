@@ -28,7 +28,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
     @Override
     public Move getNextMove(Game game) {
-        int depth = searchDepth;
+        int depth = getSearchDepth();
         int alpha = Integer.MIN_VALUE;
         int alphaOrig = alpha;
         int beta = Integer.MAX_VALUE;
@@ -38,7 +38,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         List<Move> bestMoves = new ArrayList<>();
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-        if(existingEntry != null && existingEntry.depth() >= depth) {
+        if(existingEntry != null && existingEntry.depth() >= 0) {
             LOGGER.info("TT hit at root");
             // TODO: write logic to reassemble a move.
         }
@@ -118,7 +118,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int alphaOrig = alpha;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-        if(existingEntry != null && existingEntry.depth() >= depth) {
+        if(existingEntry != null && existingEntry.depth() >= (getSearchDepth() - depth)) {
             LOGGER.info("TT hit");
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT)
                 return existingEntry.score();

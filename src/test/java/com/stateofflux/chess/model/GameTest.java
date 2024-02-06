@@ -106,8 +106,6 @@ public class GameTest {
         assertThat(game.asFen()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR b Kkq - 1 1");
     }
 
-    // NOTE TO ME: Implement all the tests below and the enPassant, castling and
-    // promotion tests before refactoring!
     @Test
     public void validKnightMove() {
         Game game = new Game();
@@ -588,6 +586,19 @@ public class GameTest {
         LOGGER.info(game.asFen());
     }
 
+    @Nested
+    class ZobristKey {
+        @Test public void keysAreRestoredAfterUndo() {
+            Game game = new Game();
+            MoveList<Move> moves = game.generateMoves();
+            long hash = game.getZobristKey();
+            for(var move : moves) {
+                game.move(move);
+                game.undo();
+                assertThat(game.getZobristKey()).isEqualTo(hash);
+            }
+        }
+    }
     @Nested
     class Repetition {
         @Test public void getGameState() {

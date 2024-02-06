@@ -1112,6 +1112,10 @@ public class Board {
         zobristHasher = new ZobristHasher(pc, this);
     }
 
+    public long resetZobristKey(PlayerColor pc) {
+        return zobristHasher.reset(pc, this);
+    }
+
     public void updateZobristKeyFlipPlayer(PlayerColor c) {
         zobristHasher.updateZobristKeyFlipPlayer(c);
     }
@@ -1139,7 +1143,12 @@ public class Board {
     }
 
     void setEnPassantTarget(int target) {
-        zobristHasher.updateZobristKeyWithEnPassant(getEnPassantTarget());  // clear the current value
+        if(target == getEnPassantTarget())
+            return;
+
+        if(getEnPassantTarget() != PawnMoves.NO_EN_PASSANT_VALUE)
+            zobristHasher.updateZobristKeyWithEnPassant(getEnPassantTarget());  // clear the current value if set
+
         enPassantTarget = target;
         if(enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE)
             zobristHasher.updateZobristKeyWithEnPassant(enPassantTarget); // add the new value
@@ -1158,4 +1167,5 @@ public class Board {
     }
 
     public boolean hasEnPassantTarget() { return enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE; }
+
 }

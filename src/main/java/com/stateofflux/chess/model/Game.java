@@ -429,9 +429,9 @@ public class Game {
         board.setEnPassantTarget(h.enPassantTarget());
         this.check = h.check();
         board.setCastlingRights(h.castlingRights());
-
         switchActivePlayer();
         decrementClock();
+        resetZobristKey();
     }
 
     private void update50MoveRule(Move move) {
@@ -582,7 +582,10 @@ public class Game {
 
         assert(source != -1);  // source wasn't found in the possible locations
 
-        return new Move(piece, source, destination, capture);
+        Move move = new Move(piece, source, destination, capture);
+        if(capture) move.setCapturePiece(board.get(destination));
+
+        return move;
     }
 
     private Move extractCastlingMove(String action) {
@@ -777,6 +780,7 @@ public class Game {
     public long getZobristKey() {
         return board.getZobristKey();
     }
+    public long resetZobristKey() { return board.resetZobristKey(getActivePlayerColor()); }
 
     // --------------------------- clocks ---------------------------
     public void setClock(int clock) { this.clock = clock; }

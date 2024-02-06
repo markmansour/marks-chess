@@ -123,12 +123,7 @@ public class ZobristHasher {
     }
 
     public ZobristHasher(PlayerColor color, Board board) {
-        key = calculateFullZorbistKey(color, board,
-            board.canCastlingWhiteKingSide(),
-            board.canCastlingWhiteQueenSide(),
-            board.canCastlingBlackKingSide(),
-            board.canCastlingBlackQueenSide(),
-            board.getEnPassantTarget());
+        reset(color, board);
     }
 
     private long calculateFullZorbistKey(PlayerColor color, Board board, boolean wk, boolean wq, boolean bk, boolean bq, int epT) {
@@ -190,5 +185,14 @@ public class ZobristHasher {
 
     public void updateZobristKeyFlipPlayer(PlayerColor c) {
         key ^= getSideKey(c);
+    }
+
+    public long reset(PlayerColor color, Board board) {
+        return key = calculateFullZorbistKey(color, board,
+            board.canCastlingWhiteKingSide(),
+            board.canCastlingWhiteQueenSide(),
+            board.canCastlingBlackKingSide(),
+            board.canCastlingBlackQueenSide(),
+            board.getEnPassantTarget());
     }
 }
