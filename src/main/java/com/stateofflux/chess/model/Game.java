@@ -16,7 +16,7 @@ public class Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
     private static final int MOVE_LIST_CAPACITY = 220;
 
-    record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache) {}
+    record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache, long hash) {}
 
     protected final Board board;
     protected PlayerColor activePlayerColor;
@@ -28,7 +28,7 @@ public class Game {
     private boolean outOfTime = false;
     private int movesWithoutCaptureOrPawnMove = 0;
 
-    private final ArrayList<Long> historyAsHashes = new ArrayList<>();  // add hashes as an attribute of History and remove this field.
+    // private final ArrayList<Long> historyAsHashes = new ArrayList<>();  // add hashes as an attribute of History and remove this field.
     private final ArrayList<History> historyOfMoves = new ArrayList<>();
 
     // --------------------------- Constructors ---------------------------
@@ -397,10 +397,9 @@ public class Game {
             board.getEnPassantTarget(),
             check,
             board.getCastlingRights(),
-            copyOfPieceCache
+            copyOfPieceCache,
+            board.getZobristKey()
         ));
-
-        historyAsHashes.add(board.getZobristKey());
 
         updateBoard(move);
         switchActivePlayer();
@@ -424,8 +423,7 @@ public class Game {
 
         switchActivePlayer();
 
-        long previousZobristKey = historyAsHashes.remove(size - 1);
-        board.forceZobristKey(previousZobristKey);
+        board.forceZobristKey(h.hash);
 
         decrementClock();
 
@@ -672,10 +670,6 @@ public class Game {
             this.board.getEnPassantTargetAsFen();
     }
 
-    private List<Long> getHistoryAsHashes() {
-        return historyAsHashes;
-    }
-
     public Move getLastMove() {
         return historyOfMoves.get(historyOfMoves.size() - 1).move();
     }
@@ -709,8 +703,7 @@ public class Game {
     // https://en.wikipedia.org/wiki/Threefold_repetition
     public boolean isRepetition() {
         int n = 2;
-        long[] temp = getHistoryAsHashes().stream().mapToLong(Long::longValue).toArray();
-        // System.arraycopy(getHistoryAsHashes().stream().mapToLong(Long::longValue).toArray(), 0, temp, 0, getHistoryAsHashes().size());
+        long[] temp = historyOfMoves.stream().mapToLong(x -> x.hash).toArray();
 
         int length = temp.length;
         if (length > 3) {
