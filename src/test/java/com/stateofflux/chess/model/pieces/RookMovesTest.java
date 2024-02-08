@@ -21,7 +21,7 @@ public class RookMovesTest {
 
     @Test
     public void moveToEdgeOfBoard() {
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR", PlayerColor.WHITE);
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/R7/8/1PPPPPPP/1NBQKBNR");
         PieceMoves bm = new RookMoves(openingBoard, 24);
 
         assertThat(bm.getNonCaptureMoves())

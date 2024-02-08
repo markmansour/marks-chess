@@ -19,7 +19,7 @@ public class BoardTest {
 
   @Test
   public void standardBoardWithFenString() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     assertThat(b.toFen())
         .as("Initial board setup")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
@@ -27,13 +27,13 @@ public class BoardTest {
 
   @Test public void illegalFenBoardNotEnoughPiecesInRow() {
     assertThrows(IllegalArgumentException.class,
-        () -> new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR", PlayerColor.WHITE)
+        () -> new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR")
     ); // only 7P on rank 2
   }
 
   @Test
   public void emptyBoard() {
-    Board b = new Board("", PlayerColor.WHITE);
+    Board b = new Board("");
     assertThat(b.toFen())
         .as("Blank board")
         .isEqualTo("8/8/8/8/8/8/8/8");
@@ -41,7 +41,7 @@ public class BoardTest {
 
   @Test
   public void boardWithEmptyA1() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR", PlayerColor.WHITE);
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
     assertThat(b.toFen())
         .as("Empty A1")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR");
@@ -49,7 +49,7 @@ public class BoardTest {
 
   @Test
   public void boardWithEmptyH8() {
-    Board b = new Board("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+    Board b = new Board("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     assertThat(b.toFen())
         .as("Empty H8")
         .isEqualTo("rnbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
@@ -57,7 +57,7 @@ public class BoardTest {
 
   @Test
   public void boardWithHalfRowEmptyStart() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR", PlayerColor.WHITE);
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
     assertThat(b.toFen())
         .as("Empty start of row")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/4PPPP/RNBQKBNR");
@@ -65,7 +65,7 @@ public class BoardTest {
 
   @Test
   public void boardWithHalfRowEmptyEnd() {
-    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR", PlayerColor.WHITE);
+    Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
     assertThat(b.toFen())
         .as("Empty end of row")
         .isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");

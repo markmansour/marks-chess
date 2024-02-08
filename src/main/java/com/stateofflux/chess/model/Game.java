@@ -28,7 +28,7 @@ public class Game {
     private boolean outOfTime = false;
     private int movesWithoutCaptureOrPawnMove = 0;
 
-    private final ArrayList<Long> historyAsHashes = new ArrayList<>();
+    private final ArrayList<Long> historyAsHashes = new ArrayList<>();  // add hashes as an attribute of History and remove this field.
     private final ArrayList<History> historyOfMoves = new ArrayList<>();
 
     // --------------------------- Constructors ---------------------------
@@ -36,10 +36,9 @@ public class Game {
     // game with no players - used for analysis
     public Game() {
         this.depth = 0;
-        this.activePlayerColor = PlayerColor.WHITE;  // bypass updating the zobrist key.
         this.board = new Board();
-        board.initializeCastlingRights();
-        board.clearEnPassantTarget();
+
+        setActivePlayerColor(PlayerColor.WHITE);
         setClock(0);
     }
 
@@ -47,28 +46,11 @@ public class Game {
         this(fenString, 0);
     }
 
-/*
-    public Game(Game game) {
-        this.depth = 0;
-        this.board = new Board(game.getPiecePlacement());
-
-        setActivePlayerColor(game.getActivePlayerColor());
-        board.setCastlingRights(game.board.getCastlingRights());
-        board.setEnPassantTarget(game.board.getEnPassantTarget());
-        setClock(game.getClock());
-        board.setZobristKey(getActivePlayerColor(), board.getEnPassantTarget());
-        historyOfMoves.addAll(game.historyOfMoves);
-        historyAsHashes.addAll(game.historyAsHashes);
-
-        setActivePlayerIsInCheck();
-    }
-*/
-
     // game that can start midway through - used for analysis
     public Game(String fenString, int depth) {
         FenString fen = new FenString(fenString);
         this.depth = depth;
-        this.board = new Board(fen.getPiecePlacement(), fen.getActivePlayerColor());
+        this.board = new Board(fen.getPiecePlacement());
 
         setActivePlayerColor(fen.getActivePlayerColor());
         board.setCastlingRightsFromFen(fen.getCastlingRights());
@@ -78,12 +60,7 @@ public class Game {
     }
 
     public Game(Pgn pgn) {
-        this.depth = 0;
-        this.board = new Board();
-        this.setActivePlayerColor(PlayerColor.WHITE);
-        this.board.initializeCastlingRights();
-        this.board.clearEnPassantTarget();
-        this.setClock(0);
+        this();
 
         for(var move : pgn.getMoves()) {
             this.move(move.whiteMove());
@@ -169,10 +146,12 @@ public class Game {
         Piece enPassantPiece = getBoard().get(location);
         Move enPassantMove = new Move(enPassantPiece, location, move.getEnPassantTarget(), true);
 
+        // simplified move/undo.
         long[] boardsBackup = getBoard().copyOfBoards();
         Piece[] piecesBackup = getBoard().copyOfPieceCache();
+        long hash = getZobristKey();
 
-        this.getBoard().update(enPassantMove, board.getEnPassantTarget());
+        this.getBoard().update(enPassantMove);
         if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
             exposesCheck = true;
         }
@@ -180,6 +159,7 @@ public class Game {
         this.getBoard().setBoards(boardsBackup);
         this.getBoard().setPieceCache(piecesBackup);
         board.calculateAllCacheBoards();  // this could also be backed up and restored rather than recalculated.
+        board.forceZobristKey(hash);
 
         return exposesCheck;
     }
@@ -406,32 +386,50 @@ public class Game {
      */
 
     public void move(Move move) {
-        int removed = updateBoard(move);
-        postMoveAccounting(move, removed);
-    }
+        long[] boardsBeforeUpdate = getBoard().copyOfBoards();
+        Piece[] copyOfPieceCache = Arrays.copyOf(getBoard().getPieceCache(), getBoard().getPieceCache().length);
 
-    private void postMoveAccounting(Move move, int removedLocation) {
-        board.setEnPassantTarget(move.getEnPassantTarget());
-        removeCastlingRightsFor(move, removedLocation);
+        // TODO: the depth of historyOfMoves is only as deep as the depth traversal (so no very large - currently depth 6 max)
+        //       Therefore convert this to a fixed size array (and reuse the arrays instead of reallocated them).
+        historyOfMoves.add(new History(
+            move,
+            boardsBeforeUpdate,
+            board.getEnPassantTarget(),
+            check,
+            board.getCastlingRights(),
+            copyOfPieceCache
+        ));
+
         historyAsHashes.add(board.getZobristKey());
+
+        updateBoard(move);
         switchActivePlayer();
         setActivePlayerIsInCheck();
         incrementClock();
         update50MoveRule(move);
     }
 
-    public void undo() {
+    public Move undo() {
         int size = historyOfMoves.size();
         History h = historyOfMoves.remove(size - 1);
-        getBoard().setBoards(h.boards);
-        getBoard().setPieceCache(h.pieceCache);
-        historyAsHashes.remove(size - 1);
+
+        // restore the board
+        getBoard().setBoards(h.boards);          // updates the piece oriented views
+        getBoard().setPieceCache(h.pieceCache);  // updates the board oriented views
         board.setEnPassantTarget(h.enPassantTarget());
-        this.check = h.check();
+
+        check = h.check();
+
         board.setCastlingRights(h.castlingRights());
+
         switchActivePlayer();
+
+        long previousZobristKey = historyAsHashes.remove(size - 1);
+        board.forceZobristKey(previousZobristKey);
+
         decrementClock();
-        resetZobristKey();
+
+        return h.move;
     }
 
     private void update50MoveRule(Move move) {
@@ -461,26 +459,11 @@ public class Game {
         }
     }
 
-    private int updateBoard(Move move) {
-        long[] boardsBeforeUpdate = getBoard().copyOfBoards();
-        Piece[] copyOfPieceCache = Arrays.copyOf(getBoard().getPieceCache(), getBoard().getPieceCache().length);
-
-        int removed = this.getBoard().update(move, board.getEnPassantTarget());
-
+    private void updateBoard(Move move) {
+        int removed = this.getBoard().update(move);
+        removeCastlingRightsFor(move, removed);
         removeEnPassantIfAttackingPieceIsPinned(move);
-
-        // TODO: the depth of historyOfMoves is only as deep as the depth traversal (so no very large - currently depth 6 max)
-        //       Therefore convert this to a fixed size array (and reuse the arrays instead of reallocated them).
-        historyOfMoves.add(new History(
-            move,
-            boardsBeforeUpdate,
-            board.getEnPassantTarget(),
-            check,
-            board.getCastlingRights(),
-            copyOfPieceCache
-        ));
-
-        return removed;
+        board.setEnPassantTarget(move.getEnPassantTarget());
     }
 
     public String getMoveHistory() {
@@ -725,17 +708,19 @@ public class Game {
     // 3-fold repetition
     // https://en.wikipedia.org/wiki/Threefold_repetition
     public boolean isRepetition() {
-        int n = 3;
+        int n = 2;
+        long[] temp = getHistoryAsHashes().stream().mapToLong(Long::longValue).toArray();
+        // System.arraycopy(getHistoryAsHashes().stream().mapToLong(Long::longValue).toArray(), 0, temp, 0, getHistoryAsHashes().size());
 
-        final int i = Math.min(getHistoryAsHashes().size() - 1, getFullMoveCounter() * 2 + getHalfMoveClock());
-        if (getHistoryAsHashes().size() >= 4) {
-            long lastKey = getHistoryAsHashes().get(getHistoryAsHashes().size() - 1);
+        int length = temp.length;
+        if (length > 3) {
+            long lastKey = getZobristKey();
             int rep = 0;
-            for (int x = 4; x <= i; x += 2) {
-                final long k = getHistoryAsHashes().get(getHistoryAsHashes().size() - x - 1);
-                if (k == lastKey && ++rep >= n - 1) {
+
+            // looking for two other matches in the history, moving in reverse order, and only looking at moves for the same color (-2).
+            for(int x = length - 4; x >= 0; x -= 2) {
+                if(temp[x] == lastKey && ++rep >= n)
                     return true;
-                }
             }
         }
         return false;
@@ -780,7 +765,9 @@ public class Game {
     public long getZobristKey() {
         return board.getZobristKey();
     }
-    public long resetZobristKey() { return board.resetZobristKey(getActivePlayerColor()); }
+    public long calculateFullZorbistKey() {
+        return board.calculateFullZorbistKey(getActivePlayerColor());
+    }
 
     // --------------------------- clocks ---------------------------
     public void setClock(int clock) { this.clock = clock; }

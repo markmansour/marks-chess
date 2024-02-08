@@ -51,7 +51,7 @@ public class BishopMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         // rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR b KQkq -
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR", PlayerColor.WHITE);
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2B5/8/PPPPPPPP/RN1QKBNR");
 
         PieceMoves bm = new BishopMoves(openingBoard, 26);
 

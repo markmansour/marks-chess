@@ -36,7 +36,7 @@ public class PawnMovesTest {
     @Test
     public void openingMovesCannotPassthroughAnotherPiece() {
         // load this in as "rnbqkbnr/1ppppppp/4P3/8/8/P7/P1PP1PPP/RNBQKBNR b KQkq -"
-        Board openingBoard = new Board("rnbqkbnr/1ppppppp/4P3/8/8/p7/PPPPP1PP/RNBQKBNR", PlayerColor.WHITE);
+        Board openingBoard = new Board("rnbqkbnr/1ppppppp/4P3/8/8/p7/PPPPP1PP/RNBQKBNR");
         PieceMovesInterface bm = new PawnMoves(openingBoard, 52, -1);
 
         int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
@@ -87,7 +87,7 @@ public class PawnMovesTest {
     @Test
     public void doesNotWrapAroundDuringCapture() {
         // rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR w KQkq -
-        Board b = new Board("rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/1pppppp1/8/p6p/PP4PP/8/2PPPP2/RNBQKBNR");
 
         // black pawn at A5 (32)
         PieceMovesInterface bm = new PawnMoves(b, 32, -1);
@@ -117,7 +117,7 @@ public class PawnMovesTest {
     @Test
     public void captureFromOriginalPosition() {
         // rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR w KQkq -
-        Board b = new Board("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBQKBNR");
 
         // black pawn at A3 (16)
         PieceMovesInterface bm = new PawnMoves(b, 16, -1);
@@ -132,7 +132,7 @@ public class PawnMovesTest {
         // 2r3k1/1q1nbppp/r3p3/3pP3/p1pP4/P1Q2N2/1PRN1PPP/2R4K w - - 0 22 -
         // move b4
         // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3
-        Board b = new Board("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K", PlayerColor.WHITE);
+        Board b = new Board("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K");
         PawnMoves pm = new PawnMoves(b, 24, -1);
         assertThat(pm.getCaptureMoves()).isZero();  // both a4 and c4 could be legan enPassant with no context (-1)
         pm = new PawnMoves(b, 26, -1);
@@ -156,7 +156,7 @@ public class PawnMovesTest {
     }
 
     @Test public void whitePawnEvaluationTest() {
-        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         long whitePawns = b.getWhitePawnBoard();
         long blackPawns = b.getBlackPawnBoard();
 
@@ -165,7 +165,7 @@ public class PawnMovesTest {
     }
 
     @Test public void whitePawnEvaluationDoubleTest() {
-        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/1P6/1PPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/1P6/1PPPPPPP/RNBQKBNR");
         long whitePawns = b.getWhitePawnBoard();
         long blackPawns = b.getBlackPawnBoard();
 
@@ -174,13 +174,13 @@ public class PawnMovesTest {
     }
 
     @Test public void whitePawnEvaluationIsolatedTest() {
-        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RNBQKBNR");
         long whitePawns = b.getWhitePawnBoard();
         long blackPawns = b.getBlackPawnBoard();
 
         assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(1);
 
-        b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1P1PP1P/RNBQKBNR", PlayerColor.WHITE);
+        b = new Board("rnbqkbnr/pppppppp/8/8/8/8/P1P1PP1P/RNBQKBNR");
         whitePawns = b.getWhitePawnBoard();
         blackPawns = b.getBlackPawnBoard();
         assertThat(PawnMoves.pawnEvaluation(whitePawns, blackPawns, true)).isEqualTo(3);
@@ -188,7 +188,7 @@ public class PawnMovesTest {
     }
 
     @Test public void whitePawnEvaluationBlockedTest() {
-        Board b = new Board("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR", PlayerColor.WHITE);
+        Board b = new Board("rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR");
         long whitePawns = b.getWhitePawnBoard();
         long blackPawns = b.getBlackPawnBoard();
 

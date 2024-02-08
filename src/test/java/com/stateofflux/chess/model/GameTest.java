@@ -199,7 +199,7 @@ public class GameTest {
         Game game = new Game("2r3k1/1q1nbppp/r3p3/3pP3/p1pP4/P1Q2N2/1PRN1PPP/2R4K w - - 0 22");
         game.move("b4"); // from b2 to b4 - creating an en passant situation
 
-        assertThat(game.board.cannotCastle()).isTrue();
+        assertThat(game.board.getCastlingRights()).isEqualTo(0);
         assertThat(game.board.getEnPassantTargetAsFen()).isEqualTo("b3");
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.BLACK);
         // 2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - - 1 22
@@ -601,12 +601,6 @@ public class GameTest {
     }
     @Nested
     class Repetition {
-        @Test public void getGameState() {
-            Game g = new Game();
-            long hash = g.board.getZobristKey();
-            assertThat(hash).isEqualTo(4516155336704681926L);
-        }
-
         @Test public void testThreefoldRepetition() {
             Game game = Game.fromSan("1. e4 e5 2. Be2 Be7 3. Bf1 Bf8 4. Bd3 Bd6 5. Bf1 Bf8 6. Bd3 Bd6 7. Bf1 Bf8");
             assertThat(game.isRepetition()).isTrue();

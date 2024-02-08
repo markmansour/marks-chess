@@ -26,7 +26,7 @@ public class QueenMovesTest {
     @Test
     public void moveToEdgeOfBoard() {
         // Move white queen to 26 (c4)
-        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR", PlayerColor.WHITE);
+        Board openingBoard = new Board("rnbqkbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RNB1KBNR");
         PieceMoves bm = new QueenMoves(openingBoard, 26);
 
         assertThat(bm.getNonCaptureMoves())
@@ -49,7 +49,7 @@ public class QueenMovesTest {
         // Empty slots are a3 (2), a4 (3)
         // d8 (59)
         // rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR b KQkq -
-        Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR", PlayerColor.WHITE);
+        Board openingBoard = new Board("rnb1kbnr/pppppppp/8/8/2Q5/8/PPPPPPPP/RN2KBNR");
 
         PieceMoves bm = new QueenMoves(openingBoard, 26);
 
@@ -69,7 +69,7 @@ public class QueenMovesTest {
 
     @Test void doesNotTakeThroughOpponentsPieces() {
         // rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR w KQkq -
-        Board board = new Board("rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR", PlayerColor.WHITE);
+        Board board = new Board("rnb1kbnr/pp1ppppp/8/2p5/2Q5/8/PPPPPPPP/RN2KBNR");
         PieceMoves bm = new QueenMoves(board, 26);
         int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
         // should not contain 42, 50, 58!

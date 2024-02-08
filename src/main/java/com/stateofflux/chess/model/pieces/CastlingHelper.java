@@ -25,15 +25,7 @@ public class CastlingHelper {
     public final static char BLACK_KING_CHAR = 'k';
     public final static char BLACK_QUEEN_CHAR = 'q';
     public final static char NO_CASTLING_CHAR = '-';
+    public final static String NO_CASTLING_STRING = String.valueOf(NO_CASTLING_CHAR);
 
-
-    private final int location;
-
-    CastlingHelper(int location) {
-        this.location = location;
-    }
-
-    public int location() {
-        return this.location;
-    }
+    private CastlingHelper() { }
 }

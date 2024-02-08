@@ -26,9 +26,9 @@ public class Board {
     public static final long FILE_C = 0x404040404040404L;
     public static final long FILE_B = 0x202020202020202L;
     public static final long FILE_A = 0x101010101010101L;
-    private ZobristHasher zobristHasher;
 
-    private long[] boards = new long[Piece.SIZE];
+    private final ZobristHasher zobristHasher;
+    private long[] boards;
 
     // caches
     private long occupiedBoard;
@@ -36,7 +36,7 @@ public class Board {
     private long whiteBoard;
     private long blackBoardWithoutKing;
     private long whiteBoardWithoutKing;
-    private Piece[] pieceCache = new Piece[64];
+    private Piece[] pieceCache;
     private int enPassantTarget;
 
     // instance vars
@@ -69,33 +69,60 @@ public class Board {
      */
     public Board() {
         boards = new long[Piece.SIZE];
+        pieceCache = new Piece[64];
+        zobristHasher = new ZobristHasher();
 
-        // Consider moving these to an ENUM
-        this.boards[Piece.WHITE_KING.getIndex()] = 1L << 4;
-        this.boards[Piece.WHITE_QUEEN.getIndex()] = 1L << 3;
-        this.boards[Piece.WHITE_ROOK.getIndex()] = 1L | 1L << 7;
-        this.boards[Piece.WHITE_BISHOP.getIndex()] = 1L << 2 | 1L << 5;
-        this.boards[Piece.WHITE_KNIGHT.getIndex()] = 1L << 1 | 1L << 6;
-        this.boards[Piece.WHITE_PAWN.getIndex()] = 255L << 8;
+        setDefaultCastlingRights();
+        clearPieceCache();  // initialize all space to Piece.EMPTY
 
-        this.boards[Piece.BLACK_KING.getIndex()] = 1L << 60;
-        this.boards[Piece.BLACK_QUEEN.getIndex()] = 1L << 59;
-        this.boards[Piece.BLACK_ROOK.getIndex()] = 1L << 63 | 1L << 56;
-        this.boards[Piece.BLACK_BISHOP.getIndex()] = 1L << 58 | 1L << 61;
-        this.boards[Piece.BLACK_KNIGHT.getIndex()] = 1L << 57 | 1L << 62;
-        this.boards[Piece.BLACK_PAWN.getIndex()] = 255L << 48;
+        setByBoard(Piece.WHITE_KING,   4);
+        setByBoard(Piece.WHITE_QUEEN,  3);
+        setByBoard(Piece.WHITE_ROOK,   0);
+        setByBoard(Piece.WHITE_ROOK,   7);
+        setByBoard(Piece.WHITE_KNIGHT, 1);
+        setByBoard(Piece.WHITE_KNIGHT, 6);
+        setByBoard(Piece.WHITE_BISHOP, 2);
+        setByBoard(Piece.WHITE_BISHOP, 5);
+        setByBoard(Piece.WHITE_PAWN,   8);
+        setByBoard(Piece.WHITE_PAWN,   9);
+        setByBoard(Piece.WHITE_PAWN,   10);
+        setByBoard(Piece.WHITE_PAWN,   11);
+        setByBoard(Piece.WHITE_PAWN,   12);
+        setByBoard(Piece.WHITE_PAWN,   13);
+        setByBoard(Piece.WHITE_PAWN,   14);
+        setByBoard(Piece.WHITE_PAWN,   15);
 
-        populatePieceCache();
+        setByBoard(Piece.BLACK_KING,   60);
+        setByBoard(Piece.BLACK_QUEEN,  59);
+        setByBoard(Piece.BLACK_ROOK,   63);
+        setByBoard(Piece.BLACK_ROOK,   56);
+        setByBoard(Piece.BLACK_KNIGHT, 57);
+        setByBoard(Piece.BLACK_KNIGHT, 62);
+        setByBoard(Piece.BLACK_BISHOP, 58);
+        setByBoard(Piece.BLACK_BISHOP, 61);
+        setByBoard(Piece.BLACK_PAWN,   48);
+        setByBoard(Piece.BLACK_PAWN,   49);
+        setByBoard(Piece.BLACK_PAWN,   50);
+        setByBoard(Piece.BLACK_PAWN,   51);
+        setByBoard(Piece.BLACK_PAWN,   52);
+        setByBoard(Piece.BLACK_PAWN,   53);
+        setByBoard(Piece.BLACK_PAWN,   54);
+        setByBoard(Piece.BLACK_PAWN,   55);
+
         calculateAllCacheBoards();
 
-        initializeZobristKey(PlayerColor.WHITE);  // needs the caches populated for it to work.
+        enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;  // set to -1 and don't update zobrist key.  May be better to have a non 0 value (64) so that it is always set and unset?
     }
 
     /*
      * Build a board using a fen string
      */
-    public Board(String fen, PlayerColor playerColor) {
-        initializeZobristKey(playerColor);
+    public Board(String fen) {
+        boards = new long[Piece.SIZE];
+        pieceCache = new Piece[64];
+        zobristHasher = new ZobristHasher();
+
+        enPassantTarget = PawnMoves.NO_EN_PASSANT_VALUE;
         this.populate(fen);
         populatePieceCache();
         calculateAllCacheBoards();
@@ -166,9 +193,11 @@ public class Board {
         CharSequence[] ranks = new CharSequence[8];
 
         for (int i = 7; i >= 0; i--) {
-            ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8);
+            ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8).toString().replace("", " ");
             LOGGER.info("{}: {}", i + 1, ranks[i]);
         }
+        LOGGER.info("-+-----------------");
+        LOGGER.info("    a b c d e f g h");
     }
 
     public void setBoards(long[] boards) {
@@ -205,31 +234,42 @@ public class Board {
         }
     }
 
-    public void setByBoard(Piece piece, int boardIndex, int location) {
+    public void setByBoard(Piece piece, int location) {
         assert location >= 0;
-        this.boards[boardIndex] |= (1L << location);
-        zobristHasher.updateZobristKeyWhenSetting(piece, location);
-        pieceCache[location] = Piece.getPieceByIndex(boardIndex);
+
+        this.boards[piece.getIndex()] |= (1L << location);
+        zobristHasher.updatePiece(piece, location);
+        pieceCache[location] = piece;
+
     }
 
     public void clearByBoard(Piece piece, int boardIndex, int location) {
+        if(piece == Piece.EMPTY)
+            return;
+
         this.boards[boardIndex] &= ~(1L << location);
-        zobristHasher.updateZobristKeyWhenSetting(piece, location);
+        zobristHasher.updatePiece(piece, location);
         pieceCache[location] = Piece.EMPTY;
     }
 
-    protected void clearLocation(int location) {
+    // TODO: This is only used in one place.  Can I remove it?
+    protected void clearLocation(Piece p, int location) {
         long bitToClear = 1L << location;
-
+        boolean cleared = false;
         for(int i = 0; i < boards.length; i++) {
             if((boards[i] & bitToClear) != 0) {
                 // clear the bit at the location on all boards
-                zobristHasher.clearZorbistMask(bitToClear);
+                // zobristHasher.toggleZorbistMask(bitToClear);
                 boards[i] &= ~bitToClear;
+                cleared = true;
+                break;
             }
         }
 
-        pieceCache[location] = Piece.EMPTY;
+        if(cleared) {
+            zobristHasher.updatePiece(p, location);  // xor the piece off the hash
+            pieceCache[location] = Piece.EMPTY;
+        }
     }
 
     public int set(char element, int location) {
@@ -238,7 +278,7 @@ public class Board {
                 if (piece == Piece.EMPTY)
                     throw new IllegalArgumentException("Cannot place empty piece");
 
-                setByBoard(piece, piece.getIndex(), location);
+                setByBoard(piece, location);
                 location++;
                 break;
             }
@@ -281,21 +321,26 @@ public class Board {
      * Move a piece on the board, but do not perform validation.
      * return the removed location
      */
-    public int update(Move m, int gameEnPassantState) {
+    public int update(Move m) {
         boolean standardMove = true;
         int removed;
         Piece removedPiece;
 
+        // remove the piece making the move from the board
         int fromBoardIndex = this.getBoardIndex(m.getFrom());
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
+
+        // clear the destination location
         removed = m.getTo();
         removedPiece = get(m.getTo());
-        this.clearLocation(m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
+        if(removedPiece != Piece.EMPTY) {
+            clearByBoard(removedPiece, this.getBoardIndex(m.getTo()), removed);
+            // this.clearLocation(m.getPiece(), m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
+        }
 
         // if promotion
         if(m.isPromoting()) {
-            fromBoardIndex = m.getPromotionPiece().getIndex();
-            setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set promoted piece
+            setByBoard(m.getPromotionPiece(), m.getTo()); // set promoted piece
             standardMove = false;
         }
 
@@ -303,13 +348,13 @@ public class Board {
             int target = m.getEnPassantTarget();
             removed = target;
             removedPiece = get(target);
-            this.clearLocation(target);  // clear en passant target
-            setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set new pawn location
+            clearByBoard(removedPiece, removedPiece.getIndex(), removed);// clear en passant target
+            setByBoard(m.getPiece(), m.getTo()); // set new pawn location
             standardMove = false;
         }
 
         // remove the piece that created the en passant scenario.
-        if(m.isEnPassantCapture(gameEnPassantState)) {
+        if(m.isEnPassantCapture(getEnPassantTarget())) {
             int target = m.getTo();
 
             int sourceFile, destFile;
@@ -323,26 +368,33 @@ public class Board {
                 removed = m.getFrom() - 1;
 
             removedPiece = get(removed);
-            this.clearLocation(removed);  // clear en passant target
+            this.clearLocation(removedPiece, removed);  // clear en passant target
 
             // boardIndex doesn't change (pawn to pawn)
-            setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set new pawn location
+            setByBoard(m.getPiece(), m.getTo()); // set new pawn location
             standardMove = false;
         }
 
-        // if castling - king already moved
+        // if castling - king already removed
         if(m.isCastling()) {
-            setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set king location
+            setByBoard(m.getPiece(), m.getTo()); // set king location
 
-            int toBoardIndex = this.getBoardIndex(m.getSecondaryFrom());
-            clearByBoard(m.getPiece(), toBoardIndex, m.getSecondaryFrom()); // clear
-            setByBoard(m.getPiece(), toBoardIndex, m.getSecondaryTo()); // set rook location
+            Piece rook;
+
+            if(m.getSecondaryFrom() == CastlingHelper.WHITE_QUEEN_SIDE_INITIAL_ROOK_LOCATION ||
+                m.getSecondaryFrom() == CastlingHelper.WHITE_KING_SIDE_INITIAL_ROOK_LOCATION)
+                rook = Piece.WHITE_ROOK;
+            else
+                rook = Piece.BLACK_ROOK;
+
+            clearByBoard(rook, rook.getIndex(), m.getSecondaryFrom()); // clear rook location
+            setByBoard(rook, m.getSecondaryTo()); // set rook location
 
             standardMove = false;
         }
 
         if(standardMove) {
-            setByBoard(m.getPiece(), fromBoardIndex, m.getTo()); // set
+            setByBoard(m.getPiece(), m.getTo()); // set
         }
 
         calculateAllCacheBoards();
@@ -526,8 +578,8 @@ public class Board {
     }
 
     // ------------------------ Caching methods -------------------------------
-    private void populatePieceCache() {
-        Arrays.fill(pieceCache, null);
+    public void populatePieceCache() {
+        clearPieceCache();
 
         for(int i = 0; i < this.boards.length; i++) {
             int[] locations = Board.bitboardToArray(this.boards[i]);
@@ -537,11 +589,10 @@ public class Board {
                 pieceCache[location] = p;
             }
         }
+    }
 
-        for(int k = 0; k < pieceCache.length; k++) {
-            if(pieceCache[k] == null)
-                pieceCache[k] = Piece.EMPTY;
-        }
+    private void clearPieceCache() {
+        Arrays.fill(pieceCache, Piece.EMPTY);
     }
 
     public void calculateAllCacheBoards() {
@@ -611,51 +662,17 @@ public class Board {
     }
 
     // ------------------------ Castling Rights -------------------------------
-    public void setCastlingRights(int castlingRights) {
-        this.castlingRights = castlingRights;
-    }
-
-    public int getCastlingRights() {
-        return this.castlingRights;
-    }
-
-    private void clearCastling(int value) {
-        updateCastlingRights();
-        castlingRights &= ~value;
-        updateCastlingRights();
-    }
-
     public boolean canCastlingWhiteKingSide()  { return (castlingRights & CastlingHelper.CASTLING_WHITE_KING_SIDE) != 0; }
     public boolean canCastlingBlackKingSide()  { return (castlingRights & CastlingHelper.CASTLING_BLACK_KING_SIDE) != 0; }
     public boolean canCastlingWhiteQueenSide() { return (castlingRights & CastlingHelper.CASTLING_WHITE_QUEEN_SIDE) != 0; }
     public boolean canCastlingBlackQueenSide() { return (castlingRights & CastlingHelper.CASTLING_BLACK_QUEEN_SIDE) != 0; }
 
-    public boolean cannotCastle()              { return castlingRights == 0; }
-    public void clearCastlingWhiteKingSide()  { clearCastling(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
-    public void clearCastlingBlackKingSide()  { clearCastling(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
-    public void clearCastlingWhiteQueenSide() { clearCastling(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
-    public void clearCastlingBlackQueenSide() { clearCastling(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
-    public void clearCastlingWhite()          { clearCastling((CastlingHelper.CASTLING_WHITE_KING_SIDE | CastlingHelper.CASTLING_WHITE_QUEEN_SIDE)); }
-
-    public void initializeCastlingRights() {
-        castlingRights =
-            CastlingHelper.CASTLING_WHITE_KING_SIDE |
-                CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
-                CastlingHelper.CASTLING_BLACK_KING_SIDE |
-                CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
-        zobristHasher.updateCastlingRights(0, true, true, true, true);
-    }
-
-    public void setCastlingRightsFromFen(String fen) {
-        // if(fen.isBlank()) { clearCastlingRights(); }
-        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
-        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
-        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0)  { addCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
-        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { addCastlingRights(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+    public int getCastlingRights() {
+        return this.castlingRights;
     }
 
     public String getCastlingRightsForFen() {
-        if(castlingRights == 0) return "-";
+        if(castlingRights == 0) return CastlingHelper.NO_CASTLING_STRING;
 
         StringBuilder sb = new StringBuilder();
 
@@ -667,20 +684,47 @@ public class Board {
         return sb.toString();
     }
 
-    public void clearCastlingBlack()          { clearCastling((CastlingHelper.CASTLING_BLACK_KING_SIDE | CastlingHelper.CASTLING_BLACK_QUEEN_SIDE)); }
+    public void setDefaultCastlingRights() {
+        assert castlingRights == 0; // this method should only be called Board constructor.
 
-/*
-    public void clearCastlingRights() {
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights off
-        castlingRights = 0;
-        this.zobristKey ^= getCastlingRights(this.zobristKey);  // xor the castling rights on
+        castlingRights =
+            CastlingHelper.CASTLING_WHITE_KING_SIDE |
+                CastlingHelper.CASTLING_BLACK_KING_SIDE |
+                CastlingHelper.CASTLING_WHITE_QUEEN_SIDE |
+                CastlingHelper.CASTLING_BLACK_QUEEN_SIDE;
+        zobristHasher.updateCastlingRights(castlingRights);
     }
-*/
 
-    public void addCastlingRights(int value) {
-        updateCastlingRights();
-        castlingRights |= value;
-        updateCastlingRights();
+    public void setCastlingRightsFromFen(String fen) {
+        assert castlingRights == 0; // this method should only be called from the Board(fen) constructor.
+
+        if(fen.indexOf(CastlingHelper.WHITE_KING_CHAR) >= 0)  { castlingRights |= CastlingHelper.CASTLING_WHITE_KING_SIDE ; }
+        if(fen.indexOf(CastlingHelper.WHITE_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_WHITE_QUEEN_SIDE; }
+        if(fen.indexOf(CastlingHelper.BLACK_KING_CHAR) >= 0)  { castlingRights |= CastlingHelper.CASTLING_BLACK_KING_SIDE ; }
+        if(fen.indexOf(CastlingHelper.BLACK_QUEEN_CHAR) >= 0) { castlingRights |= CastlingHelper.CASTLING_BLACK_QUEEN_SIDE; }
+
+        zobristHasher.updateCastlingRights(castlingRights);
+    }
+
+    // only used in undo()
+    public void setCastlingRights(int rights) {
+        zobristHasher.updateCastlingRights(castlingRights);  // remove the current rights
+        castlingRights = rights;
+        zobristHasher.updateCastlingRights(castlingRights);  // add the new rights
+    }
+
+    public void clearCastlingWhiteKingSide()  { clearCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE ); }
+    public void clearCastlingBlackKingSide()  { clearCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE ); }
+    public void clearCastlingWhiteQueenSide() { clearCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
+    public void clearCastlingBlackQueenSide() { clearCastlingRights(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+    public void clearCastlingWhite()          { clearCastlingRights(CastlingHelper.CASTLING_WHITE_KING_SIDE); clearCastlingRights(CastlingHelper.CASTLING_WHITE_QUEEN_SIDE); }
+    public void clearCastlingBlack()          { clearCastlingRights(CastlingHelper.CASTLING_BLACK_KING_SIDE); clearCastlingRights(CastlingHelper.CASTLING_BLACK_QUEEN_SIDE); }
+
+
+    private void clearCastlingRights(int value) {
+        zobristHasher.updateCastlingRights(castlingRights);  // remove the current rights
+        castlingRights &= ~value;
+        zobristHasher.updateCastlingRights(castlingRights);  // add the new rights
     }
 
     // --------------------------- piece moves and attacks ---------------------------
@@ -1108,25 +1152,8 @@ public class Board {
         return zobristHasher.getZobristKey();
     }
 
-    public void initializeZobristKey(PlayerColor pc) {
-        zobristHasher = new ZobristHasher(pc, this);
-    }
-
-    public long resetZobristKey(PlayerColor pc) {
-        return zobristHasher.reset(pc, this);
-    }
-
     public void updateZobristKeyFlipPlayer(PlayerColor c) {
-        zobristHasher.updateZobristKeyFlipPlayer(c);
-    }
-
-    public void updateCastlingRights() {
-        zobristHasher.updateCastlingRights(
-            castlingRights,
-            canCastlingWhiteKingSide(),
-            canCastlingWhiteQueenSide(),
-            canCastlingBlackKingSide(),
-            canCastlingBlackQueenSide());
+        zobristHasher.updatePlayer(c);
     }
 
     // --------------------------- En Passant ---------------------------
@@ -1147,11 +1174,11 @@ public class Board {
             return;
 
         if(getEnPassantTarget() != PawnMoves.NO_EN_PASSANT_VALUE)
-            zobristHasher.updateZobristKeyWithEnPassant(getEnPassantTarget());  // clear the current value if set
+            zobristHasher.updateEnPassant(getEnPassantTarget());  // clear the current value if set
 
         enPassantTarget = target;
         if(enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE)
-            zobristHasher.updateZobristKeyWithEnPassant(enPassantTarget); // add the new value
+            zobristHasher.updateEnPassant(enPassantTarget); // add the new value
     }
 
     public String getEnPassantTargetAsFen() {
@@ -1168,4 +1195,11 @@ public class Board {
 
     public boolean hasEnPassantTarget() { return enPassantTarget != PawnMoves.NO_EN_PASSANT_VALUE; }
 
+    public long calculateFullZorbistKey(PlayerColor pc) {
+        return zobristHasher.calculateFullZorbistKey(pc,this);
+    }
+
+    public void forceZobristKey(long previousZobristKey) {
+        zobristHasher.forceKey(previousZobristKey);
+    }
 }

@@ -89,6 +89,7 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 ## Suggestions the features to build and the order to build them
 * [Suggested ordering for improving chess engine](https://www.reddit.com/r/chessprogramming/comments/mctk27/what_are_the_lowest_hanging_fruits_for_greater/)
 * [another suggestion](https://www.reddit.com/r/chessprogramming/comments/fxiz8u/how_much_faster_are_bitboards_as_opposed_to_a_2d/).
+* [Comparative Advantage of Engine Improvements](https://www.reddit.com/r/ComputerChess/comments/yln9ef/comparative_advantage_of_engine_improvements/) (reddit)
 
 ## Overview of search
 * [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)

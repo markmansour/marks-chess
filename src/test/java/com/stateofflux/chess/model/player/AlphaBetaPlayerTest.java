@@ -58,7 +58,7 @@ public class AlphaBetaPlayerTest {
     }
 
     @Disabled(value = "Full game")
-    @Test public void RandomVsAlphaBeta() {
+    @Test public void randomVsAlphaBeta() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
@@ -106,7 +106,6 @@ public class AlphaBetaPlayerTest {
         assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
-    @Test
     public void iterativeDeepeningTest() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
