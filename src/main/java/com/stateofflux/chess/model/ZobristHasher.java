@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model;
 
+import com.stateofflux.chess.model.pieces.PawnMoves;
 import com.stateofflux.chess.model.pieces.Piece;
 
 public class ZobristHasher {
@@ -137,7 +138,7 @@ public class ZobristHasher {
 
         hash ^= getSideKey(color);
 
-        if (board.getEnPassantTarget() >= 0) {
+        if (board.getEnPassantTarget() != PawnMoves.NO_EN_PASSANT_VALUE) {
             hash ^= getEnPassantKey(board.getEnPassantTarget());
         }
         return hash;

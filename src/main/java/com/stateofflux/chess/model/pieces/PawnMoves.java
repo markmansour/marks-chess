@@ -6,7 +6,7 @@ public class PawnMoves implements PieceMovesInterface {
     public static final long[][] PAWN_ATTACKS = new long[2][64];
 
     public static final String NO_EN_PASSANT = "-";
-    public static final int NO_EN_PASSANT_VALUE = -1;
+    public static final int NO_EN_PASSANT_VALUE = 64;
 
     protected long nonCaptureMoves;
     protected long captureMoves;

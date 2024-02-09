@@ -1182,7 +1182,7 @@ public class Board {
     }
 
     public String getEnPassantTargetAsFen() {
-        if (enPassantTarget == -1) {
+        if (enPassantTarget == PawnMoves.NO_EN_PASSANT_VALUE) {
             return "-";
         }
 
