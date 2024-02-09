@@ -27,7 +27,7 @@ The project contains a chess engine with following abilities:
 * Improved evaluation (king attacked)
 * Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)   
 * End games
-* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.
+* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.  [Tutorial from lc0](https://lczero.org/dev/wiki/testing-guide/) may be of help.
 * Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!))
 * Multi threaded search and evaluation
 * Time management
@@ -92,9 +92,11 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * [Comparative Advantage of Engine Improvements](https://www.reddit.com/r/ComputerChess/comments/yln9ef/comparative_advantage_of_engine_improvements/) (reddit)
 
 ## Overview of search
-* [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)
+* Alpha Beta worked example video [Algorithms Explained – minimax and alpha-beta pruning](https://www.youtube.com/watch?v=l-hh51ncgDI) by Sebastian Lague
 * [Alpha-Beta with Sibling Prediction Pruning in Chess - Jeroen W.T. Carolus](https://homepages.cwi.nl/%7Epaulk/theses/Carolus.pdf)
+* [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)
 
+* 
 ## Transposition Tables
 * [Wikipedia](https://en.wikipedia.org/wiki/Transposition_table) and [Chessprogramming wiki](https://www.chessprogramming.org/Transposition_Table) (very general) 
 * Implementations: [blunder](https://github.com/algerbrex/blunder/blob/main/engine/transposition.go), [kengine](https://github.com/bhlangonijr/kengine/blob/main/src/main/java/com/github/bhlangonijr/kengine/alphabeta/TranspositionTable.kt),  
@@ -104,7 +106,7 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * [Iterative Deepening Search(IDS) or Iterative Deepening Depth First Search(IDDFS)](https://www.geeksforgeeks.org/iterative-deepening-searchids-iterative-deepening-depth-first-searchiddfs/)
 * [Iterative deepening depth-first search](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search)
 
-# Useful References
+# Useful Tools
 * [Lichess Board Editor](https://lichess.org/editor) (great for creating testing scenarios)
 
 ## Implementations
@@ -125,3 +127,5 @@ Polyglot readers
 * [jchesslib](https://github.com/asdfjkl/jchesslib/tree/main) for Java Polyglot implementation
 * [chesstango](https://github.com/mcoria/chesstango/tree/master/engine/src/main/java/net/chesstango/engine/polyglot)
 * [carballo](https://github.com/albertoruibal/carballo/blob/9d0e08d5d7f6869f05cf986aed263f44d36bf6af/jse/src/main/java/com/alonsoruibal/chess/book/FileBook.java)
+
+[Coding Adventure: Making a Better Chess Bot](https://www.youtube.com/watch?v=_vqlIPDR2TU) by Sebastian Lague

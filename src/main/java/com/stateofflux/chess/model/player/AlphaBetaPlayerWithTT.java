@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayerWithTT.class);
-    private TranspositionTable tt;
+    private final TranspositionTable tt;
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
@@ -38,15 +38,27 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         List<Move> bestMoves = new ArrayList<>();
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-        if(existingEntry != null && existingEntry.depth() >= 0) {
+
+        if(existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
             LOGGER.info("TT hit at root");
-            // TODO: write logic to reassemble a move.
+
+            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+                LOGGER.info("returning cached hit - EXACT");
+                return existingEntry.getBestMove();
+            } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+                alpha = Math.max(alpha, existingEntry.score());
+            else if(existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+                beta = Math.min(beta, existingEntry.score());
+
+            if(alpha >= beta) {
+                LOGGER.info("returning cached hit - a >= b");
+                return existingEntry.getBestMove();
+            }
         }
 
         // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
         MoveList<Move> moves = game.generateMoves();
         moves.sort(getComparator());
-
 
         for(Move move: moves) {
             game.move(move);
@@ -71,45 +83,62 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             }
         }
 
-        updateTranspositionTable(game, value, alphaOrig, beta, depth);
 
         assert !bestMoves.isEmpty();
+        Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
+        updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
-    }
-
-    private void updateTranspositionTable(Game game, int value, int alphaOrig, int beta, int depth) {
-        TranspositionTable.NodeType nt;
-        if( value <= alphaOrig)
-            nt = TranspositionTable.NodeType.UPPER_BOUND;
-        else if(value >= beta)
-            nt = TranspositionTable.NodeType.LOWER_BOUND;
-        else
-            nt = TranspositionTable.NodeType.EXACT;
-
-        TranspositionTable.Entry newEntry = new TranspositionTable.Entry(game.getZobristKey(), null, depth, value, nt, 0);
-        tt.put(game.getZobristKey(), value, depth, nt, game.getClock());
+        return bestMove;
     }
 
     /*
-     * NegaMax with alpha-beta pruning.  https://en.wikipedia.org/wiki/Negamax#Negamax_with_alpha_beta_pruning
+     * The pseudocode that adds transposition table functions to negamax with alpha/beta pruning is given as follows
+     *   -> https://en.wikipedia.org/wiki/Negamax
      *
      * function negamax(node, depth, α, β, color) is
-     *    if depth = 0 or node is a terminal node then
-     *        return color × the heuristic value of node
+     *     alphaOrig := α
      *
-     *    childNodes := generateMoves(node)
-     *    childNodes := orderMoves(childNodes)
-     *    value := −∞
-     *    foreach child in childNodes do
-     *        value := max(value, −negamax(child, depth − 1, −β, −α, −color))
-     *        α := max(α, value)
-     *        if α ≥ β then
-     *            break (* cut-off *)
-     *    return value
+     *     (* Transposition Table Lookup; node is the lookup key for ttEntry *)
+     *     ttEntry := transpositionTableLookup(node)
+     *     if ttEntry is valid and ttEntry.depth ≥ depth then
+     *         if ttEntry.flag = EXACT then
+     *             return ttEntry.value
+     *         else if ttEntry.flag = LOWERBOUND then
+     *             α := max(α, ttEntry.value)
+     *         else if ttEntry.flag = UPPERBOUND then
+     *             β := min(β, ttEntry.value)
+     *
+     *         if α ≥ β then
+     *             return ttEntry.value
+     *
+     *     if depth = 0 or node is a terminal node then
+     *         return color × the heuristic value of node
+     *
+     *     childNodes := generateMoves(node)
+     *     childNodes := orderMoves(childNodes)
+     *     value := −∞
+     *     for each child in childNodes do
+     *         value := max(value, −negamax(child, depth − 1, −β, −α, −color))
+     *         α := max(α, value)
+     *         if α ≥ β then
+     *             break
+     *
+     *     (* Transposition Table Store; node is the lookup key for ttEntry *)
+     *     ttEntry.value := value
+     *     if value ≤ alphaOrig then
+     *         ttEntry.flag := UPPERBOUND
+     *     else if value ≥ β then
+     *         ttEntry.flag := LOWERBOUND
+     *     else
+     *         ttEntry.flag := EXACT
+     *     ttEntry.depth := depth
+     *     ttEntry.is_valid := true
+     *     transpositionTableStore(node, ttEntry)
+     *
+     *     return value
      *
      * (* Initial call for Player A's root node *)
      *    negamax(rootNode, depth, −∞, +∞, 1)
@@ -118,17 +147,20 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int alphaOrig = alpha;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-        if(existingEntry != null && existingEntry.depth() >= (getSearchDepth() - depth)) {
+        if(existingEntry != null && existingEntry.depth() >= depth) {
             LOGGER.info("TT hit");
-            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT)
+            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+                LOGGER.info("returning cached hit - EXACT");
                 return existingEntry.score();
-            else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+            } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
             else if(existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
                 beta = Math.min(beta, existingEntry.score());
 
-            if(alpha >= beta)
+            if(alpha >= beta) {
+                LOGGER.info("returning cached hit - a >= b");
                 return existingEntry.score();
+            }
         }
 
         int sideToMove = pc.isWhite() ? 1 : -1;
@@ -145,10 +177,17 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         moves.sort(getComparator());
 
         int value = Integer.MIN_VALUE;
+        Move bestMove = null;
 
         for(Move move: moves) {
             game.move(move);
-            value = Math.max(value, -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor()));
+
+            int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
+            if(score > value) {
+                value = score;
+                bestMove = move;
+            }
+
             game.undo();
 
             alpha = Math.max(alpha, value);
@@ -157,9 +196,22 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 break;
         }
 
-        updateTranspositionTable(game, value, alphaOrig, beta, depth);
+        updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
         return value;
+    }
+
+    private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth) {
+        TranspositionTable.NodeType nt;
+        if( value <= alphaOrig)
+            nt = TranspositionTable.NodeType.UPPER_BOUND;
+        else if(value >= beta)
+            nt = TranspositionTable.NodeType.LOWER_BOUND;
+        else
+            nt = TranspositionTable.NodeType.EXACT;
+
+        // TranspositionTable.Entry newEntry = new TranspositionTable.Entry(game.getZobristKey(), null, depth, value, nt, 0);
+        tt.put(game.getZobristKey(), value, best, nt, depth, game.getClock());
     }
 }
 

@@ -1,15 +1,12 @@
 package com.stateofflux.chess.model;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
 
 public class TranspositionTable {
 
-    /**
+    /*
      * From https://www.chessprogramming.org/Transposition_Table
      *
      * What Information is Stored
@@ -25,12 +22,16 @@ public class TranspositionTable {
      * - Age is used to determine when to overwrite entries from searching previous positions during the game of chess
      */
 
-    private final int hashSize;
-    private final long[] data;
     private final long[] keys;
+    private final long[] data;
+    private final long[] movesData;
     private final int mask;
 
-    public record Entry (long key, Move best, int depth, int score, NodeType nt, int age) {}
+    public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
+        public Move getBestMove() {
+            return Move.buildFrom(best);
+        }
+    }
 
     public TranspositionTable() {
         this(128);
@@ -38,34 +39,32 @@ public class TranspositionTable {
 
     public TranspositionTable(int memoryUsageInMB) {
         int entrySizeInBytes = 8;  // packing all data into a long (64 bits / 8 bytes);
-        hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes ;  // number of entries
+        int hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes;  // number of entries
         mask = hashSize - 1; // m = n & (d - 1) will compute the modulo (base 2) where n -> numerator, d -> denominator, m is modulo.
         data = new long[hashSize];
         keys = new long[hashSize];
+        movesData = new long[hashSize];
     }
 
     public enum NodeType {
-        EXACT, LOWER_BOUND, UPPER_BOUND;
+        EXACT, LOWER_BOUND, UPPER_BOUND
     }
 
     /*
-        fun get(key: Long, ply: Int): Entry? {
+    fun get(key: Long, ply: Int): Entry? {
 
-            val k = keys[key.and(mask).toInt()]
-            val d = data[key.and(mask).toInt()]
-            val entry = buildEntry(k, d, ply)
+        val k = keys[key.and(mask).toInt()]
+        val d = data[key.and(mask).toInt()]
+        val entry = buildEntry(k, d, ply)
 
-            return if ((k xor d) == key) entry else null
-        }
-    */
-    public static int long2int(long l) {
-        return (int) (l & 0xFFFFFFFFL); // (1L << 32) - 1 => 0xFFFFFFFFL
-
+        return if ((k xor d) == key) entry else null
     }
+    */
     public Entry get(long key, int ply) {
         long k = keys[Math.toIntExact(key & mask)];
         long d = data[Math.toIntExact(key & mask)];
-        Entry e = buildEntry(key, d, ply);
+        long md = movesData[Math.toIntExact(key & mask)];
+        Entry e = buildEntry(key, d, md, ply);
 
         if ((k ^ d) == key) {
             return e;
@@ -75,24 +74,24 @@ public class TranspositionTable {
     }
 
     /*
-        fun put(key: Long, value: Long, depth: Int, nodeType: NodeType, ply: Int): Boolean {
+    fun put(key: Long, value: Long, depth: Int, nodeType: NodeType, ply: Int): Boolean {
 
-            val entry = get(key, ply)
-            if (entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
-                val newValue = when {
-                    value >= MATE_VALUE -> value + ply
-                    value <= -MATE_VALUE -> value - ply
-                    else -> value
-                }
-                val d = buildData(newValue, depth, nodeType)
-                keys[key.and(mask).toInt()] = key xor d
-                data[key.and(mask).toInt()] = d
-                return true
+        val entry = get(key, ply)
+        if (entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
+            val newValue = when {
+                value >= MATE_VALUE -> value + ply
+                value <= -MATE_VALUE -> value - ply
+                else -> value
             }
-            return false
+            val d = buildData(newValue, depth, nodeType)
+            keys[key.and(mask).toInt()] = key xor d
+            data[key.and(mask).toInt()] = d
+            return true
         }
+        return false
+    }
     */
-    public boolean put(long key, int score, int depth, NodeType nodeType, int ply) {
+    public boolean put(long key, int score, Move best, NodeType nodeType, int depth, int ply) {
         Entry entry = get(key, ply);
         if(entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
             int newScore;
@@ -104,9 +103,14 @@ public class TranspositionTable {
                 newScore = score;
 
             long d = buildData(newScore, depth, nodeType);
-            int index = Math.toIntExact(key & mask); // key & mask modulos the key
-            keys[index] = key ^ d;  // i don't understand why this is xor-ed.  Assuming it is a checksum, but it means the key returned in the Entry object is a corruption of the original key.
+            int index = Math.toIntExact(key & mask); // key & mask will take the modulo of the key
+
+            // key ^ d acts as a checksum.  It is possible to generate the same key twice, so xor it with d.  If
+            // reversing the xor is the original key, then it was the value inserted into the array.
+            keys[index] = key ^ d;
             data[index] = d;
+            movesData[index] = best.toLong();
+
             return true;
         }
 
@@ -143,7 +147,7 @@ public class TranspositionTable {
             return Entry(key, newValue, depth, nodeType)
         }
     */
-    private Entry buildEntry(long key, long data, int ply){
+    private Entry buildEntry(long key, long data, long moveData, int ply){
         int score = ((int) ((data >> 32) & 0xFFFFFFFFL));
         int depth = ((int) ((data >> 16) & 0xFFFFL));
         NodeType nodeType = NodeType.values()[(int) (data & 0xFFFFL)];
@@ -156,6 +160,6 @@ public class TranspositionTable {
         else
             newScore = score;
 
-        return new Entry(key, null, depth, newScore, nodeType, 0);
+        return new Entry(key, newScore, moveData, nodeType, depth, 0);
     }
 }

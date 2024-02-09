@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model;
 
 
+import com.stateofflux.chess.model.pieces.Piece;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +16,8 @@ public class TranspositionTableTest {
         int score = 10000000;
         int depth = 3;
         int ply = 1;
-
-        boolean putResult = tt.put(key, score, depth, TranspositionTable.NodeType.EXACT, ply);
+        Move m = new Move(Piece.EMPTY, 0, 0, false);
+        tt.put(key, score, m, TranspositionTable.NodeType.EXACT, depth, ply);
 
         TranspositionTable.Entry entry = tt.get(key, ply);
         assertThat(entry.key()).isEqualTo(key);
@@ -46,10 +47,11 @@ public class TranspositionTableTest {
             -1510841015, -1047551057, 1756701190, -1429453207, -391100556, 1575039684, -597592416, -427242900,
             1458115053, -1658987226, -1870818275, 1265802426, 784056402, 398561731, -137806895, -325193710 };
 
+        Move m = new Move(Piece.EMPTY, 0, 0, false);
         TranspositionTable tt = new TranspositionTable();
 
         for(var key : testData) {
-            tt.put(key, ((int) Math.abs(key)) % 10000, ((int) Math.abs(key)) % 5, TranspositionTable.NodeType.EXACT, 1);
+            tt.put(key, ((int) Math.abs(key)) % 10000, m, TranspositionTable.NodeType.EXACT, ((int) Math.abs(key)) % 5, 1);
         }
 
         for(var key: testData) {

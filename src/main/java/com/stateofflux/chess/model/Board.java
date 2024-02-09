@@ -37,13 +37,13 @@ public class Board {
     private long blackBoardWithoutKing;
     private long whiteBoardWithoutKing;
     private Piece[] pieceCache;
-    private int enPassantTarget;
 
     // instance vars
     protected int castlingRights;
+    private int enPassantTarget;
 
     // --------------------------- Constructors ---------------------------
-    /**
+    /*
      * RANKS:
      *   8 | 56 57 58 59 60 61 62 63 (MSB,
      *   7 | 48 49 50 51 52 53 54 55 left)
@@ -55,17 +55,6 @@ public class Board {
      *   1 |  0  1  2  3  4  5  6  7 (LSB, right)
      * -------------------------------------------
      * FILES: a  b  c  d  e  f  g  h
-     *
-     * 8 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
-     * 7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
-     * 6
-     * 5
-     * 4
-     * 3
-     * 2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-     * 1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-     * a b c d e f g h
-     *
      */
     public Board() {
         boards = new long[Piece.SIZE];

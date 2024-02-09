@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
@@ -106,8 +105,9 @@ public class AlphaBetaPlayerTest {
         assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThan(one.evaluate(game, PlayerColor.WHITE));
     }
 
-    public void iterativeDeepeningTest() {
-        Game game = new Game();
+    @Disabled
+    @Test public void iterativeDeepeningTest() {
+        Game game = new Game("4k3/2p5/8/8/8/8/3P4/4K3 w - - 0 1");  // simple board for testing
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
@@ -118,7 +118,7 @@ public class AlphaBetaPlayerTest {
 
         one.setSearchDepth(2);
         Move depth2 = one.getNextMove(game);
-fail("zobrist keys are wrong for depth 2 - in alphabeta method. ");
+
         one.setSearchDepth(3);
         Move depth3 = one.getNextMove(game);
 

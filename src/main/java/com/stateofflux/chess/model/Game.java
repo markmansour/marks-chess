@@ -361,7 +361,7 @@ public class Game {
     }
 
     public Move sanToMove(String action) {
-        Piece promotionPiece = null;
+        Piece promotionPiece;
         Move move;
 
         // Castling
@@ -373,17 +373,16 @@ public class Game {
             if (promotionMarker >= 0) {
                 promotionPiece = Piece.getPieceByPieceChar(action.substring(promotionMarker + 1, promotionMarker + 2));
                 action = action.substring(0, promotionMarker);
-            }
+            } else
+                promotionPiece = Piece.EMPTY;
 
             move = extractMoveFromAlgebraicNotation(action);
             move.setPromotion(promotionPiece);  // ok to set to null
             move.updateForEnPassant(getBoard().getWhitePawnBoard(), getBoard().getBlackPawnBoard());
         }
+
         return move;
     }
-    /*
-     * expects en passant, castling, and promotion to be set in the move object.
-     */
 
     public void move(Move move) {
         long[] boardsBeforeUpdate = getBoard().copyOfBoards();
