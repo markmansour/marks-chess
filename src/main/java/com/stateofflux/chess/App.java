@@ -1,5 +1,7 @@
 package com.stateofflux.chess;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
@@ -8,18 +10,17 @@ import com.stateofflux.chess.model.player.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Hello world!
- *
- */
-public class App 
+public class App
 {
     private static final Logger Logger = LoggerFactory.getLogger(Game.class);
+    private static final String PROGRAM_NAME = "Mark's Chess Program";
 
     /*
      * To run this from the command line:
@@ -28,19 +29,67 @@ public class App
      */
     public static void main(String[] args)
     {
-        Logger.info("Mark's Chess Program");
+        Logger.info(PROGRAM_NAME);
+
+        AppArgs aa = new AppArgs();
+        JCommander.Builder builder = JCommander.newBuilder().addObject(aa);
+        JCommander jc = builder.build();
+        jc.setProgramName(PROGRAM_NAME);
+
+        try {
+            jc.parse(args);
+        } catch (ParameterException e) {
+            System.out.println("Error parsing command line args: " + String.join(" ", args) );
+            e.usage();
+            System.exit(1);
+        }
+
+        if(aa.askedForHelp) {
+            jc.usage();
+            System.exit(0);
+        }
+
+        try {
+            // Evaluator evaluator = new SimpleEvaluator();
+            Class<?> evaluatorClass = Class.forName("com.stateofflux.chess.model.player." + aa.evaluatorStrategy);
+            Evaluator evaluator = (Evaluator) evaluatorClass.getConstructor().newInstance();
+
+            // Player whitePlayer = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
+            Class<?> whitePlayerClass = Class.forName("com.stateofflux.chess.model.player." + aa.whiteStrategy);
+            Constructor<?> whitePlayerConstructor = whitePlayerClass.getConstructor(PlayerColor.class, Evaluator.class);
+            Player whitePlayer = (Player) whitePlayerConstructor.newInstance(PlayerColor.WHITE, evaluator);
+
+            // Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+            Class<?> blackPlayerClass = Class.forName("com.stateofflux.chess.model.player." + aa.blackStrategy);
+            Constructor<?> blackPlayerConstructor = blackPlayerClass.getConstructor(PlayerColor.class, Evaluator.class);
+            Player blackPlayer = (Player) blackPlayerConstructor.newInstance(PlayerColor.WHITE, evaluator);
+
+            // give the players a reasonable chance of winning.
+            whitePlayer.setSearchDepth(aa.whiteDepth);
+            blackPlayer.setSearchDepth(aa.blackDepth);
+
+            uciLoop(whitePlayer, blackPlayer, aa);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void uciLoop(Player whitePlayer, Player blackPlayer, AppArgs aa) {
         StringBuilder sb = new StringBuilder();
 
         final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
-
         Game game = null;
-        Evaluator evaluator = new SimpleEvaluator();
-        Player whitePlayer = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
-        Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
 
-        // give the players a reasonable chance of winning.
-        whitePlayer.setSearchDepth(5);
-        blackPlayer.setSearchDepth(5);
+        Logger.atDebug().log("Configuration: ");
+        Logger.atDebug().log("- white player type: " + aa.whiteStrategy);
+        Logger.atDebug().log("- white player search depth: " + aa.whiteDepth);
+        Logger.atDebug().log("- black player type: " + aa.blackStrategy);
+        Logger.atDebug().log("- black player search depth: " + aa.blackDepth);
+        Logger.atDebug().log("- evaluator: " + aa.evaluatorStrategy);
+        Logger.atDebug().log("- help?: " + aa.askedForHelp);
+        Logger.atDebug().log("");
 
         for (String line = scanner.nextLine().strip(); !line.equals("quit"); line = scanner.nextLine()) {
             String[] lineParts = line.split("\\s+");

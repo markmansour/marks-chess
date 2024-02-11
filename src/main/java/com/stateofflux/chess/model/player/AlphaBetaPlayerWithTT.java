@@ -40,10 +40,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
 
         if(existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
-            LOGGER.info("TT hit at root");
+            // LOGGER.info("TT hit at root");
 
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
-                LOGGER.info("returning cached hit - EXACT");
+                // LOGGER.info("returning cached hit - EXACT");
                 return existingEntry.getBestMove();
             } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
@@ -148,9 +148,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
         if(existingEntry != null && existingEntry.depth() >= depth) {
-            LOGGER.info("TT hit");
+            // LOGGER.info("TT hit");
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
-                LOGGER.info("returning cached hit - EXACT");
+                // LOGGER.info("returning cached hit - EXACT");
                 return existingEntry.score();
             } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
@@ -158,7 +158,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 beta = Math.min(beta, existingEntry.score());
 
             if(alpha >= beta) {
-                LOGGER.info("returning cached hit - a >= b");
+                // LOGGER.info("returning cached hit - a >= b");
                 return existingEntry.score();
             }
         }
