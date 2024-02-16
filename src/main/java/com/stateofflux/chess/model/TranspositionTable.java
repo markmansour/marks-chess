@@ -2,7 +2,7 @@ package com.stateofflux.chess.model;
 
 import java.util.*;
 
-import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
+import static com.stateofflux.chess.model.player.Evaluator.MATE_VALUE;
 
 public class TranspositionTable {
 

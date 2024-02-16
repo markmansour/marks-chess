@@ -7,13 +7,22 @@ import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayer.class);
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    final static Deque<Move> moveHistory = new ArrayDeque<>();
 
+    record MoveData(Move move, int score) {
+        public String toString() {
+            return move + " (" + score + ")";
+        }
+    }
 
     public AlphaBetaPlayer(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
@@ -23,21 +32,28 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     public Move getNextMove(Game game) {
         // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
         MoveList<Move> moves = game.generateMoves();
+        List<MoveData> dataOnMoves = new ArrayList<>();
+        List<Move> bestMoves = new ArrayList<>();
+
         moves.sort(getComparator());
 
+        // LOGGER.info("depth remaining: {}.  reviewing moves ({})", getSearchDepth(), moves);
+
         int depth = getSearchDepth();
-        int alpha = Integer.MIN_VALUE;
-        int beta = Integer.MAX_VALUE;
+        int alpha = Evaluator.MIN_VALUE;
+        int beta = Evaluator.MAX_VALUE;
         PlayerColor pc = this.getColor();
 
-        List<Move> bestMoves = new ArrayList<>();
-        int value = Integer.MIN_VALUE;
-        int score;
+        int value = Evaluator.MIN_VALUE;
 
         for(Move move: moves) {
             game.move(move);
-            score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
+            moveHistory.addLast(move);
+            int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
+            moveHistory.removeLast();
+
+            dataOnMoves.add(new MoveData(move, score));
 
             if(score == value) {
                 bestMoves.add(move);
@@ -47,12 +63,13 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
                 value = score;
             }
 
-            if(value > alpha)
+            if(value >= alpha) {
                 alpha = value;
-
+            }
             // at the root beta is always MAX, and therefore alpha can never be greater than MAX.
             // this condition really not applicable at this level, but leaving for symmetry with alphaBeta()
             if( alpha >= beta) {
+                // LOGGER.info("depth remaining: {}. Cut off: α {}, β {}", depth, alpha, beta);
                 break;  // cut off
             }
         }
@@ -61,8 +78,19 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
+        Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        return bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+        logger.atInfo().log("{} : depth remaining(α {}, β {}): {}.  all moves: {}.  how we got here: {}.  best move: {} ({})",
+            game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
+            alpha,
+            beta,
+            depth,
+            dataOnMoves,
+            moveHistory,
+            bestMove,
+            value);
+
+        return bestMove;
     }
 
     /*
@@ -92,6 +120,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             return evaluate(game, pc) * sideToMove;
 
         MoveList<Move> moves = game.generateMoves();
+        List<MoveData> dataOnMoves = new ArrayList<>();
+        List<Move> bestMoves = new ArrayList<>();
 
         // node is terminal
         if(moves.isEmpty())
@@ -99,18 +129,52 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         moves.sort(getComparator());
 
-        int value = Integer.MIN_VALUE;
+        // logger.info("depth remaining: {}.  reviewing moves ({})", depth, moves);
+
+        int value = Evaluator.MIN_VALUE;
 
         for(Move move: moves) {
             game.move(move);
-            value = Math.max(value, -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor()));
+            moveHistory.addLast(move);
+            int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
+            moveHistory.removeLast();
 
-            alpha = Math.max(alpha, value);
+            dataOnMoves.add(new MoveData(move, score));
 
-            if(alpha >= beta)
+            if(score == value) {
+                bestMoves.add(move);
+            } else if(score > value) {
+                bestMoves.clear();
+                bestMoves.add(move);
+                value = score;
+            }
+
+            if(value >= alpha) {
+                alpha = value;
+            }
+
+            if(alpha >= beta) {
+                // LOGGER.info("depth remaining: {}. Cut off: α {}, β {}", depth, alpha, beta);
                 break;
+            }
         }
+
+        Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+
+        if(depth > 1)
+        logger.atInfo().log("{}{} : depth: {} (α {}, β {}).  generated moves: {}.  pruned #: {}/{}.  how we got here: {}.  best move: {} ({})",
+            " ".repeat((getSearchDepth() - depth) * 2),
+            sideToMove == 1 ? "MAX" : "MIN",
+            depth,
+            alpha,
+            beta,
+            dataOnMoves,
+            moves.size() - dataOnMoves.size(),
+            moves.size(),
+            moveHistory,
+            bestMove,
+            value);
 
         return value;
     }

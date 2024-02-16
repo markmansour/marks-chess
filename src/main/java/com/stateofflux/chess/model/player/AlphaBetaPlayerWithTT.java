@@ -29,11 +29,11 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     @Override
     public Move getNextMove(Game game) {
         int depth = getSearchDepth();
-        int alpha = Integer.MIN_VALUE;
+        int alpha = Evaluator.MIN_VALUE;
         int alphaOrig = alpha;
-        int beta = Integer.MAX_VALUE;
+        int beta = Evaluator.MAX_VALUE;
         PlayerColor pc = this.getColor();
-        int value = Integer.MIN_VALUE;
+        int value = Evaluator.MIN_VALUE;
         int score;
         List<Move> bestMoves = new ArrayList<>();
 
@@ -176,7 +176,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         moves.sort(getComparator());
 
-        int value = Integer.MIN_VALUE;
+        int value = Evaluator.MIN_VALUE;
         Move bestMove = null;
 
         for(Move move: moves) {

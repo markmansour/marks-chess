@@ -50,7 +50,7 @@ public class BasicNegaMaxPlayer extends Player {
         MoveList<Move> moves = game.generateMoves();
         moves.sort(getComparator());
 
-        int max = Integer.MIN_VALUE;
+        int max = Evaluator.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
 
 
@@ -109,7 +109,7 @@ public class BasicNegaMaxPlayer extends Player {
         if(moves.isEmpty())
             return evaluate(game, depth) * sideToMove;  // I want this evaluated from the perspective of the last turn so flip the color.
 
-        int max = Integer.MIN_VALUE;
+        int max = Evaluator.MIN_VALUE;
         int score;
 
         for(Move move: moves) {

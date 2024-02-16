@@ -7,7 +7,6 @@ import com.stateofflux.chess.model.pieces.Piece;
 
 import java.util.Map;
 
-import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
 import static java.lang.Long.bitCount;
 
 /*

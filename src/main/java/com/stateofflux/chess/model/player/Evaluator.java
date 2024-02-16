@@ -4,12 +4,15 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.pieces.Piece;
 
 public interface Evaluator {
-    int PAWN_VALUE = 100;
-    int ROOK_VALUE = 500;
-    int KNIGHT_VALUE = 320;
-    int BISHOP_VALUE = 330;
-    int QUEEN_VALUE = 900;
-    int KING_VALUE = 20_000;
+    public static final int PAWN_VALUE = 100;
+    public static final int ROOK_VALUE = 500;
+    public static final int KNIGHT_VALUE = 320;
+    public static final int BISHOP_VALUE = 330;
+    public static final int QUEEN_VALUE = 900;
+    public static final int KING_VALUE = 20_000;
+    public static final int MATE_VALUE = 100_000;
+    public static final int MIN_VALUE = -1_000_000;
+    public static final int MAX_VALUE = 1_000_000;
 
     static int pieceToValue(Piece piece) {
         if(piece == null)

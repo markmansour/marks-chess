@@ -1,9 +1,7 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
-import com.stateofflux.chess.model.pieces.Piece;
 
-import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
 import static java.lang.Long.bitCount;
 
 public class MaterialEvaluator implements Evaluator {

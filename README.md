@@ -21,57 +21,32 @@ The project contains a chess engine with following abilities:
 * Move ordering (basic version implemented to prioritize captures) and improved move ordering ([MVV-LVA](https://www.chessprogramming.org/MVV-LVA)).
 * Zobrist keys to find repetition and support speed improvements during search.
 
-### Next steps
-* Improved search (Iterative deepening, widening aspiration windows, quiescence, Transposition Tables (done))
-* Pruning and Reduction (late move reduction, null moves, futility pruning)
-* Improved evaluation (king attacked)
-* Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)   
-* End games
-* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.  [Tutorial from lc0](https://lczero.org/dev/wiki/testing-guide/) may be of help.
-* Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!))
-* Multi threaded search and evaluation
-* Time management
-* Neural Net chess player - see [maia](https://github.com/CSSLab/maia-chess), [sunfish](https://github.com/thomasahle/sunfish), [Bagatur](https://github.com/bagaturchess/Bagatur) (Java).  Perhaps [bullet](https://github.com/jw1912/bullet) would be useful for training?
-* Resignations
-
-### Maybes
-* Monte Carlo Tree search
-* Tournament Framework
-
 ## Design
 * **Game** - contains only game state such as clock moves, draw/checked/mate/repetition/50 move rule, the active player, and a history of moves.  Players make moves in the game object, which updates the underlying board.  The Game object deals in moves including move generation and enforces correctness of moves.
 * **Board** - this class represents the board layout including where pieces are placed, and hashes of the board state.  It does not enforce correctness.
 * **Pieces** - com.stateofflux.chess.model.pieces.*: This package attempts to encapsulate all piece logic.
-* **Players** - logic to determine how to move pieces on the board.  Includes search and evaluation functions.
+* **Players** - logic to determine how to move pieces on the board.  Includes search and evaluation functions.  In traditional chess engines this is called artificial intelligence.
 
 ## Build
-IntelliJ project included.  Currently built against [Amazon Corretto JDK 17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/what-is-corretto-17.html) and Apache Maven 3.9+.
+Built against [Amazon Corretto JDK 17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/what-is-corretto-17.html) and Apache Maven 3.9+.
 
-If you're doing this on the command line then to get started:
+If you're building the project on the command line then to get started:
 
 ```bash
 $ git clone https://github.com/markmansour/marks-chess.git
 $ cd marks-chess
-$ mvn package
+$ mvn package assembly:single
 ```
 
 ## Playing against other engines
 Build a single jar file with all dependencies, and call it from a shell script.  That
 shell script can be called from a chess engine.
 
-Create a package:
 ```bash
-$ mvn package assembly:single
+$ ~./app.sh
 ```
 
-Create an OS launcher (shell script) containing.
-```bash
-/bin/bash -c 'cd <PATH>/marks-chess && mvn exec:java -Dexec.mainClass=com.stateofflux.chess.App'
-```
-You'll need to make it executable (chmod +x <shell script>).
-
-I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on macOS and had it compete against itself, a human, and stockfish.
-
+I use this script as a launch for GUIs such as [cutechess](https://github.com/cutechess/cutechess) or banksia on macOS.
 
 # Why?
 ## Goals
@@ -86,6 +61,8 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * Write production quality code.  This is for fun, and I'm *sure* my classes could be factored in a much cleaner way.
 
 # Notes
+The below notes are mainly for me, but I'll leave them in as they may help others.
+
 ## Suggestions the features to build and the order to build them
 * [Suggested ordering for improving chess engine](https://www.reddit.com/r/chessprogramming/comments/mctk27/what_are_the_lowest_hanging_fruits_for_greater/)
 * [another suggestion](https://www.reddit.com/r/chessprogramming/comments/fxiz8u/how_much_faster_are_bitboards_as_opposed_to_a_2d/).
@@ -96,7 +73,6 @@ I've added marks-chess to [cutechess](https://github.com/cutechess/cutechess) on
 * [Alpha-Beta with Sibling Prediction Pruning in Chess - Jeroen W.T. Carolus](https://homepages.cwi.nl/%7Epaulk/theses/Carolus.pdf)
 * [A review of game-tree pruning - T.A. Marsland](https://webdocs.cs.ualberta.ca/%7Etony/OldPapers/icca.Mar1986.pp3-18.pdf)
 
-* 
 ## Transposition Tables
 * [Wikipedia](https://en.wikipedia.org/wiki/Transposition_table) and [Chessprogramming wiki](https://www.chessprogramming.org/Transposition_Table) (very general) 
 * Implementations: [blunder](https://github.com/algerbrex/blunder/blob/main/engine/transposition.go), [kengine](https://github.com/bhlangonijr/kengine/blob/main/src/main/java/com/github/bhlangonijr/kengine/alphabeta/TranspositionTable.kt),  
@@ -129,3 +105,31 @@ Polyglot readers
 * [carballo](https://github.com/albertoruibal/carballo/blob/9d0e08d5d7f6869f05cf986aed263f44d36bf6af/jse/src/main/java/com/alonsoruibal/chess/book/FileBook.java)
 
 [Coding Adventure: Making a Better Chess Bot](https://www.youtube.com/watch?v=_vqlIPDR2TU) by Sebastian Lague
+
+# Potential Future Capabilities
+* Improved search (Iterative deepening, widening aspiration windows, quiescence, Transposition Tables (done))
+* Pruning and Reduction (late move reduction, null moves, futility pruning)
+* Improved evaluation (king attacked)
+* Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)
+* End games
+* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.  [Tutorial from lc0](https://lczero.org/dev/wiki/testing-guide/) may be of help.
+* Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!))
+* Threaded search and evaluation
+* Time management
+* Neural Net chess player - see [Minic](https://github.com/tryingsomestuff/Minic), [maia](https://github.com/CSSLab/maia-chess), [sunfish](https://github.com/thomasahle/sunfish), [Bagatur](https://github.com/bagaturchess/Bagatur) (Java).  Perhaps [bullet](https://github.com/jw1912/bullet) would be useful for training?
+* Resignations
+
+### Features (in priority order)
+1. [ ] verify alpha/beta search is working (seems to have a bug)
+2. [ ] iterative deepening
+3. [ ] timeouts
+4. [ ] integration with other bots - get a baseline ELO
+5. [ ] create basic neural net player
+
+### Papercuts to address (in priority order)
+1. [ ] add copyright notice to files
+2. [ ] add stylecheck into build process
+3. [ ] improve coverage (95%+)
+4. [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
+5. [ ] I don't love my logging patterns.  Review and improve.
+6. [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)

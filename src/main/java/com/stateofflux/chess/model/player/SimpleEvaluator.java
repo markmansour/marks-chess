@@ -2,16 +2,20 @@ package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
 import com.stateofflux.chess.model.pieces.Piece;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.stateofflux.chess.model.pieces.KingMoves.MATE_VALUE;
+import java.lang.invoke.MethodHandles;
+
 import static java.lang.Long.bitCount;
 
 public class SimpleEvaluator implements Evaluator {
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /*
      Tables from: https://www.chessprogramming.org/Simplified_Evaluation_Function
      But!  The tables listed are in the wrong order (really!?) as they are in visual order rather than array order.
-     e.g.  Bottom left represents index 0, but if copied straight into an array would be index 54.  Therefore reverse
+     e.g.  Bottom left represents index 0, but if copied straight into an array would be index 54.  Therefore, reverse
      the line order so the bottom line (bottom 8 values) becomes the top line (the first 8 values).
     */
     protected static final int[] PAWN_TABLE = {
@@ -167,11 +171,11 @@ public class SimpleEvaluator implements Evaluator {
         // sideMoved is the value of the move just completed.  The game counter has already moved
         // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
         // then it was black that just moved.
-        int sideMoved = game.getActivePlayerColor().isBlack() ? 1 : -1;
+        int sideMoved = game.getActivePlayerColor().isWhite() ? 1 : -1;
 
         // from white's perspective.
         if(game.isCheckmated()) {
-            // LOGGER.info("**************** CHECKMATED: {}", evaluatingMoves);
+            // logger.info("**************** CHECKMATED: {}", evaluatingMoves);
             return (MATE_VALUE - depth) * sideMoved;
         }
 
@@ -186,8 +190,12 @@ public class SimpleEvaluator implements Evaluator {
 
         int mobilityWeight = 1;
 
-        MoveList<Move> whiteMoves = game.generateMovesFor(PlayerColor.WHITE);
-        MoveList<Move> blackMoves = game.generateMovesFor(PlayerColor.BLACK);
+        // using pseudo moves as:
+        // a) it's faster than creating legal moves
+        // b) the current game logic doesn't take the moving player into account when cleaning up moves.  e.g. if
+        //    it is white's turn and I ask for black moves, it will remove any black moves that put white in check.
+        MoveList<Move> whiteMoves = game.pseudoLegalMovesFor(PlayerColor.WHITE);
+        MoveList<Move> blackMoves = game.pseudoLegalMovesFor(PlayerColor.BLACK);
 
         // from the perspective of the white player
         int mobilityScore = mobilityWeight *
@@ -196,7 +204,7 @@ public class SimpleEvaluator implements Evaluator {
         if(game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
-            bonus += (500 * sideMoved);  // from white's perspective
+            bonus += 500 * sideMoved;  // from white's perspective
         }
 
         // if attacking a space next to the king give a bonus
@@ -212,8 +220,10 @@ public class SimpleEvaluator implements Evaluator {
 
         /*
          * In order for NegaMax to work, it is important to return the score relative to the side being evaluated.
+         * materialScore, mobilityScore and bonus are all calculated from white's perspective, so need to be
+         * multiplied by side.  BoardScore already takes into account the side moving.
          */
-        return (materialScore + mobilityScore + bonus + boardScore(game));
+        return (materialScore + mobilityScore + bonus) + (boardScore(game) * sideMoved);
     }
 
     protected int boardScore(Game game) {
