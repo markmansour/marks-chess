@@ -111,11 +111,6 @@ public class Move {
         return m;
     }
 
-
-    public PlayerColor getColor() {
-        return this.piece.getColor();
-    }
-
     public int getFrom() {
         return from;
     }

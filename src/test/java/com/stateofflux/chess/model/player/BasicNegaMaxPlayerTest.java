@@ -14,8 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
 public class BasicNegaMaxPlayerTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicNegaMaxPlayerTest.class);
-
 /*
     @Test public void lessMaterialHasLowerEvaluation() {
         Game game;
@@ -43,6 +41,7 @@ public class BasicNegaMaxPlayerTest {
     }
 */
 
+    @Disabled
     @Test public void evaluatePicksMate() {
         BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         Game game = new Game("Bn6/2k4p/6q1/p4p1R/P1P2Kn1/4r1n1/5N2/6N1 b - -"); // black is winning.

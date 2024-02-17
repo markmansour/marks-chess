@@ -63,7 +63,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
                 value = score;
             }
 
-            if(value >= alpha) {
+            if(value > alpha) {
                 alpha = value;
             }
             // at the root beta is always MAX, and therefore alpha can never be greater than MAX.
@@ -80,7 +80,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         // we don't continue to pick the "first" result.
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        logger.atInfo().log("{} : depth remaining(α {}, β {}): {}.  all moves: {}.  how we got here: {}.  best move: {} ({})",
+        logger.atDebug().log("{} : depth remaining(α {}, β {}): {}.  all moves: {}.  how we got here: {}.  best move: {} ({})",
             game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
             alpha,
             beta,
@@ -114,18 +114,19 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      *    negamax(rootNode, depth, −∞, +∞, 1)
      */
     public int alphaBeta(Game game, int depth, int alpha, int beta, PlayerColor pc) {
-        int sideToMove = pc.isWhite() ? 1 : -1;
+assert pc == game.getActivePlayerColor();
+        int sideMoved = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
-            return evaluate(game, pc) * sideToMove;
+            return evaluate(game, pc) * sideMoved;
 
         MoveList<Move> moves = game.generateMoves();
         List<MoveData> dataOnMoves = new ArrayList<>();
         List<Move> bestMoves = new ArrayList<>();
 
         // node is terminal
-        if(moves.isEmpty())
-            return evaluate(game, depth) * sideToMove;
+        if(moves.isEmpty())  // mate, draw, etc.
+            return evaluate(game, getSearchDepth() - depth) * sideMoved;
 
         moves.sort(getComparator());
 
@@ -162,10 +163,9 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        if(depth > 1)
-        logger.atInfo().log("{}{} : depth: {} (α {}, β {}).  generated moves: {}.  pruned #: {}/{}.  how we got here: {}.  best move: {} ({})",
+        logger.atDebug().log("{}{} : depth: {} (α {}, β {}).  generated moves: {}.  pruned #: {}/{}.  how we got here: {}.  best move: {} ({})",
             " ".repeat((getSearchDepth() - depth) * 2),
-            sideToMove == 1 ? "MAX" : "MIN",
+            sideMoved == 1 ? "MAX" : "MIN",
             depth,
             alpha,
             beta,

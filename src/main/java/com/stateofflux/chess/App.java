@@ -69,9 +69,8 @@ public class App
             blackPlayer.setSearchDepth(aa.blackDepth);
 
             uciLoop(whitePlayer, blackPlayer, aa);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -82,14 +81,14 @@ public class App
         final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         Game game = null;
 
-        Logger.atDebug().log("Configuration: ");
-        Logger.atDebug().log("- white player type: " + aa.whiteStrategy);
-        Logger.atDebug().log("- white player search depth: " + aa.whiteDepth);
-        Logger.atDebug().log("- black player type: " + aa.blackStrategy);
-        Logger.atDebug().log("- black player search depth: " + aa.blackDepth);
-        Logger.atDebug().log("- evaluator: " + aa.evaluatorStrategy);
-        Logger.atDebug().log("- help?: " + aa.askedForHelp);
-        Logger.atDebug().log("");
+        Logger.atInfo().log("Configuration: ");
+        Logger.atInfo().log("- white player type: " + aa.whiteStrategy);
+        Logger.atInfo().log("- white player search depth: " + aa.whiteDepth);
+        Logger.atInfo().log("- black player type: " + aa.blackStrategy);
+        Logger.atInfo().log("- black player search depth: " + aa.blackDepth);
+        Logger.atInfo().log("- evaluator: " + aa.evaluatorStrategy);
+        Logger.atInfo().log("- help?: " + aa.askedForHelp);
+        Logger.atInfo().log("");
 
         for (String line = scanner.nextLine().strip(); !line.equals("quit"); line = scanner.nextLine()) {
             String[] lineParts = line.split("\\s+");
@@ -102,15 +101,9 @@ public class App
 //                     System.out.println("option name <OPTION-NAME> value");
                     System.out.println("uciok");
                 }
-                case "isready" -> {
-                    System.out.println("readyok");
-                }
-                case "setoption" -> {
-                    throw new IllegalArgumentException("setoption not supported yet");
-                }
-                case "register" -> {
-                    System.out.println("later");
-                }
+                case "isready" -> System.out.println("readyok");
+                case "setoption" -> throw new IllegalArgumentException("setoption not supported yet");
+                case "register" -> System.out.println("later");
                 case "go" -> {
                     if(game == null) {
                         game = new Game();
@@ -170,9 +163,7 @@ public class App
                     assert game != null;
                     game.printOccupied();
                 }
-                default -> {
-                    Logger.info("Error: {}", line);
-                }
+                default -> Logger.info("Error: {}", line);
             }
 
             sb.append(line).append(System.lineSeparator());

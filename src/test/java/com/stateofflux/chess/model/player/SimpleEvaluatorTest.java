@@ -13,8 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
 public class SimpleEvaluatorTest {
-    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     @Nested
     class WhitesTurn {
         @Test public void initialBoardShouldBeZero() {
@@ -32,10 +30,10 @@ public class SimpleEvaluatorTest {
         }
 
         @Test public void checkmateShouldReturnLargeNumber() {
-            Game game = new Game("5rk1/p4ppp/8/1QP5/8/8/PP3qrP/R2RK3 w - -");
+            Game game = new Game("5rk1/p4ppp/8/1QP5/8/8/PP3qrP/R2RK3 w - -");  // white is mated
             Evaluator se = new SimpleEvaluator();
             int score = se.evaluate(game, 0);
-            assertThat(score).isEqualTo(Evaluator.MATE_VALUE);
+            assertThat(score).isEqualTo(-Evaluator.MATE_VALUE);
         }
 
         @Test public void whiteAdvantage() {
@@ -63,10 +61,10 @@ public class SimpleEvaluatorTest {
         }
 
         @Test public void checkmateShouldReturnLargeNumber() {
-            Game game = new Game("5k2/ppbb1Qp1/2p4p/8/2BP2Pq/8/PP3P2/1R3K2 b - -");
+            Game game = new Game("5k2/ppbb1Qp1/2p4p/8/2BP2Pq/8/PP3P2/1R3K2 b - -");  // black is mated.
             Evaluator se = new SimpleEvaluator();
             int score = se.evaluate(game, 0);
-            assertThat(score).isEqualTo(-Evaluator.MATE_VALUE);
+            assertThat(score).isEqualTo(Evaluator.MATE_VALUE);
         }
 
         @Test public void whiteAdvantage() {

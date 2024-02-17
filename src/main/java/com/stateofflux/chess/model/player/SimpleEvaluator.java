@@ -171,12 +171,14 @@ public class SimpleEvaluator implements Evaluator {
         // sideMoved is the value of the move just completed.  The game counter has already moved
         // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
         // then it was black that just moved.
-        int sideMoved = game.getActivePlayerColor().isWhite() ? 1 : -1;
+        int sideMoved = game.getActivePlayerColor().isBlack() ? 1 : -1;
 
         // from white's perspective.
         if(game.isCheckmated()) {
             // logger.info("**************** CHECKMATED: {}", evaluatingMoves);
             return (MATE_VALUE - depth) * sideMoved;
+        } else if(game.isDraw()) {
+            return 0;
         }
 
         // from the perspective of the white player
