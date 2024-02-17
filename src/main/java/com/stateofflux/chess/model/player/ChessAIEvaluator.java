@@ -10,7 +10,7 @@ import java.util.Map;
 import static java.lang.Long.bitCount;
 
 /*
- * Implementation of https://github.com/zeyu2001/chess-ai/blob/main/js/main.js
+ * Implementation of https://github.com/zeyu2001/chess-ai/blob/main/js/main.js#L132 (evaluateBoard)
  */
 public class ChessAIEvaluator extends SimpleEvaluator {
     protected static Map<Character, Integer> PIECE_WEIGHTS = Map.of(
@@ -128,7 +128,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
     @Override
     public int evaluate(Game game, int depth) {
         int bonus = 0;
-        int sideMoved = game.getActivePlayerColor().isBlack() ? -1 : 1;
+        int sideMoved = game.getActivePlayerColor().isBlack() ? 1 : -1;
 
         if(game.isCheckmated()) {
             return (MATE_VALUE - depth) * sideMoved;  // prioritize mate values that take fewer moves.
@@ -141,8 +141,6 @@ public class ChessAIEvaluator extends SimpleEvaluator {
             bonus += 50 * sideMoved;
         }
 
-        Move lastMove = game.getLastMove();
-
         Board b = game.getBoard();
 
         int materialScore =
@@ -153,14 +151,17 @@ public class ChessAIEvaluator extends SimpleEvaluator {
                 + PIECE_WEIGHTS.get(Piece.KNIGHT_ALGEBRAIC) * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
                 + PIECE_WEIGHTS.get(Piece.PAWN_ALGEBRAIC) * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
+        Move lastMove = game.getLastMove();
+
         if(lastMove.isCapture()) {
-            // I don't have the captured piece info - this is the only part of the algo I can't replicate.
+            bonus += PIECE_WEIGHTS.get(lastMove.getCapturePiece().getAlgebraicChar()) * sideMoved;
         }
 
         // this does the same as promotion math and general square math as I'm calculating the
         // score from scratch, whereas chessai does an incremental update.
         int boardScore = boardScore(game);
 
-        return bonus + materialScore + boardScore;
+        // return bonus + materialScore + boardScore;
+        return bonus + materialScore + (boardScore * sideMoved);
     }
 }

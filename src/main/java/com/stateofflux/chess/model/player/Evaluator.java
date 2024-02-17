@@ -30,6 +30,4 @@ public interface Evaluator {
     }
 
     int evaluate(Game game, int depth);
-
-    int getNodesEvaluated();
 }

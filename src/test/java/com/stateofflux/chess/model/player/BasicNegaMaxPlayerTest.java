@@ -50,14 +50,6 @@ public class BasicNegaMaxPlayerTest {
         assertThat(m.toLongSan()).isEqualTo("g3h5");
     }
 
-    @Test public void evaluateAllNodes() {
-        Evaluator se = new SimpleEvaluator();
-        Game game = new Game(); // black is winning.
-        BasicNegaMaxPlayer white = new BasicNegaMaxPlayer(PlayerColor.WHITE, se);
-        white.getNextMove(game);
-        assertThat(se.getNodesEvaluated()).isEqualTo(20 * 20);
-    }
-
     @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void basicNegaMaxVsRandom() {
         Game game = new Game();

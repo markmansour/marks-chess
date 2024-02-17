@@ -56,6 +56,7 @@ public class BasicNegaMaxPlayer extends Player {
 
         for(Move move: moves) {
             game.move(move);
+            nodesVisited++;
             int score = -negaMax(game, searchDepth - 1, color.otherColor());
             // LOGGER.info("score for move ({}) : {}", move, score);
             game.undo();

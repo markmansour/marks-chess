@@ -26,6 +26,8 @@ public class TranspositionTable {
     private final long[] data;
     private final long[] movesData;
     private final int mask;
+    private int hashSize;  // number of entries
+    private int entryCount;
 
     public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
         public Move getBestMove() {
@@ -39,7 +41,8 @@ public class TranspositionTable {
 
     public TranspositionTable(int memoryUsageInMB) {
         int entrySizeInBytes = 8;  // packing all data into a long (64 bits / 8 bytes);
-        int hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes;  // number of entries
+        hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes;
+        entryCount = 0;
         mask = hashSize - 1; // m = n & (d - 1) will compute the modulo (base 2) where n -> numerator, d -> denominator, m is modulo.
         data = new long[hashSize];
         keys = new long[hashSize];
@@ -110,6 +113,7 @@ public class TranspositionTable {
             keys[index] = key ^ d;
             data[index] = d;
             movesData[index] = best.toLong();
+            entryCount++;
 
             return true;
         }
@@ -120,6 +124,7 @@ public class TranspositionTable {
     public void clear() {
         Arrays.fill(keys, 0L);
         Arrays.fill(data, 0L);
+        entryCount = 0;
     }
 
     private long buildData(int score, int depth, NodeType nodeType) {
@@ -161,5 +166,13 @@ public class TranspositionTable {
             newScore = score;
 
         return new Entry(key, newScore, moveData, nodeType, depth, 0);
+    }
+
+    public int getEntryCount() {
+        return entryCount;
+    }
+
+    public int getHashSize() {
+        return hashSize;
     }
 }

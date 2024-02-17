@@ -4,18 +4,21 @@ import com.stateofflux.chess.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaBetaPlayerWithTT.class);
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final TranspositionTable tt;
+    private int tableHits;
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
         tt = new TranspositionTable();
+        tableHits = 0;
     }
 
     @Override
@@ -28,11 +31,23 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
     @Override
     public Move getNextMove(Game game) {
-        int depth = getSearchDepth();
+        int searchDepth = getSearchDepth();
+        Move bestMove = null;
+
+        for(int depth = 1; depth <= searchDepth; depth++) {
+            bestMove = alphaBetaRoot(game, depth);
+            logger.info("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, getTableHits(), getTtEntries(), getTtHashSize(), (int) (((double) getTtEntries()) / (double) getTtHashSize() * 100));
+            logger.info("best move: {}.  Node visited: {}", bestMove, getNodesVisited());
+        }
+
+        return bestMove;
+    }
+
+    public Move alphaBetaRoot(Game game, int depth) {
         int alpha = Evaluator.MIN_VALUE;
-        int alphaOrig = alpha;
         int beta = Evaluator.MAX_VALUE;
         PlayerColor pc = this.getColor();
+        int alphaOrig = alpha;
         int value = Evaluator.MIN_VALUE;
         int score;
         List<Move> bestMoves = new ArrayList<>();
@@ -40,6 +55,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
 
         if(existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
+            tableHits++;
             // LOGGER.info("TT hit at root");
 
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
@@ -51,7 +67,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 beta = Math.min(beta, existingEntry.score());
 
             if(alpha >= beta) {
-                LOGGER.info("returning cached hit - a >= b");
+                logger.info("returning cached hit - a >= b");
                 return existingEntry.getBestMove();
             }
         }
@@ -62,6 +78,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         for(Move move: moves) {
             game.move(move);
+            nodesVisited++;
+
             score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
 
@@ -82,7 +100,6 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 break;  // cut off
             }
         }
-
 
         assert !bestMoves.isEmpty();
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
@@ -148,6 +165,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
         if(existingEntry != null && existingEntry.depth() >= depth) {
+            tableHits++;
             // LOGGER.info("TT hit");
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
                 // LOGGER.info("returning cached hit - EXACT");
@@ -163,38 +181,48 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             }
         }
 
-        int sideToMove = pc.isWhite() ? 1 : -1;
+        int sideMoved = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
-            return evaluate(game, pc) * sideToMove;
+            return evaluate(game, pc) * sideMoved;
 
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal
         if(moves.isEmpty())
-            return evaluate(game, depth) * sideToMove;
+            return evaluate(game, getSearchDepth() - depth) * sideMoved;
 
         moves.sort(getComparator());
 
         int value = Evaluator.MIN_VALUE;
-        Move bestMove = null;
+        List<Move> bestMoves = new ArrayList<>();
 
         for(Move move: moves) {
             game.move(move);
+            nodesVisited++;
 
             int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
-            if(score > value) {
-                value = score;
-                bestMove = move;
-            }
-
             game.undo();
 
-            alpha = Math.max(alpha, value);
+            if(score == value) {
+                bestMoves.add(move);
+            } else if(score > value) {
+                bestMoves.clear();
+                bestMoves.add(move);
+                value = score;
+            }
 
-            if(alpha >= beta)
+            if(value >= alpha) {
+                alpha = value;
+            }
+
+            if(alpha >= beta) {
+                // LOGGER.info("depth remaining: {}. Cut off: α {}, β {}", depth, alpha, beta);
                 break;
+            }
         }
+
+        Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
@@ -212,6 +240,18 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         // TranspositionTable.Entry newEntry = new TranspositionTable.Entry(game.getZobristKey(), null, depth, value, nt, 0);
         tt.put(game.getZobristKey(), value, best, nt, depth, game.getClock());
+    }
+
+    public int getTableHits() {
+        return tableHits;
+    }
+
+    public int getTtEntries() {
+        return tt.getEntryCount();
+    }
+
+    public int getTtHashSize() {
+        return tt.getHashSize();
     }
 }
 

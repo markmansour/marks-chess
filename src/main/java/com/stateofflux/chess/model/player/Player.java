@@ -9,10 +9,12 @@ public abstract class Player {
     protected int searchDepth;
     protected PlayerColor color;
     protected Evaluator evaluator;
+    protected int nodesVisited;
 
     public Player(PlayerColor pc, Evaluator evaluator) {
         color = pc;
         this.evaluator = evaluator;
+        nodesVisited = 0;
     }
 
     public void setSearchDepth(int depth) {
@@ -38,10 +40,14 @@ public abstract class Player {
     }
 
     public String toString() {
-        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: " + evaluator.getNodesEvaluated() + ")";
+        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: ";
     }
 
     public int getBestMoveScore() {
         return color.isWhite() ? 1 : -1;
+    }
+
+    public int getNodesVisited() {
+        return nodesVisited;
     }
 }

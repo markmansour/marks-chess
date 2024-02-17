@@ -145,7 +145,6 @@ public class SimpleEvaluator implements Evaluator {
         PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
     }
 
-    protected int nodesEvaluated = 0;
     protected boolean endGame = false;
 
     public SimpleEvaluator() {
@@ -163,8 +162,6 @@ public class SimpleEvaluator implements Evaluator {
      */
     @Override
     public int evaluate(Game game, int depth) {
-        nodesEvaluated++;
-
         Board b = game.getBoard();
         int bonus = 0;
 
@@ -251,9 +248,5 @@ public class SimpleEvaluator implements Evaluator {
             PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_ENDGAME_TABLE);
             PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
         }
-    }
-
-    public int getNodesEvaluated() {
-        return nodesEvaluated;
     }
 }

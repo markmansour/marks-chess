@@ -13,9 +13,4 @@ public class MinusOneZeroOneEvaluator implements Evaluator {
 
         return game.getActivePlayerColor().isBlack() ? 1 : -1;
     }
-
-    @Override
-    public int getNodesEvaluated() {
-        return 0;
-    }
 }

@@ -104,8 +104,13 @@ public class Game {
             move(move);
             playerIndex++;
 
-            LOGGER.info("{}({}): move({}) -> {} ({}) - advantage ({}:{})",
-                currentPlayer.getClass().getSimpleName(), currentPlayer.getSearchDepth(), move, asFen(), currentPlayer, currentPlayer.getBestMoveScore() > 0 ? "White" : "Black", currentPlayer.getBestMoveScore());
+            LOGGER.info("{}({}): move({}) -> {} ({}) - nv: {}",
+                currentPlayer.getClass().getSimpleName(),
+                currentPlayer.getSearchDepth(),
+                move,
+                asFen(),
+                currentPlayer,
+                currentPlayer.getNodesVisited());
         }
     }
 

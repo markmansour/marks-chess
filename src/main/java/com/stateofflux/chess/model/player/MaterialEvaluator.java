@@ -37,9 +37,4 @@ public class MaterialEvaluator implements Evaluator {
 
         return (materialScore);
     }
-
-    @Override
-    public int getNodesEvaluated() {
-        return 0;
-    }
 }

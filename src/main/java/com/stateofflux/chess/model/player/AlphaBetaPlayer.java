@@ -48,6 +48,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         for(Move move: moves) {
             game.move(move);
+            nodesVisited++;
+
             moveHistory.addLast(move);
             int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
@@ -136,6 +138,8 @@ assert pc == game.getActivePlayerColor();
 
         for(Move move: moves) {
             game.move(move);
+            nodesVisited++;
+
             moveHistory.addLast(move);
             int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
