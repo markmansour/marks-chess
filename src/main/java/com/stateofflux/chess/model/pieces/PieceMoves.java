@@ -93,22 +93,6 @@ public abstract class PieceMoves implements PieceMovesInterface {
         }
     }
 
-    protected long getOpponentBoard() {
-        return this.opponentBoard;
-    }
-
-    protected long getCurrentPlayerBoard() {
-        return this.currentPlayerBoard;
-    }
-
-    public Board getBoard() {
-        return this.board;
-    }
-
-    public Piece getPiece() {
-        return this.piece;
-    }
-
     @Override
     public long getCaptureMoves() {
         return this.captureMoves;

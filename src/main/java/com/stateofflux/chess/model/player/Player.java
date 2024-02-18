@@ -15,6 +15,7 @@ public abstract class Player {
         color = pc;
         this.evaluator = evaluator;
         nodesVisited = 0;
+        searchDepth = DEFAULT_SEARCH_DEPTH;
     }
 
     public void setSearchDepth(int depth) {
@@ -49,5 +50,17 @@ public abstract class Player {
 
     public int getNodesVisited() {
         return nodesVisited;
+    }
+
+    public void reset() {
+        nodesVisited = 0;
+    }
+
+    public void setHashInMb(int hashSize) {
+        // no-op
+    }
+
+    public void setIncrement(long increment) {
+        // no-op
     }
 }

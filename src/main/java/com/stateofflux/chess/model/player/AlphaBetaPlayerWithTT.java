@@ -14,7 +14,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     private static final long DEFAULT_TIME_ALLOCATION = TimeUnit.MINUTES.toNanos(5);
     private static final long DEFAULT_INCREMENT_ALLOCATION = TimeUnit.SECONDS.toNanos(5);
 
-    private final TranspositionTable tt;
+    private TranspositionTable tt;
     private int tableHits;
     private final Timer timer;
     private long increment;
@@ -42,6 +42,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     }
 
     // in Nanos.
+    @Override
     public void setIncrement(long increment) {
         this.increment = increment;
     }
@@ -303,6 +304,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
     public int getTtHashSize() {
         return tt.getHashSize();
+    }
+
+    @Override
+    public void setHashInMb(int hashSize) {
+        logger.atInfo().log("resizing hash to {} mb", hashSize);
+        tt = new TranspositionTable(hashSize);
     }
 }
 

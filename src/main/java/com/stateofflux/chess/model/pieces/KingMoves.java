@@ -27,9 +27,11 @@ public class KingMoves implements PieceMovesInterface {
         }
     }
 
+/*
     public static long surroundingMoves(int location) {
         return KING_MOVES[location];
     }
+*/
 
     private final Board board;
     private final int location;

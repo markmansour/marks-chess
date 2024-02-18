@@ -869,10 +869,6 @@ public class Game {
         return "unknown";
     }
 
-    public int getCurrentPlayerIndex() {
-        return clock % 2;
-    }
-
     public int getPreviousPlayerIndex() {
         return (clock + 1) % 2;
     }

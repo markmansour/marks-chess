@@ -3,6 +3,7 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
+import com.stateofflux.chess.model.TranspositionTable;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -143,9 +144,18 @@ public class AlphaBetaPlayerTest {
         assertThat(((AlphaBetaPlayerWithTT) two).getTableHits()).isNotZero();
     }
 
-
     @Nested
     class AlphaBetaWithTT {
+        @Test public void testSettingOfHashSize() {
+            Evaluator evaluator = new SimpleEvaluator();
+            AlphaBetaPlayerWithTT player = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
+            int initialHashSize = player.getTtHashSize();
+            int mbToEntries = 1024 * 1024 / 8;
+            assertThat(initialHashSize).isEqualTo(TranspositionTable.DEFAULT_HASH_SIZE_IN_MB * mbToEntries);
+            player.setHashInMb(16);    // set hashsize to 16MB
+            assertThat(player.getTtHashSize()).isEqualTo(16 * mbToEntries);
+        }
+
         @Disabled
         @Test public void iterativeDeepeningTest() {
             Game game = new Game("4k3/2p5/8/8/8/8/3P4/4K3 w - - 0 1");  // simple board for testing
