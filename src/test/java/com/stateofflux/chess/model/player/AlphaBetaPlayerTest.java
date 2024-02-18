@@ -188,6 +188,23 @@ public class AlphaBetaPlayerTest {
             }
         }
 
+        @Disabled("This is not working!")
+        @Test public void addressBlunder() {
+            Game game = new Game("2kr2nr/pp3ppp/2p5/2P1nb2/4q3/7P/PPP1BPP1/R1BQK1NR b - - 0 16");
+            long timeAllocatedInMillis = TimeUnit.SECONDS.toNanos(5);
+            Evaluator evaluator = new SimpleEvaluator();
+            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+            game.setPlayers(one, two);
+
+            one.setIncrement(timeAllocatedInMillis);  // 1 second
+            one.setSearchDepth(200);
+
+            Move bestMove = one.getNextMove(game);
+            logger.info("Best move is: {}", bestMove);
+            assertThat(bestMove.toLongSan()).isEqualTo("d8d1");
+        }
+
         @Test public void iterativeDeepeningWithTimer() {
             Game game = new Game();  // simple board for testing
             long timeAllocatedInMillis = TimeUnit.SECONDS.toNanos(5);

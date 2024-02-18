@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class App
 {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    public final static Logger uci_logger = LoggerFactory.getLogger("UCI_Logger");
+
     private static final String PROGRAM_NAME = "Mark's Chess Program";
     private Player whitePlayer;
     private Player blackPlayer;
@@ -42,7 +44,7 @@ public class App
         try {
             jc.parse(args);
         } catch (ParameterException e) {
-            System.out.println("Error parsing command line args: " + String.join(" ", args) );
+            logger.atError().log("Error parsing command line args: " + String.join(" ", args) );
             e.usage();
             System.exit(1);
         }
@@ -52,14 +54,14 @@ public class App
             System.exit(0);
         }
 
-        logger.atInfo().log("Configuration: ");
-        logger.atInfo().log("- white player type: " + aa.whiteStrategy);
-        logger.atInfo().log("- white player search depth: " + aa.whiteDepth);
-        logger.atInfo().log("- black player type: " + aa.blackStrategy);
-        logger.atInfo().log("- black player search depth: " + aa.blackDepth);
-        logger.atInfo().log("- evaluator: " + aa.evaluatorStrategy);
-        logger.atInfo().log("- help?: " + aa.askedForHelp);
-        logger.atInfo().log("");
+        logger.atDebug().log("Configuration: ");
+        logger.atDebug().log("- white player type: " + aa.whiteStrategy);
+        logger.atDebug().log("- white player search depth: " + aa.whiteDepth);
+        logger.atDebug().log("- black player type: " + aa.blackStrategy);
+        logger.atDebug().log("- black player search depth: " + aa.blackDepth);
+        logger.atDebug().log("- evaluator: " + aa.evaluatorStrategy);
+        logger.atDebug().log("- help?: " + aa.askedForHelp);
+        logger.atDebug().log("");
 
         try {
             App app = new App(aa);
@@ -91,8 +93,8 @@ public class App
     }
 
     public void uciLoop() {
-        System.out.println("log level info? " + logger.isInfoEnabled());
-        System.out.println("log level debug? " + logger.isDebugEnabled());
+        logger.atDebug().log("log level info? " + logger.isInfoEnabled());
+        logger.atDebug().log("log level debug? " + logger.isDebugEnabled());
         StringBuilder sb = new StringBuilder();
 
         final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
@@ -100,28 +102,27 @@ public class App
 
         for (String line = scanner.nextLine().strip(); !line.equals("quit"); line = scanner.nextLine()) {
             String[] lineParts = line.split("\\s+");
-            logger.info("command received: {}", line);
+            logger.atDebug().log("command received: {}", line);
 
             switch(lineParts[0]) {
                 case "uci" -> {
-                    System.out.println("id name Mark's Chess Engine");
-                    System.out.println("id author Mark Mansour");
+                    uci_logger.atInfo().log("id name Mark's Chess Engine");
+                    uci_logger.atInfo().log("id author Mark Mansour");
 
                     // e.g. option name Hash type spin default 64 min 1 max 65536
-                    System.out.println("option name Hash type spin default " + TranspositionTable.DEFAULT_HASH_SIZE_IN_MB + " min 1 max " + getFreeMemoryInMB());
+                    uci_logger.atInfo().log("option name Hash type spin default " + TranspositionTable.DEFAULT_HASH_SIZE_IN_MB + " min 1 max " + getFreeMemoryInMB());
 //                     System.out.println("option name <OPTION-NAME> value");
-                    System.out.println("uciok");
+                    uci_logger.atInfo().log("uciok");
                 }
-                case "isready" -> System.out.println("readyok");
+                case "isready" -> uci_logger.atInfo().log("readyok");
                 case "setoption" -> {
                     // e.g. setoption name Hash value 64
                     if(lineParts[2].equals("Hash")) {
                         hashSize = Integer.valueOf(lineParts[4]);
-                        logger.info("set hash size to {}", hashSize);
-                        System.out.println("set hash size to "+ hashSize);
+                        logger.atDebug().log("set hash size to {}", hashSize);
                     }
                 }
-                case "register" -> System.out.println("later");
+                case "register" -> uci_logger.atInfo().log("later");
                 case "go" -> {
                     if(game == null) {
                         game = new Game();
@@ -130,36 +131,33 @@ public class App
                     if(lineParts.length == 3 && lineParts[1].equals("perft")) {
                         perft(lineParts, game);
                     } else {
-                        System.out.println("parsing the go command");
+                        logger.atInfo().log("parsing the go command");
                         // go wtime 19653 btime 20000 movestogo 40
                         Map<String, String> params = new HashMap<>();
                         for(int i = 1; i < lineParts.length; i += 2)
                             params.put(lineParts[i], lineParts[i+1]);
 
-                        // Logger.info("Ignoring all go commands");
                         Player p = game.getActivePlayerColor().isWhite() ? whitePlayer : blackPlayer;
 
                         // wtime & btime
                         String timeString = game.getActivePlayerColor().isWhite() ? params.get("wtime") : params.get("btime");
-                        System.out.println("lineParts : " + lineParts);
-                        System.out.println("timeString : " + timeString);
+                        logger.atDebug().log("timeString : " + timeString);
 
                         if(!timeString.isBlank()) {
-                            long remainingTimeInMillis = Integer.valueOf(timeString);
+                            long remainingTimeInMillis = Integer.parseInt(timeString);
                             int movesToGo = 50;  // assume there are 50 moves left
                             if(params.containsKey("movestogo")) {
                                 movesToGo = Integer.parseInt(params.get("movestogo"));
                             }
                             long incrementInNanos = TimeUnit.MILLISECONDS.toNanos(remainingTimeInMillis / movesToGo);
                             p.setIncrement(incrementInNanos);
-                            logger.atInfo().log("set increment for {} to {}ms", game.getActivePlayerColor(), TimeUnit.NANOSECONDS.toMillis(incrementInNanos));
-                            System.out.println("increment set to : " + TimeUnit.NANOSECONDS.toMillis(incrementInNanos) + "ms");
+                            logger.atDebug().log("set increment for {} to {}ms", game.getActivePlayerColor(), TimeUnit.NANOSECONDS.toMillis(incrementInNanos));
                         }
 
                         // movestogo - noop
 
                         Move m = p.getNextMove(game);
-                        System.out.println("bestmove " + m.toLongSan());
+                        uci_logger.atInfo().log("bestmove " + m.toLongSan());
                     }
                 }
                 case "ucinewgame" -> {
@@ -169,7 +167,7 @@ public class App
                     String fen = FenString.INITIAL_BOARD;
 
                     if(lineParts[1].equals("startpos"))
-                        logger.info("using default board setup");
+                        logger.atDebug().log("using default board setup");
 
                     game = getGame(fen);
 
@@ -185,13 +183,20 @@ public class App
                     assert game != null;
                     game.printOccupied();
                 }
-                default -> logger.info("Error: {}", line);
+                case "help" -> {
+                    uci_logger.atInfo().log("Mark's Chess is a chess engine for playing and analyzing.");
+                    uci_logger.atInfo().log("Mark's Chess is normally used with a graphical user interface (GUI) and implements");
+                    uci_logger.atInfo().log("the Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc.");
+                    uci_logger.atInfo().log("For any further information, visit https://github.com/markmansour/marks-chess");
+                    uci_logger.atInfo().log("or read the corresponding README.md and Copying.txt files distributed along with this program.");
+                }
+                default -> uci_logger.atError().log("Unknown command: '{}'. Type help for more information.", line);
             }
 
             sb.append(line).append(System.lineSeparator());
         }
 
-        logger.info(sb.toString());
+        // logger.atDebug().log(sb.toString());
     }
 
     private static void perft(String[] lineParts, Game game) {
@@ -210,7 +215,7 @@ public class App
         else
             nodesPerSecond = 0;
 
-        logger.info("ran for {} ms and reviewed {} nodes.  {} nodes/second",
+        logger.atDebug().log("ran for {} ms and reviewed {} nodes.  {} nodes/second",
             TimeUnit.NANOSECONDS.toMillis(endTime - startTime),
             perftCount, nodesPerSecond
         );
@@ -222,7 +227,7 @@ public class App
 
     private Game getGame(String fen) {
         Game game = new Game(fen);
-        logger.info("fresh game object");
+        logger.atDebug().log("fresh game object");
         whitePlayer.reset();
         whitePlayer.setHashInMb(hashSize);
         blackPlayer.reset();

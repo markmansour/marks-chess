@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static com.stateofflux.chess.App.uci_logger;
+
 public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final long DEFAULT_TIME_ALLOCATION = TimeUnit.MINUTES.toNanos(5);
@@ -59,10 +61,24 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int searchDepth = getSearchDepth();
         Move bestMove = null;
 
+        uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", searchDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
+
         for(int depth = 1; depth <= searchDepth && !timedOut; depth++) {
             bestMove = alphaBetaRoot(game, depth);
-            logger.info("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, getTableHits(), getTtEntries(), getTtHashSize(), (int) (((double) getTtEntries()) / (double) getTtHashSize() * 100));
-            logger.info("best move: {}.  Node visited: {}", bestMove, getNodesVisited());
+            logger.atDebug().log("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, getTableHits(), getTtEntries(), getTtHashSize(), (int) (((double) getTtEntries()) / (double) getTtHashSize() * 100));
+            logger.atDebug().log("best move: {}.  Node visited: {}", bestMove, getNodesVisited());
+
+            // info depth 10 seldepth 14 multipv 1 score cp 27 nodes 144979 nps 2163865 hashfull 54 tbhits 0 time 67 pv e2e4 d7d5 e4d5 g8f6 g1f3 d8d5 b1c3 d5e6 d1e2
+            uci_logger.atInfo().log("info depth {} score {} nodes {} nps {} hashfull {} time {} pv {}",
+                depth,
+                getBestMoveScore(),
+                getNodesVisited(),
+                getNodesVisited() * 1000L / TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
+                tt.getHashfull(),
+                TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
+                bestMove.toLongSan()
+                );
+
         }
 
         return bestMove;
@@ -85,6 +101,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
             if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
                 // LOGGER.info("returning cached hit - EXACT");
+                bestMoveScore = existingEntry.score();
                 return existingEntry.getBestMove();
             } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
@@ -92,7 +109,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 beta = Math.min(beta, existingEntry.score());
 
             if(alpha >= beta) {
-                logger.info("returning cached hit - a >= b");
+                logger.atDebug().log("returning cached hit - a >= b");
+                bestMoveScore = existingEntry.score();
                 return existingEntry.getBestMove();
             }
         }
@@ -132,6 +150,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         assert !bestMoves.isEmpty();
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+        bestMoveScore = value;
 
         // There are many values with the same score so randomly pick a value.  By randomly picking a value
         // we don't continue to pick the "first" result.
@@ -234,7 +253,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             // are we out of time?
             if((nodesVisited & 4095) == 0 && moves.size() != 1) {  // every 4096 nodes, check to see if we're out of time: (numerator & (denominator - 1)) == 0.
                 if(timer.incrementIsUsed()) {
-                    logger.atInfo().log("timing out after {}ms (allocation of {}ms)",
+                    logger.atDebug().log("timing out after {}ms (allocation of {}ms)",
                         TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
                         TimeUnit.NANOSECONDS.toMillis(timer.getIncrementAllocation()));
                     timedOut = true;
@@ -269,7 +288,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         }
 
         if(bestMoves.isEmpty()) {
-            logger.atInfo().log("search has been terminated but without a best value at this level");
+            logger.atDebug().log("search has been terminated but without a best value at this level");
             return Evaluator.MAX_VALUE;  // the aim is that this is a no-op as no best value has been found.
             // return 0;
         }
@@ -299,16 +318,16 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     }
 
     public int getTtEntries() {
-        return tt.getEntryCount();
+        return tt.getActiveEntries();
     }
 
     public int getTtHashSize() {
-        return tt.getHashSize();
+        return tt.getMaxEntries();
     }
 
     @Override
     public void setHashInMb(int hashSize) {
-        logger.atInfo().log("resizing hash to {} mb", hashSize);
+        logger.atDebug().log("resizing hash to {} mb", hashSize);
         tt = new TranspositionTable(hashSize);
     }
 }

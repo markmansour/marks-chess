@@ -172,7 +172,7 @@ public class Board {
 
     // --------------------------- Instance Methods ---------------------------
 
-    void printOccupiedBoard() {
+    public void printOccupiedBoard() {
         StringBuilder prettyBoard = new StringBuilder(64);
 
         for (int i = 0; i < 64; i++) {

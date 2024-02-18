@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("UnitTest")
+@Tag("FullGameTest")
 public class BasicNegaMaxPlayerTest {
 /*
     @Test public void lessMaterialHasLowerEvaluation() {
