@@ -5,20 +5,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final long DEFAULT_TIME_ALLOCATION = TimeUnit.MINUTES.toNanos(5);
+    private static final long DEFAULT_INCREMENT_ALLOCATION = TimeUnit.SECONDS.toNanos(5);
+
     private final TranspositionTable tt;
     private int tableHits;
+    private final Timer timer;
+    private long increment;
+    private boolean timedOut;
+    final static Deque<Move> moveHistory = new ArrayDeque<>();
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
+        this(color, evaluator, DEFAULT_TIME_ALLOCATION);
+    }
+
+    public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator, long timeAllocatedForPlayer) {
         super(color, evaluator);
         tt = new TranspositionTable();
         tableHits = 0;
+        timer = Timer.create(timeAllocatedForPlayer);
+        timedOut = false;
     }
 
     @Override
@@ -29,12 +41,24 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         return moveComparator;
     }
 
+    // in Nanos.
+    public void setIncrement(long increment) {
+        this.increment = increment;
+    }
+
+    // in Nanos.
+    public long getIncrement() {
+        return (this.increment == 0) ? DEFAULT_INCREMENT_ALLOCATION : this.increment;
+    }
+
     @Override
     public Move getNextMove(Game game) {
+        timer.startIncrementCountdown(getIncrement());
+        timedOut = false;
         int searchDepth = getSearchDepth();
         Move bestMove = null;
 
-        for(int depth = 1; depth <= searchDepth; depth++) {
+        for(int depth = 1; depth <= searchDepth && !timedOut; depth++) {
             bestMove = alphaBetaRoot(game, depth);
             logger.info("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, getTableHits(), getTtEntries(), getTtHashSize(), (int) (((double) getTtEntries()) / (double) getTtHashSize() * 100));
             logger.info("best move: {}.  Node visited: {}", bestMove, getNodesVisited());
@@ -98,6 +122,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             // this condition really not applicable at this level, but leaving for symmetry with alphaBeta()
             if( alpha >= beta) {
                 break;  // cut off
+            }
+
+            if(timedOut) {
+                break;
             }
         }
 
@@ -196,12 +224,29 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         int value = Evaluator.MIN_VALUE;
         List<Move> bestMoves = new ArrayList<>();
+        int score;
 
         for(Move move: moves) {
             game.move(move);
             nodesVisited++;
 
-            int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
+            // are we out of time?
+            if((nodesVisited & 4095) == 0 && moves.size() != 1) {  // every 4096 nodes, check to see if we're out of time: (numerator & (denominator - 1)) == 0.
+                if(timer.incrementIsUsed()) {
+                    logger.atInfo().log("timing out after {}ms (allocation of {}ms)",
+                        TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
+                        TimeUnit.NANOSECONDS.toMillis(timer.getIncrementAllocation()));
+                    timedOut = true;
+                }
+            }
+
+            if(timedOut) {
+                game.undo();
+                // score = Evaluator.MIN_VALUE;
+                break;
+            }
+
+            score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
 
             if(score == value) {
@@ -212,7 +257,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 value = score;
             }
 
-            if(value >= alpha) {
+            if(value > alpha) {
                 alpha = value;
             }
 
@@ -220,6 +265,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 // LOGGER.info("depth remaining: {}. Cut off: α {}, β {}", depth, alpha, beta);
                 break;
             }
+        }
+
+        if(bestMoves.isEmpty()) {
+            logger.atInfo().log("search has been terminated but without a best value at this level");
+            return Evaluator.MAX_VALUE;  // the aim is that this is a no-op as no best value has been found.
+            // return 0;
         }
 
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));

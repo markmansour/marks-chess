@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -153,14 +154,45 @@ public class AlphaBetaPlayerTest {
             Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
             game.setPlayers(one, two);
 
-            int goalDepth = 20;
+            int goalDepth = 8;
 
             for(int depth = 1; depth <= goalDepth; depth++) {
                 one.setSearchDepth(depth);
                 Move move = one.getNextMove(game);
-                logger.info("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, one.getTableHits(), one.getTtEntries(), one.getTtHashSize(), (int) (((double) one.getTtEntries()) / (double) one.getTtHashSize() * 100));
-                logger.info("best move: {}.  Node visited: {}", move, one.getNodesVisited());
             }
+        }
+
+        @Disabled
+        @Test public void debugIterativeDeepening() {
+            Game game = new Game("4k3/2p5/8/8/8/8/3P4/4K3 w - - 0 1");  // simple board for testing
+            Evaluator evaluator = new SimpleEvaluator();
+            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+            game.setPlayers(one, two);
+
+            int goalDepth = 8;
+
+            for(int depth = 1; depth <= goalDepth; depth++) {
+                one.setSearchDepth(depth);
+                Move move = one.getNextMove(game);
+            }
+        }
+
+        @Test public void iterativeDeepeningWithTimer() {
+            Game game = new Game();  // simple board for testing
+            long timeAllocatedInMillis = TimeUnit.SECONDS.toNanos(5);
+            Evaluator evaluator = new SimpleEvaluator();
+            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+            game.setPlayers(one, two);
+
+            one.setIncrement(timeAllocatedInMillis);  // 1 second
+            one.setSearchDepth(200);
+
+            Move bestMove = one.getNextMove(game);
+            logger.info("Best move is: {}", bestMove);
+//            long timeUsed = one.getLastIncrement();
+//            assertThat(timeUsed).isLessThan(timeAllocatedInMillis);
         }
     }
 }
