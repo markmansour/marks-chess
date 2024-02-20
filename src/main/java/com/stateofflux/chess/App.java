@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.stateofflux.chess.model.*;
 import com.stateofflux.chess.model.player.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class App
                 case "setoption" -> {
                     // e.g. setoption name Hash value 64
                     if(lineParts[2].equals("Hash")) {
-                        hashSize = Integer.valueOf(lineParts[4]);
+                        hashSize = Integer.parseInt(lineParts[4]);
                         logger.atDebug().log("set hash size to {}", hashSize);
                     }
                 }
@@ -236,6 +237,7 @@ public class App
         return game;
     }
 
+    @SuppressFBWarnings("DM_GC")
     private int getFreeMemoryInMB() {
         Runtime rt = Runtime.getRuntime();
         rt.gc();

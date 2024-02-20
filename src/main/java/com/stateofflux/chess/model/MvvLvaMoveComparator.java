@@ -2,9 +2,11 @@ package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.player.Evaluator;
 
+import java.io.Serializable;
+
 // Most Valuable Victim - Least Valuable Aggressor
 // https://www.chessprogramming.org/MVV-LVA
-public class MvvLvaMoveComparator implements java.util.Comparator<Move> {
+public class MvvLvaMoveComparator implements java.util.Comparator<Move>, Serializable {
     @Override
     public int compare(Move m1, Move m2) {
         // no captures

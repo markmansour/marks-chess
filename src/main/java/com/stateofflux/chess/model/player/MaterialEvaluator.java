@@ -6,8 +6,6 @@ import static java.lang.Long.bitCount;
 
 public class MaterialEvaluator implements Evaluator {
 
-    protected boolean endGame = false;
-
     public MaterialEvaluator() {
     }
 

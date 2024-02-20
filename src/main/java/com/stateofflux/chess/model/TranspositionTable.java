@@ -29,7 +29,7 @@ public class TranspositionTable {
     private final int maxEntries;  // number of entries
     private int activeEntries;
 
-    public static int DEFAULT_HASH_SIZE_IN_MB = 128;
+    public static final int DEFAULT_HASH_SIZE_IN_MB = 128;
 
     public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
         public Move getBestMove() {

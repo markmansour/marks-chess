@@ -4,6 +4,7 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.MoveList;
 import com.stateofflux.chess.model.PlayerColor;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.security.SecureRandom;
 import java.util.concurrent.ThreadLocalRandom;
@@ -11,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RandomMovePlayer extends Player {
     protected final SecureRandom rand;
 
+    @SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
     public RandomMovePlayer(PlayerColor pc, Evaluator evaluator) {
         super(pc, evaluator);
         rand = new SecureRandom();

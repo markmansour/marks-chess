@@ -6,7 +6,7 @@ import com.stateofflux.chess.model.Direction;
 public abstract class StraightLineMoves extends PieceMoves {
 
     private static final long[] ROOK_MASKS = new long[64];
-    public static final long[][] ROOK_TABLE = new long[64][4096];
+    private static final long[][] ROOK_TABLE = new long[64][4096];
     private static final long[] ROOK_MAGIC = new long[]{
         0xa8002c000108020L, 0x6c00049b0002001L, 0x100200010090040L, 0x2480041000800801L, 0x280028004000800L,
         0x900410008040022L, 0x280020001001080L, 0x2880002041000080L, 0xa000800080400034L, 0x4808020004000L,
@@ -33,7 +33,7 @@ public abstract class StraightLineMoves extends PieceMoves {
         12, 11, 11, 11, 11, 11, 11, 12
     };
     private static final long[] BISHOP_MASKS = new long[64];
-    public static final long[][] BISHOP_TABLE = new long[64][1024];
+    private static final long[][] BISHOP_TABLE = new long[64][1024];
     private static final long[] BISHOP_MAGIC = new long[]{
         0x89a1121896040240L, 0x2004844802002010L, 0x2068080051921000L, 0x62880a0220200808L, 0x4042004000000L,
         0x100822020200011L, 0xc00444222012000aL, 0x28808801216001L, 0x400492088408100L, 0x201c401040c0084L,

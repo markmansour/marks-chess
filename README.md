@@ -119,10 +119,16 @@ Polyglot readers
 * Neural Net chess player - see [Minic](https://github.com/tryingsomestuff/Minic), [maia](https://github.com/CSSLab/maia-chess), [sunfish](https://github.com/thomasahle/sunfish), [Bagatur](https://github.com/bagaturchess/Bagatur) (Java).  Perhaps [bullet](https://github.com/jw1912/bullet) would be useful for training?
 * Resignations
 
+## Neural Net Research
+* [Stockfish NNUE doc explaining how NNUEs work](https://github.com/official-stockfish/nnue-pytorch/blob/master/docs/nnue.md)
+* [Neural Networks for chess](https://github.com/asdfjkl/neural_network_chess) by Dominik Klein
+* [Coding Your First Neural Network FROM SCRATCH](https://code.likeagirl.io/coding-your-first-neural-network-from-scratch-0b28646b4043)
+* [DeepLearning4J](https://deeplearning4j.konduit.ai) - with links to learning resources
+
 ### Features (in priority order)
-1. [ ] verify alpha/beta search is working (seems to have a bug)
-2. [ ] iterative deepening
-3. [ ] timeouts
+1. [x] verify alpha/beta search is working (seems to have a bug)
+2. [x] iterative deepening
+3. [x] timeouts
 4. [ ] integration with other bots - get a baseline ELO
 5. [ ] create basic neural net player
 
