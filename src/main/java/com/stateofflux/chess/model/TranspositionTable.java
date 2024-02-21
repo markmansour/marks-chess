@@ -29,12 +29,16 @@ public class TranspositionTable {
     private final int maxEntries;  // number of entries
     private int activeEntries;
 
-    public static final int DEFAULT_HASH_SIZE_IN_MB = 128;
+    public static final int DEFAULT_HASH_SIZE_IN_MB = 16;
 
     public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
         public Move getBestMove() {
             return Move.buildFrom(best);
         }
+    }
+
+    public enum NodeType {
+        EXACT, LOWER_BOUND, UPPER_BOUND
     }
 
     public TranspositionTable() {
@@ -49,10 +53,6 @@ public class TranspositionTable {
         data = new long[maxEntries];
         keys = new long[maxEntries];
         movesData = new long[maxEntries];
-    }
-
-    public enum NodeType {
-        EXACT, LOWER_BOUND, UPPER_BOUND
     }
 
     /*
@@ -124,9 +124,10 @@ public class TranspositionTable {
     }
 
     public void clear() {
-        Arrays.fill(keys, 0L);
-        Arrays.fill(data, 0L);
         activeEntries = 0;
+        Arrays.fill(data, 0L);
+        Arrays.fill(keys, 0L);
+        Arrays.fill(movesData, 0L);
     }
 
     private long buildData(int score, int depth, NodeType nodeType) {

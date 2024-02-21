@@ -24,8 +24,8 @@ public class App
     public final static Logger uci_logger = LoggerFactory.getLogger("UCI_Logger");
 
     private static final String PROGRAM_NAME = "Mark's Chess Program";
-    private Player whitePlayer;
-    private Player blackPlayer;
+    private final Player whitePlayer;
+    private final Player blackPlayer;
     private int hashSize = TranspositionTable.DEFAULT_HASH_SIZE_IN_MB;
 
     /*
@@ -162,7 +162,7 @@ public class App
                     }
                 }
                 case "ucinewgame" -> {
-                    game = getGame();
+                    game = resetGame();
                 }
                 case "position" -> {
                     String fen = FenString.INITIAL_BOARD;
@@ -170,7 +170,7 @@ public class App
                     if(lineParts[1].equals("startpos"))
                         logger.atDebug().log("using default board setup");
 
-                    game = getGame(fen);
+                    game = resetGame(fen);
 
                     if (lineParts.length >= 4 && lineParts[2].equals("moves")) {
                         int i = 3;
@@ -222,18 +222,17 @@ public class App
         );
     }
 
-    private Game getGame() {
-        return getGame(FenString.INITIAL_BOARD);
+    private Game resetGame() {
+        return resetGame(FenString.INITIAL_BOARD);
     }
 
-    private Game getGame(String fen) {
+    private Game resetGame(String fen) {
         Game game = new Game(fen);
         logger.atDebug().log("fresh game object");
         whitePlayer.reset();
         whitePlayer.setHashInMb(hashSize);
         blackPlayer.reset();
         blackPlayer.setHashInMb(hashSize);
-        game.setPlayers(whitePlayer, blackPlayer);
         return game;
     }
 

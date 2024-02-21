@@ -54,7 +54,15 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     }
 
     @Override
+    public void reset() {
+        super.reset();
+        tableHits = 0;
+        tt.clear();
+    }
+
+    @Override
     public Move getNextMove(Game game) {
+        reset();
         timer.startIncrementCountdown(getIncrement());
         timedOut = false;
         int searchDepth = getSearchDepth();
@@ -127,7 +135,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 bestMoves.add(mh);
             } else if(score > value) {
                 bestMoves.clear();
-                bestMoves.add(mh.createNew(move, score));
+                mh.addMove(move, score);
+                bestMoves.add(mh);
                 value = score;
             }
 
@@ -155,7 +164,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
         logger.atDebug().log("{} : depth remaining {}, (α {}, β {}). best move: {} ({})",
-            game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
+            game.getActivePlayerColor().isWhite() ? "W" : "B",
             depth,
             alpha,
             beta,
@@ -291,8 +300,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 bestMoves.clear();
                 if(depth == 1)
                     bestMoves.add(mh);  // leaf node
-                else
-                    bestMoves.add(mh.createNew(move, score));
+                else {
+                    mh.addMove(move, score);
+                    bestMoves.add(mh);
+                }
 
                 value = score;
             }
@@ -317,9 +328,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        logger.atDebug().log("{}{} : depth remaining {}, (α {}, β {}). pruned #: {}/{}. best move: {} ({})",
-            " ".repeat((getSearchDepth() - depth) * 2),
-            game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
+        logger.atDebug().log("{} : depth remaining {}, (α {}, β {}). pruned #: {}/{}. best move: {} ({})",
+            // " ".repeat((getSearchDepth() - depth) * 2),   // for some reason this line breaks logging!
+            game.getActivePlayerColor().isWhite() ? "W" : "B",
             depth,
             alpha,
             beta,

@@ -87,14 +87,9 @@ public class Game {
         return g;
     }
 
-    private Player[] players;
-
     // --------------------------- Playing ---------------------------
-    public void setPlayers(Player one, Player two) {
-        this.players = new Player[] { one, two};
-    }
-
-    public void play() {
+    public void play(Player white, Player black) {
+        Player[] players = { white, black };
         int playerIndex = 0;
         Player currentPlayer;
 
@@ -183,10 +178,6 @@ public class Game {
     }
 
     // --------------------------- Players ---------------------------
-
-    public Player getActivePlayer() {
-        return activePlayerColor.isWhite() ? players[0] : players[1];
-    }
 
     private void setActivePlayerColor(PlayerColor activePlayerColor) {
         if(this.activePlayerColor != null)
@@ -861,15 +852,10 @@ public class Game {
     }
 
     public String getWinner() {
-        if(players == null) return "No Players Set";
         if(isDraw()) return "Draw";
         if(isStalemate()) return "Stalemate";
-        if(isCheckmated()) return "Checkmate: " + players[getPreviousPlayerIndex()];
+        if(isCheckmated()) return "Checkmate: " + getActivePlayerColor().otherColor();
         if(exceededMoves()) return "Moves exceeded";
         return "unknown";
-    }
-
-    public int getPreviousPlayerIndex() {
-        return (clock + 1) % 2;
     }
 }

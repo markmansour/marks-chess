@@ -7,37 +7,31 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MoveHistory {
-    private final Move bestMove;
-    private final int score;
-    private final Deque<Move> previousMoves;
+    private Move bestMove;
+    private int score;
+    private Move[] previousMoves;
+    private static final Move[] EMPTY_MOVE_LIST = new Move[0];
 
     public MoveHistory(Move bestMove, int score) {
         this.bestMove = bestMove;
         this.score = score;
-        this.previousMoves = new ArrayDeque<>(1);
+        this.previousMoves = EMPTY_MOVE_LIST;
     }
 
-    private MoveHistory(Move bestMove, int score, Deque<Move> list) {
-        this.bestMove = bestMove;
-        this.score = score;
-        this.previousMoves = list;
-    }
+    public void addMove(Move newMove, int newScore) {
+        Move[] list;
+        if(previousMoves == null || previousMoves.length == 0) {
+            previousMoves = new Move[1];
+            previousMoves[0] = bestMove;
+        } else {
+            list = new Move[previousMoves.length + 1];
+            System.arraycopy(previousMoves, 0, list, 0, previousMoves.length);
+            list[previousMoves.length] = bestMove;
+            previousMoves = list;
+        }
 
-    MoveHistory(TranspositionTable.Entry entry) {
-        this.bestMove = entry.getBestMove();
-        this.score = entry.score();
-        this.previousMoves = new ArrayDeque<>(1);
-    }
-
-    public MoveHistory createNew(Move newMove, int newScore) {
-        ArrayDeque<Move> list = new ArrayDeque<>(previousMoves.size() + 1);
-//        if(previousMovesToString().contains(newMove.toLongSan()))
-//            newMove.toLong();
-
-        list.addAll(previousMoves);
-        list.addLast(bestMove);
-
-        return new MoveHistory(newMove, newScore, list);
+        bestMove = newMove;
+        score = newScore;
     }
 
     public Move bestMove() {
@@ -48,12 +42,15 @@ public class MoveHistory {
         return score;
     }
 
-    public Deque<Move> previousMoves() {
+    public Move[] previousMoves() {
         return previousMoves;
     }
 
     public String previousMovesToString() {
-        return previousMoves().stream().map(Move::toLongSan).collect(Collectors.joining(" ")).toString();
+        if(previousMoves == null)
+            return "";
+
+        return Arrays.stream(previousMoves).map(Move::toLongSan).collect(Collectors.joining(" "));
     }
 
     @Override

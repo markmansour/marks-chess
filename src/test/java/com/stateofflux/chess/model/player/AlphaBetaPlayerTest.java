@@ -29,9 +29,8 @@ public class AlphaBetaPlayerTest {
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         Player two = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -43,9 +42,8 @@ public class AlphaBetaPlayerTest {
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -55,10 +53,8 @@ public class AlphaBetaPlayerTest {
     @Test public void testToPlaceInCheck() {
         Game game = new Game("1n2k1n1/r2p3r/b1p1ppp1/p6p/3K4/8/8/7q b - - 0 30");
         Evaluator evaluator = new SimpleEvaluator();
-        Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
         // white's turn (player one)
         // winning move is black:h1e1, white:d4c5 (their only move), black:e1b4 - checkmate
@@ -73,15 +69,14 @@ public class AlphaBetaPlayerTest {
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(6);
-        game.setPlayers(one, two);
 
         assertThat(game.getClock()).isEqualTo(54);
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
         // assertThat(game.getClock()).isEqualTo(60);  due to my evaluator (we have multiple "best moves"), this isn't consistent.
-        assertThat(game.getActivePlayer()).isEqualTo(one);  // player two played the last turn and won.  It moved to player one but they can't do anything.
+        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);  // player two played the last turn and won.  It moved to player one but they can't do anything.
     }
 
     @Test public void alphaBetaDepth2LosesToAlphaBetaDepth4() {
@@ -91,9 +86,8 @@ public class AlphaBetaPlayerTest {
         one.setSearchDepth(2);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -111,7 +105,6 @@ public class AlphaBetaPlayerTest {
         one.setSearchDepth(4);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(2);
-        game.setPlayers(one, two);
 
         Move bestMove = one.getNextMove(game);
         game.move(bestMove);
@@ -120,15 +113,16 @@ public class AlphaBetaPlayerTest {
 
     @Test public void alphaBetaVsChessAi() {
         Game game = new Game();
+
         Evaluator evaluator = new SimpleEvaluator();
-        Evaluator chessAi = new ChessAIEvaluator();
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         one.setSearchDepth(4);
+
+        Evaluator chessAi = new ChessAIEvaluator();
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, chessAi);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -165,7 +159,6 @@ public class AlphaBetaPlayerTest {
             Evaluator evaluator = new SimpleEvaluator();
             AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
             Player black = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-            game.setPlayers(white, black);
 
             white.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
             white.setSearchDepth(200);

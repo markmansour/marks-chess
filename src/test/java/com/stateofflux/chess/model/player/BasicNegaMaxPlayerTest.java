@@ -8,8 +8,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("FullGameTest")
@@ -55,9 +54,8 @@ public class BasicNegaMaxPlayerTest {
         Game game = new Game();
         Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
         Player two = new RandomMovePlayer(PlayerColor.BLACK, new SimpleEvaluator());
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         Assertions.assertThat(game.isOver()).isTrue();
@@ -69,9 +67,8 @@ public class BasicNegaMaxPlayerTest {
         Game game = new Game();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, new SimpleEvaluator());
         Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         Assertions.assertThat(game.isOver()).isTrue();
@@ -85,9 +82,8 @@ public class BasicNegaMaxPlayerTest {
         one.setSearchDepth(2);
         Player two = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         two.setSearchDepth(3);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();

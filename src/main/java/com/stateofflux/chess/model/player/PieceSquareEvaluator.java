@@ -2,15 +2,11 @@ package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
 import com.stateofflux.chess.model.pieces.Piece;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 import static java.lang.Long.bitCount;
 
 public abstract class PieceSquareEvaluator implements Evaluator {
-    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    // final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     protected int[][] pieceSquareTables;
     protected boolean endGame = false;
@@ -68,8 +64,8 @@ public abstract class PieceSquareEvaluator implements Evaluator {
         if (game.isCheckmated()) {
             // logger.info("**************** CHECKMATED: {}", evaluatingMoves);
             return (MATE_VALUE - depth) * sideMoved;
-        } else if (game.isDraw()) {
-            return 0;
+//        } else if (game.isDraw()) { // isDraw is very expensive for me to calculate (due to isStalemate) - so disable it.
+//            return 0;
         }
 
         // from the perspective of the white player
