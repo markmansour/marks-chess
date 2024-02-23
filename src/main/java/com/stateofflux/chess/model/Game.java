@@ -30,6 +30,7 @@ public class Game {
 
     // private final ArrayList<Long> historyAsHashes = new ArrayList<>();  // add hashes as an attribute of History and remove this field.
     private final ArrayList<History> historyOfMoves = new ArrayList<>();
+    private ArrayList<Move> toRemove = new ArrayList<>(64);
 
     // --------------------------- Constructors ---------------------------
 
@@ -265,7 +266,8 @@ public class Game {
 
     private void cleanUpMoves(MoveList<Move> playerMoves) {
         // if in check, make sure any move takes the player out of check.
-        MoveList<Move> toRemove = new MoveList<>(new ArrayList<>(playerMoves.size()));
+        // MoveList<Move> toRemove = new MoveList<>(new ArrayList<>(playerMoves.size()));
+        toRemove.clear();
 
         for (var move : playerMoves) {
             // can't use castling to get out of check
@@ -284,8 +286,6 @@ public class Game {
         }
 
         playerMoves.removeAll(toRemove);
-
-
     }
 
     /*
