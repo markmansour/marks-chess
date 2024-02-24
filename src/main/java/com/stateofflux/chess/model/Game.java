@@ -29,7 +29,7 @@ public class Game {
     private int movesWithoutCaptureOrPawnMove = 0;
 
     private final ArrayList<History> historyOfMoves = new ArrayList<>();
-    private ArrayList<Move> toRemove = new ArrayList<>(64);
+    private final ArrayList<Move> toRemove = new ArrayList<>(64);
 
     // --------------------------- Constructors ---------------------------
 
@@ -686,10 +686,6 @@ public class Game {
 
     public boolean isCheckmatedCheap() {
         return isChecked() && pseudoLegalMovesFor(getActivePlayerColor()).isEmpty();
-    }
-
-    public void disable50MovesRule() {
-        this.limitMovesTo50 = false;
     }
 
     // 3-fold repetition

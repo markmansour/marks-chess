@@ -1,7 +1,6 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.Move;
-import com.stateofflux.chess.model.TranspositionTable;
 
 import java.util.*;
 import java.util.stream.Collectors;

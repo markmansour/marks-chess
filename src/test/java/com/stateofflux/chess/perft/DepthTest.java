@@ -394,13 +394,13 @@ public class DepthTest {
             );
     }
 
-    private void simplifiedDepthTest(int depth, String fen, long expected) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    private void simplifiedDepthTest(int depth, String fen, long expected) throws IOException {
         SortedMap<String, Long> actual;
         String profile = "EMPTY";
         String methodName = "depthOf" + depth;
         long startTime = System.nanoTime();
         long endTime;
-        long perftCount = -1;
+        long perftCount;
 
         try {
             asyncProfiler.start(Events.CPU, 1_000_000);
