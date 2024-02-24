@@ -25,8 +25,8 @@ public class MoveHistory {
             previousMoves[0] = bestMove;
         } else {
             list = new Move[previousMoves.length + 1];
-            System.arraycopy(previousMoves, 0, list, 0, previousMoves.length);
-            list[previousMoves.length] = bestMove;
+            System.arraycopy(previousMoves, 0, list, 1, previousMoves.length);
+            list[0] = bestMove;
             previousMoves = list;
         }
 

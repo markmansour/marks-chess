@@ -135,7 +135,6 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 bestMoves.add(mh);
             } else if(score > value) {
                 bestMoves.clear();
-                mh.addMove(move, score);
                 bestMoves.add(mh);
                 value = score;
             }
@@ -295,15 +294,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             game.undo();
 
             if(score == value) {
+                mh.addMove(lastMove, score);
                 bestMoves.add(mh);
             } else if(score > value) {
                 bestMoves.clear();
-                if(depth == 1)
-                    bestMoves.add(mh);  // leaf node
-                else {
-                    mh.addMove(move, score);
-                    bestMoves.add(mh);
-                }
+                mh.addMove(lastMove, score);
+                bestMoves.add(mh);  // leaf node
 
                 value = score;
             }
