@@ -158,6 +158,10 @@ public class DepthTest {
         depthHelper(4, perftRecords);
     }
 
+    @Test public void allEpdExamplesToDepthOfFiv() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(5, perftRecords);
+    }
+
     // about 2 seconds
     @Test public void startingPositionDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(4, defaultBoard());

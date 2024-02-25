@@ -152,20 +152,39 @@ public class AlphaBetaPlayerTest {
             assertThat(player.getTtHashSize()).isEqualTo(16 * mbToEntries);
         }
 
-        @Disabled("The code makes a blunder!")
-        @Test public void addressBlunder() {
-            Game game = new Game("2kr2nr/pp3ppp/2p5/2P1nb2/4q3/7P/PPP1BPP1/R1BQK1NR b - - 0 16");
+        @Nested
+        class Blunders {
+            @Disabled("The code makes a blunder!")
+            @Test public void addressBlunder() {
+                Game game = new Game("2kr2nr/pp3ppp/2p5/2P1nb2/4q3/7P/PPP1BPP1/R1BQK1NR b - - 0 16");
 
-            Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-            Player black = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+                Evaluator evaluator = new SimpleEvaluator();
+                AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+                Player black = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
 
-            white.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
-            white.setSearchDepth(200);
+                white.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
+                white.setSearchDepth(200);
 
-            Move bestMove = black.getNextMove(game);
-            logger.info("Best move is: {}", bestMove);
-            assertThat(bestMove.toLongSan()).isEqualTo("d8d1");
+                Move bestMove = black.getNextMove(game);
+                logger.info("Best move is: {}", bestMove);
+                assertThat(bestMove.toLongSan()).isEqualTo("d8d1");
+            }
+
+            @Disabled("The code makes a blunder!")
+            @Test public void uselessRookMove() {
+                Game game = new Game("r1bqkbnr/pppppppp/8/8/3nP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq -");
+
+                Evaluator evaluator = new SimpleEvaluator();
+                AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+                Player black = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
+
+                black.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
+                black.setSearchDepth(200);
+
+                Move bestMove = black.getNextMove(game);
+                logger.info("Best move is: {}", bestMove);
+                assertThat(bestMove.toLongSan()).isNotEqualTo("a8b8");
+            }
         }
     }
 }

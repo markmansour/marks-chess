@@ -28,5 +28,13 @@ cutechess-cli \
   -pgnout output_pgn_file.pgn \
   -concurrency 5 \
   -games 10 \
-  -debug  `# shows output from each engine`
+  -debug  `# shows output from each engine` \
+  > output_engine.log 2>&1 &
 ```
+
+## References
+* [Lc0 Testing guide](https://lczero.org/dev/wiki/testing-guide/)
+* [Chess Tuning Tools](https://chess-tuning-tools.readthedocs.io/en/latest/index.html) - place parameteres to tune in a json file, and let cutechess-cli run tournaments to tune the values of those params.
+* [SPRT testing the Rustic chess engine](https://rustic-chess.org/progress/sprt_testing.html) - using cutechess-cli
+* Match Statistics on [chessprogrammingwiki.org](https://www.chessprogramming.org/Match_Statistics)
+* [A few thoughts about testing chess engines](https://tearth.dev/posts/a-few-thoughts-about-testing-chess-engines/) blog - piece on using cutechess-cli
