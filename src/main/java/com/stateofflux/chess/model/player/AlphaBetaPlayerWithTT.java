@@ -70,6 +70,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", searchDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
 
+        logger.atDebug().log("starting iterative deepening with fen: \"{}\"", game.asFen());
+
         // Iterative Deepening loop
         for(int depth = 1; depth <= searchDepth && !timedOut; depth++) {
             bestMove = alphaBetaRoot(game, depth);

@@ -178,6 +178,8 @@ public class App
                             game.moveLongNotation(lineParts[i]);
                             i++;
                         }
+
+                        logger.atDebug().log("after position startpos: fen \"{}\"", game.asFen());
                     }
                 }
                 case "d" -> {
