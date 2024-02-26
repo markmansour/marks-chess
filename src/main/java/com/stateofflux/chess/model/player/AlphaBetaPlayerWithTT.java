@@ -3,9 +3,12 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +16,8 @@ import static com.stateofflux.chess.App.uci_logger;
 
 public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    final static Logger xml = LoggerFactory.getLogger("com.stateofflux.chess.alpha-beta-debugging");
+
     private static final long DEFAULT_TIME_ALLOCATION = TimeUnit.MINUTES.toNanos(5);
     private static final long DEFAULT_INCREMENT_ALLOCATION = TimeUnit.SECONDS.toNanos(5);
 
@@ -36,7 +41,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
     @Override
     protected Comparator<Move> getComparator() {
-        if(this.moveComparator == null)
+        if (this.moveComparator == null)
             this.moveComparator = new MvvLvaMoveComparator();
 
         return moveComparator;
@@ -67,19 +72,21 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         timedOut = false;
         int searchDepth = getSearchDepth();
         MoveHistory bestMove = null;
+        MDC.put("ply", String.valueOf(game.getClock()));
 
         uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", searchDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
 
         logger.atDebug().log("starting iterative deepening with fen: \"{}\"", game.asFen());
 
+         xml.atDebug().log("<chess player=\"{}\" search-depth=\"{}\">", game.getActivePlayerColor(), searchDepth);
+
         // Iterative Deepening loop
-        for(int depth = 1; depth <= searchDepth && !timedOut; depth++) {
+        for (int depth = 1; depth <= searchDepth && !timedOut; depth++) {
+            xml.atDebug().log("<iteration depth=\"{}\">", depth);
             bestMove = alphaBetaRoot(game, depth);
-            logger.atDebug().log("{} - tt cache hits: {}.  TT {}/{} ({}%)", depth, getTableHits(), getTtEntries(), getTtHashSize(), (int) (((double) getTtEntries()) / (double) getTtHashSize() * 100));
-            logger.atDebug().log("best move: {}.  Node visited: {}", bestMove, getNodesVisited());
 
             // info depth 10 seldepth 14 multipv 1 score cp 27 nodes 144979 nps 2163865 hashfull 54 tbhits 0 time 67 pv e2e4 d7d5 e4d5 g8f6 g1f3 d8d5 b1c3 d5e6 d1e2
-            uci_logger.atInfo().log("info depth {} score {} nodes {} nps {} hashfull {} time {} pv {} {}",
+            xml.atDebug().log("<search-summary>info depth {} score {} nodes {} nps {} hashfull {} time {} pv {} {}</search-summary>",
                 depth,
                 bestMove.score(),
                 getNodesVisited(),
@@ -88,8 +95,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
                 bestMove.bestMove().toLongSan(),
                 bestMove.previousMovesToString()
-                );
+            );
+            xml.atDebug().log("</iteration>");
         }
+        xml.atDebug().log("</chess>");
 
         return bestMove.bestMove();
     }
@@ -102,21 +111,22 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int value = Evaluator.MIN_VALUE;
         List<MoveHistory> bestMoves = new ArrayList<>();
         int score;
+        int evaluatedCount = 0;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
 
-        if(existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
+        if (existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
             tableHits++;
 
-            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+            if (existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
-            } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
-            else if(existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+            else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
                 beta = Math.min(beta, existingEntry.score());
 
-            if(alpha >= beta) {
-                logger.atDebug().log("returning cached hit - a >= b");
+            if (alpha >= beta) {
+//                logger.atDebug().log("returning cached hit - a >= b");
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
             }
         }
@@ -125,32 +135,35 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         moves.sort(getComparator());
         MoveHistory mh;
 
-        for(Move move: moves) {
+        xml.atDebug().log("<node depth=\"{}\">", depth);
+
+        for (Move move : moves) {
             game.move(move);
             nodesVisited++;
 
-            mh = alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor(), move);
+            mh = alphaBeta(game, depth - 1, -beta, -alpha, pc.otherColor(), move);
+            evaluatedCount++;
             score = -mh.score();
             game.undo();
 
-            if(score == value) {
+            if (score == value) {
                 bestMoves.add(mh);
-            } else if(score > value) {
+            } else if (score > value) {
                 bestMoves.clear();
                 bestMoves.add(mh);
                 value = score;
             }
 
-            if(value > alpha)
+            if (value > alpha)
                 alpha = value;
 
             // at the root beta is always MAX, and therefore alpha can never be greater than MAX.
             // this condition really not applicable at this level, but leaving for symmetry with alphaBeta()
-            if( alpha >= beta) {
+            if (alpha >= beta) {
                 break;  // cut off
             }
 
-            if(timedOut && !bestMoves.isEmpty()) {
+            if (timedOut && !bestMoves.isEmpty()) {
                 break;
             }
         }
@@ -164,13 +177,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         // we don't continue to pick the "first" result.
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        logger.atDebug().log("{} : depth remaining {}, (α {}, β {}). best move: {} ({})",
-            game.getActivePlayerColor().isWhite() ? "W" : "B",
-            depth,
-            alpha,
-            beta,
-            bestMove,
-            value);
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMoveHistory.previousMovesToString());
+        xml.atDebug().log("</node>");
 
         return bestMoveHistory;
     }
@@ -230,36 +238,54 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int alphaOrig = alpha;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-        if(existingEntry != null && existingEntry.depth() >= depth) {
+        if (existingEntry != null && existingEntry.depth() >= depth) {
             tableHits++;
 
-            if(existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+            if (existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
-            } else if(existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
                 alpha = Math.max(alpha, existingEntry.score());
-            else if(existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+            else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
                 beta = Math.min(beta, existingEntry.score());
 
-            if(alpha >= beta) {
+            if (alpha >= beta) {
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
             }
         }
 
         int sideMoved = pc.isWhite() ? 1 : -1;
 
-        if(depth == 0) {
+        if (depth == 0) {
             int evaluatedScore = evaluate(game, pc) * sideMoved;
+
+            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" last-move=\"{}\" score=\"{}\"/>",
+                game.getActivePlayerColor(),
+                depth,
+                alpha,
+                beta,
+                lastMove,
+                evaluatedScore
+            );
+
             return new MoveHistory(lastMove, evaluatedScore);  // TODO: we're not storing history to retrieve (yet!)
         }
 
         MoveList<Move> moves = game.generateMoves();
 
         // node is terminal as there are no more moves.
-        if(moves.isEmpty()) {
-            return new MoveHistory(
+        if (moves.isEmpty()) {
+            int evaluatedScore = evaluate(game, getSearchDepth() - depth) * sideMoved;
+
+            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" last-move=\"{}\" score=\"{}\"/>",
+                game.getActivePlayerColor(),
+                depth,
+                alpha,
+                beta,
                 lastMove,
-                evaluate(game, getSearchDepth() - depth) * sideMoved
+                evaluatedScore
             );
+
+            return new MoveHistory(lastMove, evaluatedScore);  // TODO: we're not storing history to retrieve (yet!)
         }
 
         moves.sort(getComparator());
@@ -270,13 +296,15 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         MoveHistory mh;
         int evaluatedCount = 0;
 
-        for(Move move: moves) {
+        xml.atDebug().log("<node depth=\"{}\" last-move=\"{}\">", depth, lastMove);
+
+        for (Move move : moves) {
             game.move(move);
             nodesVisited++;
 
             // are we out of time?  Every 4096 nodes, check to see if we're out of time.
             // Using bit manipulation to check for modulo (numerator & (denominator - 1)) == 0.
-            if((nodesVisited & 4095) == 0 && moves.size() != 1 && timer.incrementIsUsed()) {
+            if ((nodesVisited & 4095) == 0 && moves.size() != 1 && timer.incrementIsUsed()) {
                 logger.atDebug().log("timing out after {}ms (allocation of {}ms)",
                     TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
                     TimeUnit.NANOSECONDS.toMillis(timer.getIncrementAllocation()));
@@ -285,20 +313,21 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
             // even if we've timed out, keep going one more time to ensure we have a best move as the cost
             // of an extra iteration should be cheap
-            if(timedOut && !bestMoves.isEmpty()) {
+            if (timedOut && !bestMoves.isEmpty()) {
                 game.undo();
                 break;
             }
 
-            mh = alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor(), move);
+            mh = alphaBeta(game, depth - 1, -beta, -alpha, pc.otherColor(), move);
+
             score = -mh.score();
             evaluatedCount++;
             game.undo();
 
-            if(score == value) {
+            if (score == value) {
                 mh.addMove(lastMove, score);
                 bestMoves.add(mh);
-            } else if(score > value) {
+            } else if (score > value) {
                 bestMoves.clear();
                 mh.addMove(lastMove, score);
                 bestMoves.add(mh);  // leaf node
@@ -306,45 +335,28 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 value = score;
             }
 
-            if(value > alpha)
+            if (value > alpha)
                 alpha = value;
 
-            if(alpha >= beta)
+            if (alpha >= beta)
                 break;
         }
-
-/*
-        if(bestMoves.isEmpty()) {
-            logger.atDebug().log("search has been terminated but without a best value at this level");
-            // return Evaluator.MAX_VALUE;  // the aim is that this is a no-op as no best value has been found.
-            return mh.createNew(null, Evaluator.MAX_VALUE);
-        }
-*/
 
         MoveHistory bestMoveHistory = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
         Move bestMove = bestMoveHistory.bestMove();
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        logger.atDebug().log("{} : depth remaining {}, (α {}, β {}). pruned #: {}/{}. best move: {} ({})",
-            // " ".repeat((getSearchDepth() - depth) * 2),   // for some reason this line breaks logging!
-            game.getActivePlayerColor().isWhite() ? "W" : "B",
-            depth,
-            alpha,
-            beta,
-            moves.size() - evaluatedCount,
-            moves.size(),
-            bestMove,
-            value);
-
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMoveHistory.previousMovesToString());
+        xml.atDebug().log("</node>");
         return bestMoveHistory;
     }
 
     private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth) {
         TranspositionTable.NodeType nt;
-        if( value <= alphaOrig)
+        if (value <= alphaOrig)
             nt = TranspositionTable.NodeType.UPPER_BOUND;
-        else if(value >= beta)
+        else if (value >= beta)
             nt = TranspositionTable.NodeType.LOWER_BOUND;
         else
             nt = TranspositionTable.NodeType.EXACT;

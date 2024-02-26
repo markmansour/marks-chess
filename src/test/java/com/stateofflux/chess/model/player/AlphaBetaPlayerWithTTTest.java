@@ -11,8 +11,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.lang.invoke.MethodHandles;
+import java.time.OffsetDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +27,23 @@ class AlphaBetaPlayerWithTTTest {
         // change test logging level from DEBUG to INFO (it's too noisy for full game tests).
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
     }
+
+    @Test public void forDebugging() {
+        Game game = new Game();
+        Evaluator evaluator = new SimpleEvaluator();
+
+        AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+        // white.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
+        white.setSearchDepth(4);
+
+        AlphaBetaPlayerWithTT black = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
+        black.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
+        black.setSearchDepth(200);
+
+        Move bestMove = white.getNextMove(game);
+        logger.info("Best move is: {}", bestMove);  // this should NOT be h1g1 or a1b1
+    }
+
 
     @Disabled
     @Test public void alphaBetaWithTTPlayers() {
@@ -107,8 +126,6 @@ class AlphaBetaPlayerWithTTTest {
 
             Move bestMove = white.getNextMove(game);
             logger.info("Best move is: {}", bestMove);  // this should NOT be h1g1 or a1b1
-
-
         }
     }
 
