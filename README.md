@@ -126,16 +126,18 @@ Polyglot readers
 * [DeepLearning4J](https://deeplearning4j.konduit.ai) - with links to learning resources
 
 ### Features (in priority order)
-1. [x] verify alpha/beta search is working (seems to have a bug)
-2. [x] iterative deepening
-3. [x] timeouts
-4. [ ] integration with other bots - get a baseline ELO
-5. [ ] create basic neural net player
+* [x] verify alpha/beta search is working (seems to have a bug)
+* [x] iterative deepening
+* [x] timeouts
+* [ ] integration with other bots - get a baseline ELO
+* [ ] create basic neural net player
 
 ### Papercuts to address (in priority order)
-1. [ ] add copyright notice to files
-2. [ ] add stylecheck into build process
-3. [ ] improve coverage (95%+)
-4. [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
-5. [ ] I don't love my logging patterns.  Review and improve.
-6. [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)
+* [ ] add copyright notice to files
+* [ ] add stylecheck into build process
+* [ ] add dependency management checks ([dependabot](https://github.com/dependabot/dependabot-core)?) to build process
+* [ ] improve coverage (95%+)
+* [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
+* [ ] I don't love my logging patterns.  Review and improve.
+* [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)
+* [ ] Improve speed of evaluation function.  It's pretty slow right now.

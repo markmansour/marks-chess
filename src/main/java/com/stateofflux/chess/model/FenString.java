@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model;
 
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import com.stateofflux.chess.model.pieces.CastlingHelper;
 import com.stateofflux.chess.model.pieces.PawnMoves;
@@ -27,7 +28,7 @@ public class FenString {
 
     public static final char NO_CASTLING = '-';
 
-    private final String piecePlacement;
+    private String piecePlacement;
     private PlayerColor playerTurn;
     private String castlingRights;
     private String enPassantTarget;
@@ -36,16 +37,45 @@ public class FenString {
 
     public FenString(String fen) {
         try (Scanner s = new Scanner(fen)) {
-            this.piecePlacement = s.next();
+            setPiecePlacement(s.next());
             setActivePlayerColor(s.next());
             setCastlingRights(s.next());
             setEnPassantTarget(s.next());
 
             if (s.hasNextInt()) {
-                setHalfmoveClock(s.next());
-                setFullmoveCounter(s.next());
+                int halfmove = Integer.parseInt(s.next());
+                int fullmove = Integer.parseInt(s.next());
+
+                if(halfmove < 0 || fullmove < 0)
+                    throw new NumberFormatException("moves must be greater than 0");
+
+                setHalfmoveClock(halfmove);
+                setFullmoveCounter(fullmove);
             }
         }
+    }
+
+    private void setPiecePlacement(String pp) {
+        String[] parts = pp.split("/");
+
+        if(parts.length != 8)
+            throw new IllegalArgumentException("board definition requires 8 sections");
+
+        for(int i = 0; i < parts.length; i++) {
+            int pieces = 0;
+            for(int j = 0; j < parts[i].length(); j++) {
+                char c = parts[i].charAt(j);
+                if(Character.isDigit(c))
+                    pieces += Character.digit(c, 10);
+                else
+                    pieces++;
+            }
+
+            if(pieces != 8)
+                throw new IllegalArgumentException("board sections must represent 8 squares");
+        }
+
+        this.piecePlacement = pp;
     }
 
     public static String locationToSquare(int location) {
@@ -140,18 +170,8 @@ public class FenString {
      * <Castling ability> ::= '-' | ['K'] ['Q'] ['k'] ['q'] (1..4)
      */
     private void setCastlingRights(String castlingRightsString) {
-        for (char c : castlingRightsString.toCharArray()) {
-            switch (c) {
-                case CastlingHelper.WHITE_KING_CHAR,
-                    CastlingHelper.WHITE_QUEEN_CHAR,
-                    CastlingHelper.BLACK_KING_CHAR,
-                    CastlingHelper.BLACK_QUEEN_CHAR,
-                    CastlingHelper.NO_CASTLING_CHAR:
-                    continue;
-                default:
-                    throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);
-            }
-        }
+        if(!Pattern.matches("^(?!(.*K){2})(?!(.*Q){2})(?!(.*k){2})(?!(.*q){2})[KQkq]{0,4}$|-", castlingRightsString))
+            throw new IllegalArgumentException("Invalid castling rights: " + castlingRightsString);
 
         this.castlingRights = castlingRightsString;
     }
@@ -196,8 +216,8 @@ public class FenString {
      * <Halfmove Clock> ::= <digit> {<digit>}
      * <digit> ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
      */
-    private void setHalfmoveClock(String halfmoveClockString) {
-        this.halfmoveClock = Integer.parseInt(halfmoveClockString);
+    private void setHalfmoveClock(int halfmoveClockString) {
+        this.halfmoveClock = halfmoveClockString;
     }
 
     public int getHalfmoveClock() {
@@ -209,8 +229,8 @@ public class FenString {
      * <digit19> ::= '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
      * <digit> ::= '0' | <digit19>
      */
-    private void setFullmoveCounter(String fullmoveCounterString) {
-        this.fullmoveCounter = Integer.parseInt(fullmoveCounterString);
+    private void setFullmoveCounter(int fullmoveCounterString) {
+        this.fullmoveCounter = fullmoveCounterString;
     }
 
     public int getFullmoveCounter() {
