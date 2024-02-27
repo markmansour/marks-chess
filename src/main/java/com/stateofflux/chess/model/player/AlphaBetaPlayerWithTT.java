@@ -97,6 +97,17 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 bestMove.previousMovesToString()
             );
             xml.atDebug().log("</iteration>");
+
+            uci_logger.atInfo().log("info depth {} score {} nodes {} nps {} hashfull {} time {} pv {} {}",
+                depth,
+                bestMove.score(),
+                getNodesVisited(),
+                getNodesVisited() * 1000L / (TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()) + 1),
+                tt.getHashfull(),
+                TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
+                bestMove.bestMove().toLongSan(),
+                bestMove.previousMovesToString()
+            );
         }
         xml.atDebug().log("</chess>");
 
@@ -253,7 +264,23 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             }
         }
 
-        int sideMoved = pc.isWhite() ? 1 : -1;
+        /*
+         * The player state will always be the next players turn.  This is because the previous call from alphabeta completed
+         * a move(), which updates the board AND changes the current player.
+         *
+         * e.g. if white just moved, then the board knows it is black's turn.
+         *
+         * So when we call the evaluation function and white has just moved, it will give us a value for black's view
+         * of the board.
+         *
+         * The resulting call to alphabeta flips the sign of the result, thus changing the evaluation results from
+         * black's view back to white's view.
+         *
+         * So, if white just had its turn, and it is in a dominant position we want to return a negative number as it
+         * will be flipped once the recursion unwinds.
+         */
+        // int sideMoved = pc.isBlack() ? 1 : -1;
+        int sideMoved = 1;
 
         if (depth == 0) {
             int evaluatedScore = evaluate(game, pc) * sideMoved;

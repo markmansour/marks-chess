@@ -5,6 +5,9 @@ import com.stateofflux.chess.model.pieces.Piece;
 
 import static java.lang.Long.bitCount;
 
+/**
+ * Returns the value of the board from White's perspective.
+ */
 public abstract class PieceSquareEvaluator implements Evaluator {
     // final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -58,12 +61,12 @@ public abstract class PieceSquareEvaluator implements Evaluator {
         // sideMoved is the value of the move just completed.  The game counter has already moved
         // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
         // then it was black that just moved.
-        int sideMoved = game.getActivePlayerColor().isBlack() ? 1 : -1;
+        int sideMoved = game.getActivePlayerColor().isWhite() ? 1 : -1;
 
         // from white's perspective.
         if (game.isCheckmated()) {
             // logger.info("**************** CHECKMATED: {}", evaluatingMoves);
-            return (MATE_VALUE - depth) * sideMoved;
+            return (MATE_VALUE - depth) * -sideMoved;  //  - e.g. if it is whites turn then this is bad, so make it -ve
 //        } else if (game.isDraw()) { // isDraw is very expensive for me to calculate (due to isStalemate) - so disable it.
 //            return 0;
         }
@@ -93,7 +96,7 @@ public abstract class PieceSquareEvaluator implements Evaluator {
         if (game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
-            bonus += 500 * sideMoved;  // from white's perspective
+            bonus += 500 * -sideMoved;  // from white's perspective - e.g. if it is whites turn then this is bad, so make it -ve
         }
 
         // if attacking a space next to the king give a bonus
@@ -112,9 +115,12 @@ public abstract class PieceSquareEvaluator implements Evaluator {
          * materialScore, mobilityScore and bonus are all calculated from white's perspective, so need to be
          * multiplied by side.  BoardScore already takes into account the side moving.
          */
-        return (materialScore + mobilityScore + bonus) + (boardScore(game) * sideMoved);
+        return materialScore + mobilityScore + bonus + boardScore(game);
     }
 
+    /*
+     * return the board score from the perspective of white.
+     */
     protected int boardScore(Game game) {
         int score = 0;
         Board b = game.getBoard();

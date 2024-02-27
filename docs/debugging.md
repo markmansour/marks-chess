@@ -3,17 +3,17 @@ Debugging is a variation on [tournament testing](tournament%20testing%20marks%20
 
 #### Evaluator and Alpha-Beta debugging
 
-1. Remove the old log files:
-```bash
-rm log/* output_engine.log output_pgn_file.pgn
-```
-
-2. change the level from info to debug in `logback.xml`.  While you're there, make sure the logfile is going to the right directory.
+1. change the level from info to debug in `logback.xml`.  While you're there, make sure the logfile is going to the right directory.
 
 ```xml
 <logger name="com.stateofflux.chess.alpha-beta-debugging" level="debug">
    <appender-ref ref="alpha-beta-file-debugger" />
 </logger>
+```
+
+2. Remove the old log files:
+```bash
+rm log/* output_engine.log output_pgn_file.pgn
 ```
 
 3. Rebuild the package
