@@ -99,8 +99,9 @@ public class Game {
             move(move);
             playerIndex++;
 
-            LOGGER.info("{}({}): move({}) -> {} ({}) - nv: {}",
+            LOGGER.info("{}/{}({}): move({}) -> {} ({}) - nv: {}",
                 currentPlayer.getClass().getSimpleName(),
+                currentPlayer.getEvaluator().toString(),
                 currentPlayer.getSearchDepth(),
                 move,
                 asFen(),

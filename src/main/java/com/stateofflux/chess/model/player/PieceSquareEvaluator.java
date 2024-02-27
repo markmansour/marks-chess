@@ -9,6 +9,13 @@ import static java.lang.Long.bitCount;
  * Returns the value of the board from White's perspective.
  */
 public abstract class PieceSquareEvaluator implements Evaluator {
+    protected static int PAWN_VALUE = 100;
+    protected static final int ROOK_VALUE = 500;
+    protected static final int KNIGHT_VALUE = 320;
+    protected static final int BISHOP_VALUE = 330;
+    protected static final int QUEEN_VALUE = 900;
+    protected static final int KING_VALUE = 20_000;
+
     // final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     protected int[][] pieceSquareTables;
@@ -73,12 +80,12 @@ public abstract class PieceSquareEvaluator implements Evaluator {
 
         // from the perspective of the white player
         int materialScore =
-            Evaluator.KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
-                + Evaluator.QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
-                + Evaluator.ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
-                + Evaluator.BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
-                + Evaluator.KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
-                + Evaluator.PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
+            KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
+                + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
+                + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
+                + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
+                + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
+                + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
         int mobilityWeight = 1;
 
@@ -137,4 +144,9 @@ public abstract class PieceSquareEvaluator implements Evaluator {
     }
 
      abstract void checkForEndGame(Game game);
+
+    @Override
+    public String toString() {
+        return "PieceSquareEvaluator";
+    }
 }

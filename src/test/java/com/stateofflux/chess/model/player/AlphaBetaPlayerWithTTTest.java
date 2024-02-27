@@ -26,6 +26,32 @@ class AlphaBetaPlayerWithTTTest {
     public void setUp() {
         // change test logging level from DEBUG to INFO (it's too noisy for full game tests).
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("UCI_Logger")).setLevel(Level.WARN);
+    }
+
+    @Test public void simpleVsPesto() {
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.stateofflux.chess.alpha-beta-debugging")).setLevel(Level.WARN);  // turn off XML logging
+
+        Game game = new Game();
+
+        Evaluator simpleEvaluator = new SimpleEvaluator();
+        AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, simpleEvaluator);
+        one.setSearchDepth(100);
+        one.setIncrement(TimeUnit.SECONDS.toNanos(5));
+
+        Evaluator pestoEvaluator = new PestoEvaluator();
+        AlphaBetaPlayerWithTT two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, pestoEvaluator);
+        two.setSearchDepth(100);
+        two.setIncrement(TimeUnit.SECONDS.toNanos(5));
+
+        game.play(one, two);
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+        assertThat(game.isCheckmated()).isTrue();
+
+        // assert that depth 4 player wins
+        assertThat(game.getActivePlayerColor().isWhite()).isTrue();  // black moved last and created the mate.
     }
 
     @Disabled("For debugging")

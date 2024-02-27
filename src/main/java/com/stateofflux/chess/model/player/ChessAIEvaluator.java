@@ -174,4 +174,9 @@ public class ChessAIEvaluator extends PieceSquareEvaluator {
             pieceSquareTables[Piece.BLACK_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(PieceSquareEvaluator.transposeWhiteToBlack(KING_ENDGAME_TABLE));
         }
     }
+
+    @Override
+    public String toString() {
+        return "ChessAIEvaluator";
+    }
 }

@@ -41,11 +41,7 @@ public abstract class Player {
     }
 
     public String toString() {
-        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: ";
-    }
-
-    public int getBestMoveScore() {
-        return color.isWhite() ? 1 : -1;
+        return getClass().getSimpleName() + " (" + color.toString() + ", depth: " + getSearchDepth() + ")";
     }
 
     public int getNodesVisited() {
@@ -62,5 +58,9 @@ public abstract class Player {
 
     public void setIncrement(long increment) {
         // no-op
+    }
+
+    public Object getEvaluator() {
+        return evaluator;
     }
 }
