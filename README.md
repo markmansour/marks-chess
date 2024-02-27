@@ -10,14 +10,13 @@ The project contains a chess engine with following abilities:
 * Understands checkmate, stalemate, the 50 rule move, insufficient materials, and repetition.
 * Basic UCI interface.
 * Uses bitboards (and [Magic bitboards](https://rhysre.net/fast-chess-move-generation-with-magic-bitboards.html)) for speed.  This was a lot of fun to write.
-* Perft 7 running (correctly) at 4MM nodes/second on my M2 macbook air.  Perft 7 for Java requires moving 
-  from ints to longs (64 bit) to support the higher number of nodes.
+* Perft 7 running (correctly) at 4MM nodes/second on my M2 macbook air.
 * Four working players.  
-  * RandomMovePlayer - generates moves to a depth of 1 and randomly picks a move.
-  * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
+  * [RandomMovePlayer](src/main/java/com/stateofflux/chess/model/player/RandomMovePlayer.java) - generates moves to a depth of 1 and randomly picks a move.
+  * [BasicNegaMaxPlayer](src/main/java/com/stateofflux/chess/model/player/BasicNegaMaxPlayer.java) - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
     (values in centipawns) and [Piece-Square Tables](https://www.chessprogramming.org/Simplified_Evaluation_Function#Piece-Square_Tables).
-  * AlphaBetaPlayer with alpha/beta pruning (Simple evaluation and PSTs).
-  * AlphaBetaPlayerTT with alpha/beta and transposition tables.
+  * [AlphaBetaPlayer](src/main/java/com/stateofflux/chess/model/player/AlphaBetaPlayer.java) with alpha/beta pruning (Simple evaluation and PSTs).
+  * [AlphaBetaPlayerTT](src/main/java/com/stateofflux/chess/model/player/AlphaBetaPlayerWithTT.java) with alpha/beta and transposition tables.
 * Move ordering (basic version implemented to prioritize captures) and improved move ordering ([MVV-LVA](https://www.chessprogramming.org/MVV-LVA)).
 * Zobrist keys to find repetition and support speed improvements during search.
 

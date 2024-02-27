@@ -28,13 +28,30 @@ class AlphaBetaPlayerWithTTTest {
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
     }
 
+    @Disabled("For debugging")
+    @Test public void tryItOut() {
+        Game game = new Game();
+        Evaluator evaluator = new ChessAIEvaluator();
+
+        AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+        white.setSearchDepth(4);
+
+        game.moveLongNotation("g1h3");
+        game.moveLongNotation("c7c6");
+        game.moveLongNotation("h3g1");
+        game.moveLongNotation("d8a5");
+
+        System.out.println(evaluator.evaluate(game, 0));
+    }
+
+    @Disabled("For debugging")
     @Test public void forDebugging() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
 
         AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
         // white.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second
-        white.setSearchDepth(4);
+        white.setSearchDepth(2);
 
         AlphaBetaPlayerWithTT black = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
         black.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second

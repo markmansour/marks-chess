@@ -135,7 +135,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         moves.sort(getComparator());
         MoveHistory mh;
 
-        xml.atDebug().log("<node depth=\"{}\">", depth);
+        xml.atDebug().log("<node depth=\"{}\" moves-found=\"{}\">", depth, moves.size());
 
         for (Move move : moves) {
             game.move(move);
@@ -170,14 +170,14 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         assert !bestMoves.isEmpty();
 
+        // There are many values with the same score so randomly pick a value.  By randomly picking a value
+        // we don't continue to pick the "first" result.
         MoveHistory bestMoveHistory = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
         Move bestMove = bestMoveHistory.bestMove();
 
-        // There are many values with the same score so randomly pick a value.  By randomly picking a value
-        // we don't continue to pick the "first" result.
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMoveHistory.previousMovesToString());
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.previousMovesToString());
         xml.atDebug().log("</node>");
 
         return bestMoveHistory;
@@ -258,12 +258,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         if (depth == 0) {
             int evaluatedScore = evaluate(game, pc) * sideMoved;
 
-            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" last-move=\"{}\" score=\"{}\"/>",
+            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
                 depth,
                 alpha,
                 beta,
-                lastMove,
+                lastMove.toLongSan(),
                 evaluatedScore
             );
 
@@ -276,12 +276,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         if (moves.isEmpty()) {
             int evaluatedScore = evaluate(game, getSearchDepth() - depth) * sideMoved;
 
-            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" last-move=\"{}\" score=\"{}\"/>",
+            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
                 depth,
                 alpha,
                 beta,
-                lastMove,
+                lastMove.toLongSan(),
                 evaluatedScore
             );
 
@@ -296,7 +296,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         MoveHistory mh;
         int evaluatedCount = 0;
 
-        xml.atDebug().log("<node depth=\"{}\" last-move=\"{}\">", depth, lastMove);
+        xml.atDebug().log("<node depth=\"{}\" move=\"{}\">", depth, lastMove.toLongSan());
 
         for (Move move : moves) {
             game.move(move);
@@ -347,7 +347,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMoveHistory.previousMovesToString());
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.previousMovesToString());
         xml.atDebug().log("</node>");
         return bestMoveHistory;
     }
