@@ -12,8 +12,10 @@ Debugging is a variation on [tournament testing](tournament%20testing%20marks%20
 ```
 
 2. Remove the old log files:
+Note that `rm` with a wildcard in zsh in interactive mode always prompts the user unless you set rm_star_silent.
 ```bash
-rm log/* output_engine.log output_pgn_file.pgn
+setopt rm_star_silent
+rm  -f log/* output_engine.log output_pgn_file.pgn
 ```
 
 3. Rebuild the package
@@ -45,6 +47,12 @@ awk '/1. /,0' output_pgn_file.pgn | pbcopy
 ```shell
 ruby ./src/main/ruby/xpath-to-leaf.rb log/FILE
 ```
+
+or to show the best move for all moves:
+```shell
+./pv.sh | sort
+```
+
 
 #### Helpful
 This is useful to find the root nodes values.

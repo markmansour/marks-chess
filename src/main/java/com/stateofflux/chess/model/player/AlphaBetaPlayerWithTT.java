@@ -72,7 +72,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         timedOut = false;
         int searchDepth = getSearchDepth();
         MoveHistory bestMove = null;
-        MDC.put("ply", String.valueOf(game.getClock()));
+        MDC.put("ply", String.format("%03d", game.getClock()));
 
         uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", searchDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
 
