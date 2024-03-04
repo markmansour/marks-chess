@@ -72,7 +72,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         timedOut = false;
         int searchDepth = getSearchDepth();
         MoveHistory bestMove = null;
-        MDC.put("ply", String.format("%03d", game.getClock()));
+
+        // Set the ply unless the caller has already set the ply string
+        if(xml.isDebugEnabled() && MDC.getCopyOfContextMap() != null && !MDC.getCopyOfContextMap().containsKey("ply"))
+            MDC.put("ply", String.format("%03d", game.getClock()));
 
         uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", searchDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
 
@@ -110,6 +113,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             );
         }
         xml.atDebug().log("</chess>");
+
+        if(xml.isDebugEnabled())
+            MDC.remove("ply");
 
         return bestMove.bestMove();
     }
@@ -283,7 +289,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         int sideMoved = 1;
 
         if (depth == 0) {
-            int evaluatedScore = evaluate(game, pc) * sideMoved;
+            int evaluatedScore = evaluate(game, getSearchDepth() - depth) * sideMoved;
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),

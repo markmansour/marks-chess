@@ -94,7 +94,7 @@ public class App
     }
 
     public void uciLoop() {
-        logger.atDebug().log("log level info? " + logger.isInfoEnabled());
+        logger.atInfo().log("log level info? " + logger.isInfoEnabled());
         logger.atDebug().log("log level debug? " + logger.isDebugEnabled());
         StringBuilder sb = new StringBuilder();
 

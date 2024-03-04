@@ -120,7 +120,7 @@ assert pc == game.getActivePlayerColor();
         int sideMoved = pc.isWhite() ? 1 : -1;
 
         if(depth == 0)
-            return evaluate(game, pc) * sideMoved;
+            return evaluate(game, getSearchDepth() - depth) * sideMoved;
 
         MoveList<Move> moves = game.generateMoves();
         List<MoveData> dataOnMoves = new ArrayList<>();

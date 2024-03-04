@@ -28,12 +28,8 @@ public abstract class Player {
 
     public abstract Move getNextMove(Game game);
 
-    public int evaluate(Game game, PlayerColor pc) {
-        return evaluate(game, 0);
-    }
-
-    public int evaluate(Game game, int depth) {
-        return evaluator.evaluate(game, depth);
+    public int evaluate(Game game, int depthTraversed) {
+        return evaluator.evaluate(game, depthTraversed);
     }
 
     public int getSearchDepth() {

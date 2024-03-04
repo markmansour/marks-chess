@@ -34,7 +34,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isLessThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
+        assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
     @Test public void randomLosesToAlphaBeta() {
@@ -47,7 +47,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
+        assertThat(two.evaluate(game, 0)).isGreaterThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
     @Test public void testToPlaceInCheck() {
@@ -126,7 +126,7 @@ public class AlphaBetaPlayerTest {
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isLessThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
+        assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
     @Test public void alphaBetaVsAlphaBetaWithTT() {
