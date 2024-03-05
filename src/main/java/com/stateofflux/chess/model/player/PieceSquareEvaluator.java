@@ -57,25 +57,16 @@ public abstract class PieceSquareEvaluator implements Evaluator {
      *
      * While Minimax usually associates the white side with the max-player and black with the min-player and always
      * evaluates from the white point of view, NegaMax requires a symmetric evaluation in relation to
-     * the side to move.
-     *
+     * the side to move.  Therefore, is white is winning, return a large number.  If black is winning, returning
+     * a large number.
      */
     @Override
-    public int evaluate(Game game, int depth) {
+    public int evaluate(Game game, int depthTraversed) {
         Board b = game.getBoard();
         int bonus = 0;
 
-        // sideMoved is the value of the move just completed.  The game counter has already moved
-        // on, so we need to reverse the player color.  Therefore, if the game thinks it is white's turn
-        // then it was black that just moved.
-        int sideMoved = game.getActivePlayerColor().isWhite() ? 1 : -1;
-
-        // from white's perspective.
         if (game.isCheckmated()) {
-            // logger.info("**************** CHECKMATED: {}", evaluatingMoves);
-            return (MATE_VALUE - depth) * -sideMoved;  //  - e.g. if it is whites turn then this is bad, so make it -ve
-//        } else if (game.isDraw()) { // isDraw is very expensive for me to calculate (due to isStalemate) - so disable it.
-//            return 0;
+            return (MATE_VALUE - depthTraversed) * -1;
         }
 
         // from the perspective of the white player
@@ -100,11 +91,13 @@ public abstract class PieceSquareEvaluator implements Evaluator {
         int mobilityScore = mobilityWeight *
             (whiteMoves.size() - blackMoves.size());
 
+/*
         if (game.isChecked()) {
             // LOGGER.info("Game in check ({}): {}", score, game.asFen());
             // LOGGER.info("**************** CHECK: {}", evaluatingMoves);
-            bonus += 500 * -sideMoved;  // from white's perspective - e.g. if it is whites turn then this is bad, so make it -ve
+            bonus += 500 * -currentPlayerAsInt;  // from white's perspective - e.g. if it is whites turn then this is bad, so make it -ve
         }
+*/
 
         // if attacking a space next to the king give a bonus
 
@@ -122,7 +115,9 @@ public abstract class PieceSquareEvaluator implements Evaluator {
          * materialScore, mobilityScore and bonus are all calculated from white's perspective, so need to be
          * multiplied by side.  BoardScore already takes into account the side moving.
          */
-        return materialScore + mobilityScore + bonus + boardScore(game);
+        int currentPlayerAsInt = game.getActivePlayerColor().isWhite() ? 1 : -1;
+
+        return (materialScore + mobilityScore + bonus + boardScore(game)) * currentPlayerAsInt;
     }
 
     /*
