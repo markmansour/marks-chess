@@ -36,4 +36,3 @@ profile/
 
 # End of https://www.toptal.com/developers/gitignore/api/java
 .DS_Store
-output_pgn_file.pgn

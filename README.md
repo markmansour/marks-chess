@@ -124,6 +124,10 @@ Polyglot readers
 * [Coding Your First Neural Network FROM SCRATCH](https://code.likeagirl.io/coding-your-first-neural-network-from-scratch-0b28646b4043)
 * [DeepLearning4J](https://deeplearning4j.konduit.ai) - with links to learning resources
 
+## References
+* [Practical Artificial Intelligence](https://leanpub.com/javaai/read#search)
+* [Artificial Intelligence: A Modern Approach](https://aima.cs.berkeley.edu) [github](https://github.com/aimacode/aima-java) - Search, NN, deep learning.  See Chapter 6.3 for Alpha-Beta trees, Late Move Reduction
+
 ### Features (in priority order)
 * [x] verify alpha/beta search is working (seems to have a bug)
 * [x] iterative deepening
@@ -131,10 +135,15 @@ Polyglot readers
 * [ ] integration with other bots - get a baseline ELO
 * [ ] create basic neural net player
 
+### Bugs
+* [ ] AlphaBetaWithTT occasionally generates illegal moves.
+* [ ] AlphaBetaWithTT pv results are often incorrect.
+
+
 ### Papercuts to address (in priority order)
 * [ ] add copyright notice to files
 * [ ] add stylecheck into build process
-* [ ] add dependency management checks ([dependabot](https://github.com/dependabot/dependabot-core)?) to build process
+* [ ] add dependency management checks ([dependabot](https://github.com/dependabot/dependabot-core)?) or ([renovatebot](https://docs.renovatebot.com/java/#maven-file-support)) to build process
 * [ ] improve coverage (95%+)
 * [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
 * [ ] I don't love my logging patterns.  Review and improve.
