@@ -68,6 +68,7 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             if(value > alpha) {
                 alpha = value;
             }
+
             // at the root beta is always MAX, and therefore alpha can never be greater than MAX.
             // this condition really not applicable at this level, but leaving for symmetry with alphaBeta()
             if( alpha >= beta) {
@@ -116,11 +117,10 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
      *    negamax(rootNode, depth, −∞, +∞, 1)
      */
     public int alphaBeta(Game game, int depth, int alpha, int beta, PlayerColor pc) {
-assert pc == game.getActivePlayerColor();
-        int sideMoved = pc.isWhite() ? 1 : -1;
+        assert pc == game.getActivePlayerColor();
 
         if(depth == 0)
-            return evaluate(game, getSearchDepth() - depth) * sideMoved;
+            return evaluate(game, getSearchDepth() - depth);
 
         MoveList<Move> moves = game.generateMoves();
         List<MoveData> dataOnMoves = new ArrayList<>();
@@ -128,7 +128,7 @@ assert pc == game.getActivePlayerColor();
 
         // node is terminal
         if(moves.isEmpty())  // mate, draw, etc.
-            return evaluate(game, getSearchDepth() - depth) * sideMoved;
+            return evaluate(game, getSearchDepth() - depth);
 
         moves.sort(getComparator());
 
@@ -169,7 +169,7 @@ assert pc == game.getActivePlayerColor();
 
         logger.atDebug().log("{}{} : depth: {} (α {}, β {}).  generated moves: {}.  pruned #: {}/{}.  how we got here: {}.  best move: {} ({})",
             " ".repeat((getSearchDepth() - depth) * 2),
-            sideMoved == 1 ? "MAX" : "MIN",
+            game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
             depth,
             alpha,
             beta,

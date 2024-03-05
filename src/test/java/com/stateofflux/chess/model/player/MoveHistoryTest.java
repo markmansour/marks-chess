@@ -2,10 +2,12 @@ package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.pieces.Piece;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("UnitTest")
 class MoveHistoryTest {
     @Test public void basic() {
         MoveHistory mh = new MoveHistory(new Move(Piece.WHITE_PAWN, 8, 16, false), 100);

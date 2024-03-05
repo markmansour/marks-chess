@@ -40,7 +40,6 @@ public class BasicNegaMaxPlayerTest {
     }
 */
 
-    @Disabled
     @Test public void evaluatePicksMate() {
         BasicNegaMaxPlayer black = new BasicNegaMaxPlayer(PlayerColor.BLACK, new SimpleEvaluator());
         Game game = new Game("Bn6/2k4p/6q1/p4p1R/P1P2Kn1/4r1n1/5N2/6N1 b - -"); // black is winning.
@@ -49,7 +48,6 @@ public class BasicNegaMaxPlayerTest {
         assertThat(m.toLongSan()).isEqualTo("g3h5");
     }
 
-    @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void basicNegaMaxVsRandom() {
         Game game = new Game();
         Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());
@@ -62,7 +60,6 @@ public class BasicNegaMaxPlayerTest {
         // Assertions.assertThat(one.evaluate(game)).isGreaterThan(two.evaluate(game));
     }
 
-    @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void RandomVsBasicNegaMax() {
         Game game = new Game();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, new SimpleEvaluator());
@@ -75,7 +72,6 @@ public class BasicNegaMaxPlayerTest {
         // Assertions.assertThat(two.evaluate(game)).isGreaterThan(one.evaluate(game));
     }
 
-    @Disabled(value = "Don't play full game as part of unit test suite")
     @Test public void depth3ShouldBeatDepth2() {
         Game game = new Game();
         Player one = new BasicNegaMaxPlayer(PlayerColor.WHITE, new SimpleEvaluator());

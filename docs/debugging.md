@@ -41,7 +41,7 @@ cutechess-cli \
   -pgnout log/output_pgn_file.pgn \
   -games 1 \
   -debug \
-  > output_engine.log 2>&1
+  > log/output_engine.log 2>&1
 ```
 
 5. reformat the xml log files

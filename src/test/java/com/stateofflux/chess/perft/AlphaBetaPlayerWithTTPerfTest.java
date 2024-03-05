@@ -10,6 +10,7 @@ import one.profiler.AsyncProfiler;
 import one.profiler.Events;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
+@Tag("PerformanceTest")
 public class AlphaBetaPlayerWithTTPerfTest {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

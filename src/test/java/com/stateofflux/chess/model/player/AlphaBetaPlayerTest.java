@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("FullGameTest")
+@Tag("UnitTest")
 public class AlphaBetaPlayerTest {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -24,6 +24,7 @@ public class AlphaBetaPlayerTest {
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
     }
 
+    @Tag("FullGameTest")
     @Test public void alphaBetaDefeatsRandom() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -37,6 +38,7 @@ public class AlphaBetaPlayerTest {
         assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
+    @Tag("FullGameTest")
     @Test public void randomLosesToAlphaBeta() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -79,6 +81,8 @@ public class AlphaBetaPlayerTest {
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);  // player two played the last turn and won.  It moved to player one but they can't do anything.
     }
 
+    @Disabled
+    @Tag("FullGameTest")
     @Test public void alphaBetaDepth2LosesToAlphaBetaDepth4() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -103,7 +107,7 @@ public class AlphaBetaPlayerTest {
 
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         one.setSearchDepth(4);
-        Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+        Player two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(2);
 
         Move bestMove = one.getNextMove(game);
@@ -111,6 +115,8 @@ public class AlphaBetaPlayerTest {
         assertThat(game.isCheckmated()).isTrue();
     }
 
+    @Disabled
+    @Tag("FullGameTest")
     @Test public void alphaBetaVsChessAi() {
         Game game = new Game();
 

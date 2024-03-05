@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model;
 
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 import com.stateofflux.chess.model.pieces.*;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * validation layer of the Board object.
  */
 public class Game {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MOVE_LIST_CAPACITY = 220;
 
     record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache, long hash) {}
@@ -99,7 +100,7 @@ public class Game {
             move(move);
             playerIndex++;
 
-            LOGGER.info("{}/{}({}): move({}) -> {} ({}) - nv: {}",
+            logger.atDebug().log("{}/{}({}): move({}) -> {} ({}) - nv: {}",
                 currentPlayer.getClass().getSimpleName(),
                 currentPlayer.getEvaluator().toString(),
                 currentPlayer.getSearchDepth(),
@@ -349,7 +350,7 @@ public class Game {
      *
      */
     public void move(String action) {
-        LOGGER.debug("action ({}): {}", getActivePlayerColor(), action);
+        logger.atDebug().log("action ({}): {}", getActivePlayerColor(), action);
         Move move = sanToMove(action);
 
         move(move);
@@ -775,12 +776,12 @@ public class Game {
         long moveCounter;
 
         for (var move : moves) {
-//            LOGGER.info("root move: {}", move);
+//            logger.atInfo().log("root move: {}", move);
 
             if(depth > 1) {
                 move(move);
                 moveCounter = perft(depth - 1);
-//            LOGGER.info("perft: {} {}", move, moveCounter);
+//            logger.atInfo().log("perft: {} {}", move, moveCounter);
                 undo();
             } else {
                 moveCounter = 1;
@@ -795,7 +796,7 @@ public class Game {
     }
 
     public long perft(int depth) {
-//        LOGGER.info("perft FEN: {}", this.asFen());
+//        logger.atInfo().log("perft FEN: {}", this.asFen());
         MoveList<Move> moves = this.generateMoves();
 
         if (depth == 1)
@@ -804,7 +805,7 @@ public class Game {
         long moveCounter = 0;
 
         for (var move : moves) {
-//            LOGGER.info("move: {}", move);
+//            logger.atInfo().log("move: {}", move);
             move(move);
             moveCounter += perft(depth - 1);
             undo();
@@ -814,36 +815,36 @@ public class Game {
     }
 
     public void printPerft(SortedMap<String, Long> perftResults) {
-        LOGGER.info("Perft Results");
-        LOGGER.info("-------------");
+        logger.atInfo().log("Perft Results");
+        logger.atInfo().log("-------------");
         for(var r : perftResults.entrySet()) {
-            LOGGER.info("{} {}", r.getKey(), r.getValue());
+            logger.atInfo().log("{} {}", r.getKey(), r.getValue());
         }
 
-        LOGGER.info("Nodes searched: {}", perftResults.values().stream().reduce(0L, Long::sum));
+        logger.atInfo().log("Nodes searched: {}", perftResults.values().stream().reduce(0L, Long::sum));
     }
 
     public void printOccupied() {
         board.printOccupiedBoard();
 
-        LOGGER.info("   abcdefgh");
-        LOGGER.info("--------------------------");
-        LOGGER.info("FEN:           {}", asFen());
-        LOGGER.info("isOver:        {}", isOver());
-        LOGGER.info("Winner is:     {}", getWinner());
-        LOGGER.info("move count:    {}", historyOfMoves.size());
-        LOGGER.info("moves:         {}", getMoveHistory());
-        LOGGER.info("");
-        LOGGER.info("isCheckmated:  {}", isCheckmated());
-        LOGGER.info("isDraw?:       {}", isDraw());
-        LOGGER.info("hasResigned:   {}", hasResigned());
-        LOGGER.info("isStalemate:   {}", isStalemate());
-        LOGGER.info("hasRepeated:   {}", isRepetition());
-        LOGGER.info("");
-        LOGGER.info("exceededMoves: {}", exceededMoves());
-        LOGGER.info("is spinning:   {}", isSpinning());
-        LOGGER.info("hasInsufficientMaterials: {}", hasInsufficientMaterials());
-        LOGGER.info("--------------------------");
+        logger.atInfo().log("   abcdefgh");
+        logger.atInfo().log("--------------------------");
+        logger.atInfo().log("FEN:           {}", asFen());
+        logger.atInfo().log("isOver:        {}", isOver());
+        logger.atInfo().log("Winner is:     {}", getWinner());
+        logger.atInfo().log("move count:    {}", historyOfMoves.size());
+        logger.atInfo().log("moves:         {}", getMoveHistory());
+        logger.atInfo().log("");
+        logger.atInfo().log("isCheckmated:  {}", isCheckmated());
+        logger.atInfo().log("isDraw?:       {}", isDraw());
+        logger.atInfo().log("hasResigned:   {}", hasResigned());
+        logger.atInfo().log("isStalemate:   {}", isStalemate());
+        logger.atInfo().log("hasRepeated:   {}", isRepetition());
+        logger.atInfo().log("");
+        logger.atInfo().log("exceededMoves: {}", exceededMoves());
+        logger.atInfo().log("is spinning:   {}", isSpinning());
+        logger.atInfo().log("hasInsufficientMaterials: {}", hasInsufficientMaterials());
+        logger.atInfo().log("--------------------------");
     }
 
     public String getWinner() {
