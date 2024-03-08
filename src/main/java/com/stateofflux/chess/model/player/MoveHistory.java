@@ -8,27 +8,16 @@ import java.util.stream.Collectors;
 public class MoveHistory {
     private Move bestMove;
     private int score;
-    private Move[] previousMoves;
-    private static final Move[] EMPTY_MOVE_LIST = new Move[0];
+    private Deque<Move> previousMoves;
 
     public MoveHistory(Move bestMove, int score) {
         this.bestMove = bestMove;
         this.score = score;
-        this.previousMoves = EMPTY_MOVE_LIST;
+        this.previousMoves = new ArrayDeque<>(8);
     }
 
     public void addMove(Move newMove, int newScore) {
-        Move[] list;
-        if(previousMoves == null || previousMoves.length == 0) {
-            previousMoves = new Move[1];
-            previousMoves[0] = bestMove;
-        } else {
-            list = new Move[previousMoves.length + 1];
-            System.arraycopy(previousMoves, 0, list, 1, previousMoves.length);
-            list[0] = bestMove;
-            previousMoves = list;
-        }
-
+        previousMoves.addLast(bestMove);
         bestMove = newMove;
         score = newScore;
     }
@@ -41,15 +30,38 @@ public class MoveHistory {
         return score;
     }
 
-    public Move[] previousMoves() {
+    public Deque<Move> previousMoves() {
         return previousMoves;
+    }
+
+    public String pv() {
+        if(previousMoves == null)
+            return "";
+
+        StringBuilder sb = new StringBuilder(bestMove.toLongSan());
+        Iterator<Move> i = previousMoves.descendingIterator();
+
+        while(i.hasNext()) {
+            sb.append(" ").append(i.next().toLongSan());
+        }
+
+        return sb.toString();
     }
 
     public String previousMovesToString() {
         if(previousMoves == null)
             return "";
 
-        return Arrays.stream(previousMoves).map(Move::toLongSan).collect(Collectors.joining(" "));
+        StringBuilder sb = new StringBuilder();
+        Iterator<Move> i = previousMoves.descendingIterator();
+
+        while(i.hasNext()) {
+            sb.append(i.next().toLongSan());
+
+            if(i.hasNext()) sb.append(" ");
+        }
+
+        return sb.toString();
     }
 
     @Override

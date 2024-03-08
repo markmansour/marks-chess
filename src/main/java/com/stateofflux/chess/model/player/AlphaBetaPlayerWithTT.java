@@ -89,27 +89,25 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             bestMove = alphaBetaRoot(game, depth);
 
             // info depth 10 seldepth 14 multipv 1 score cp 27 nodes 144979 nps 2163865 hashfull 54 tbhits 0 time 67 pv e2e4 d7d5 e4d5 g8f6 g1f3 d8d5 b1c3 d5e6 d1e2
-            xml.atDebug().log("<search-summary>info depth {} score {} nodes {} nps {} hashfull {} time {} pv {} {}</search-summary>",
+            xml.atDebug().log("<search-summary>info depth {} score {} nodes {} nps {} hashfull {} time {} pv {}</search-summary>",
                 depth,
                 bestMove.score(),
                 getNodesVisited(),
                 getNodesVisited() * 1000L / (TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()) + 1),
                 tt.getHashfull(),
                 TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
-                bestMove.bestMove().toLongSan(),
-                bestMove.previousMovesToString()
+                bestMove.pv()
             );
             xml.atDebug().log("</iteration>");
 
-            uci_logger.atInfo().log("info depth {} score {} nodes {} nps {} hashfull {} time {} pv {} {}",
+            uci_logger.atInfo().log("info depth {} score {} nodes {} nps {} hashfull {} time {} pv {}",
                 depth,
                 bestMove.score(),
                 getNodesVisited(),
                 getNodesVisited() * 1000L / (TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()) + 1),
                 tt.getHashfull(),
                 TimeUnit.NANOSECONDS.toMillis(timer.incrementTimeUsed()),
-                bestMove.bestMove().toLongSan(),
-                bestMove.previousMovesToString()
+                bestMove.pv()
             );
         }
         xml.atDebug().log("</chess>");
@@ -285,11 +283,8 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
          * So, if white just had its turn, and it is in a dominant position we want to return a negative number as it
          * will be flipped once the recursion unwinds.
          */
-        // int sideMoved = pc.isBlack() ? 1 : -1;
-        int sideMoved = 1;
-
         if (depth == 0) {
-            int evaluatedScore = evaluate(game, getSearchDepth() - depth) * sideMoved;
+            int evaluatedScore = evaluate(game, getSearchDepth() - depth);
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
@@ -307,7 +302,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         // node is terminal as there are no more moves.
         if (moves.isEmpty()) {
-            int evaluatedScore = evaluate(game, getSearchDepth() - depth) * sideMoved;
+            int evaluatedScore = evaluate(game, getSearchDepth() - depth);
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
@@ -380,8 +375,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.previousMovesToString());
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.pv());
         xml.atDebug().log("</node>");
+
         return bestMoveHistory;
     }
 
