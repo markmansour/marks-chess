@@ -158,6 +158,10 @@ public class DepthTest {
         depthHelper(4, perftRecords);
     }
 
+    @Test public void allEpdExamplesToDepthOfFiv() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        depthHelper(5, perftRecords);
+    }
+
     // about 2 seconds
     @Test public void startingPositionDepthFour() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(4, defaultBoard());
@@ -179,6 +183,7 @@ public class DepthTest {
      3269 ms and reviewed 4865609 nodes.  1488408 nodes/second - simplified game clock counter (1,433,169 and 1,315,740)
      2454 ms and reviewed 4865609 nodes.  1982725 nodes/second - incremental zobrist key management.
      2317 ms and reviewed 4865609 nodes.  2099960 nodes/second - use clone instead of Arrays.copyOf for Board.getCopyOfBoards
+     1853 ms and reviewed 4865609 nodes.  2625800 nodes/second (2,606,110 and 2,518,431 and 2,679,300) - use inbuild bitcount function and reuse arrays
      */
     @Test public void startingPositionDepthFive() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         depthHelper(5, defaultBoard());
@@ -393,13 +398,13 @@ public class DepthTest {
             );
     }
 
-    private void simplifiedDepthTest(int depth, String fen, long expected) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    private void simplifiedDepthTest(int depth, String fen, long expected) throws IOException {
         SortedMap<String, Long> actual;
         String profile = "EMPTY";
         String methodName = "depthOf" + depth;
         long startTime = System.nanoTime();
         long endTime;
-        long perftCount = -1;
+        long perftCount;
 
         try {
             asyncProfiler.start(Events.CPU, 1_000_000);

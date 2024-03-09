@@ -12,8 +12,8 @@ import static java.lang.Long.bitCount;
 /*
  * Implementation of https://github.com/zeyu2001/chess-ai/blob/main/js/main.js#L132 (evaluateBoard)
  */
-public class ChessAIEvaluator extends SimpleEvaluator {
-    protected static Map<Character, Integer> PIECE_WEIGHTS = Map.of(
+public class ChessAIEvaluator extends PieceSquareEvaluator {
+    protected static final Map<Character, Integer> PIECE_WEIGHTS = Map.of(
         Piece.PAWN_ALGEBRAIC, 100,
         Piece.KNIGHT_ALGEBRAIC, 280,
         Piece.BISHOP_ALGEBRAIC, 320,
@@ -22,7 +22,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         Piece.KING_ALGEBRAIC, 60000
     );
 
-    protected static final int[] PAWN_TABLE = {
+    private static final int[] PAWN_TABLE = {
         100, 100, 100, 100, 105, 100, 100, 100,
         78, 83, 86, 73, 102, 82, 85, 90,
         7, 29, 21, 44, 40, 31, 44, 7,
@@ -33,7 +33,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         0, 0, 0, 0, 0, 0, 0, 0,
     };
 
-    protected static final int[] KNIGHT_TABLE = {
+    private static final int[] KNIGHT_TABLE = {
         -66, -53, -75, -75, -10, -55, -58, -70,
         -3, -6, 100, -36, 4, 62, -4, -14,
         10, 67, 1, 74, 73, 27, 62, -2,
@@ -44,7 +44,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         -74, -23, -26, -24, -19, -35, -22, -69,
     };
 
-    protected static final int[] BISHOP_TABLE = {
+    private static final int[] BISHOP_TABLE = {
         -59, -78, -82, -76, -23, -107, -37, -50,
         -11, 20, 35, -42, -39, 31, 2, -22,
         -9, 39, -32, 41, 52, -10, 28, -14,
@@ -55,7 +55,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         -7, 2, -15, -12, -14, -15, -10, -10,
     };
 
-    protected static final int[] ROOK_TABLE = {
+    private static final int[] ROOK_TABLE = {
         35, 29, 33, 4, 37, 33, 56, 50,
         55, 29, 56, 67, 55, 62, 34, 60,
         19, 35, 28, 33, 45, 27, 25, 15,
@@ -66,7 +66,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         -30, -24, -18, 5, -2, -18, -31, -32,
     };
 
-    protected static final int[] QUEEN_TABLE = {
+    private static final int[] QUEEN_TABLE = {
         4, 54, 47, -99, -99, 60, 83, -62,
         -32, 10, 55, 56, 56, 55, 10, 3,
         -62, 12, -57, 44, -67, 28, 37, -31,
@@ -77,7 +77,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
         17, 30, -3, -14, 6, -1, 40, 18,
     };
 
-    protected static final int[] KING_MIDGAME_TABLE = {
+    private static final int[] KING_MIDGAME_TABLE = {
         -30,-40,-40,-50,-50,-40,-40,-30,
         -30,-40,-40,-50,-50,-40,-40,-30,
         -30,-40,-40,-50,-50,-40,-40,-30,
@@ -93,7 +93,7 @@ public class ChessAIEvaluator extends SimpleEvaluator {
      * - Both sides have no queens or
      * - Every side which has a queen has additionally no other pieces or one minorpiece maximum.
      */
-    protected static final int[] KING_ENDGAME_TABLE = {
+    private static final int[] KING_ENDGAME_TABLE = {
         -50, -40, -30, -20, -20, -30, -40, -50,
         -30, -20, -10, 0, 0, -10, -20, -30,
         -30, -10, 20, 30, 30, 20, -10, -30,
@@ -106,22 +106,22 @@ public class ChessAIEvaluator extends SimpleEvaluator {
 
     public ChessAIEvaluator() {
         super();
+        initializePSTs();
     }
 
-    @Override
     protected void initializePSTs() {
-        PieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
-        PieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_MIDGAME_TABLE));
-        PieceSquareTables[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
-        PieceSquareTables[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(transposeWhiteToBlack(QUEEN_TABLE));
-        PieceSquareTables[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
-        PieceSquareTables[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(BISHOP_TABLE));
-        PieceSquareTables[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
-        PieceSquareTables[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(KNIGHT_TABLE));
-        PieceSquareTables[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
-        PieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(ROOK_TABLE));
-        PieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
-        PieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
+        pieceSquareTables[Piece.WHITE_KING.getIndex()]   = visualToArrayLayout(KING_MIDGAME_TABLE);
+        pieceSquareTables[Piece.BLACK_KING.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(KING_MIDGAME_TABLE));
+        pieceSquareTables[Piece.WHITE_QUEEN.getIndex()]  = visualToArrayLayout(QUEEN_TABLE);
+        pieceSquareTables[Piece.BLACK_QUEEN.getIndex()]  = visualToArrayLayout(transposeWhiteToBlack(QUEEN_TABLE));
+        pieceSquareTables[Piece.WHITE_BISHOP.getIndex()] = visualToArrayLayout(BISHOP_TABLE);
+        pieceSquareTables[Piece.BLACK_BISHOP.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(BISHOP_TABLE));
+        pieceSquareTables[Piece.WHITE_KNIGHT.getIndex()] = visualToArrayLayout(KNIGHT_TABLE);
+        pieceSquareTables[Piece.BLACK_KNIGHT.getIndex()] = visualToArrayLayout(transposeWhiteToBlack(KNIGHT_TABLE));
+        pieceSquareTables[Piece.WHITE_ROOK.getIndex()]   = visualToArrayLayout(ROOK_TABLE);
+        pieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(ROOK_TABLE));
+        pieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
+        pieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
     }
 
     // view from white's perspective
@@ -163,5 +163,20 @@ public class ChessAIEvaluator extends SimpleEvaluator {
 
         // return bonus + materialScore + boardScore;
         return bonus + materialScore + (boardScore * sideMoved);
+    }
+
+    protected void checkForEndGame(Game game) {
+        if (endGame) return;
+
+        if (bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
+            this.endGame = true;
+            pieceSquareTables[Piece.WHITE_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(KING_ENDGAME_TABLE);
+            pieceSquareTables[Piece.BLACK_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(PieceSquareEvaluator.transposeWhiteToBlack(KING_ENDGAME_TABLE));
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ChessAIEvaluator";
     }
 }

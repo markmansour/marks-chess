@@ -1,12 +1,32 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.*;
+import com.stateofflux.chess.model.pieces.Piece;
 
 import static java.lang.Long.bitCount;
 
 public class MaterialEvaluator implements Evaluator {
+    private static final int PAWN_VALUE = 100;
+    private static final int ROOK_VALUE = 500;
+    private static final int KNIGHT_VALUE = 320;
+    private static final int BISHOP_VALUE = 330;
+    private static final int QUEEN_VALUE = 900;
+    private static final int KING_VALUE = 20_000;
 
-    protected boolean endGame = false;
+    static int pieceToValue(Piece piece) {
+        if(piece == null)
+            return 0;
+
+        return switch(piece.getAlgebraicChar()) {
+            case Piece.PAWN_ALGEBRAIC -> PAWN_VALUE;
+            case Piece.ROOK_ALGEBRAIC -> ROOK_VALUE;
+            case Piece.KNIGHT_ALGEBRAIC -> KNIGHT_VALUE;
+            case Piece.BISHOP_ALGEBRAIC -> BISHOP_VALUE;
+            case Piece.QUEEN_ALGEBRAIC -> QUEEN_VALUE;
+            case Piece.KING_ALGEBRAIC -> KING_VALUE;
+            default -> 0;  // EMPTY
+        };
+    }
 
     public MaterialEvaluator() {
     }
@@ -28,13 +48,18 @@ public class MaterialEvaluator implements Evaluator {
 
         // from the perspective of the white player
         int materialScore =
-            Evaluator.KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
-                + Evaluator.QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
-                + Evaluator.ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
-                + Evaluator.BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
-                + Evaluator.KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
-                + Evaluator.PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
+            KING_VALUE * (bitCount(b.getWhiteKingBoard()) - bitCount(b.getBlackKingBoard()))
+                + QUEEN_VALUE * (bitCount(b.getWhiteQueenBoard()) - bitCount(b.getBlackQueenBoard()))
+                + ROOK_VALUE * (bitCount(b.getWhiteRookBoard()) - bitCount(b.getBlackRookBoard()))
+                + BISHOP_VALUE * (bitCount(b.getWhiteBishopBoard()) - bitCount(b.getBlackBishopBoard()))
+                + KNIGHT_VALUE * (bitCount(b.getWhiteKnightBoard()) - bitCount(b.getBlackKnightBoard()))
+                + PAWN_VALUE * (bitCount(b.getWhitePawnBoard()) - bitCount(b.getBlackPawnBoard()));
 
         return (materialScore);
+    }
+
+    @Override
+    public String toString() {
+        return "MaterialEvaluator";
     }
 }

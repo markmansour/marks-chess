@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.*;
 public class PgnTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PgnTest.class);
 
-
     @Test public void readWellFormedPgn() {
         String pgnString = """
             [Event "FICS rated standard game"]

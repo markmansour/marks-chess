@@ -26,15 +26,19 @@ public class TranspositionTable {
     private final long[] data;
     private final long[] movesData;
     private final int mask;
-    private int hashSize;  // number of entries
-    private int entryCount;
+    private final int maxEntries;  // number of entries
+    private int activeEntries;
 
-    public static int DEFAULT_HASH_SIZE_IN_MB = 128;
+    public static final int DEFAULT_HASH_SIZE_IN_MB = 16;
 
     public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
         public Move getBestMove() {
             return Move.buildFrom(best);
         }
+    }
+
+    public enum NodeType {
+        EXACT, LOWER_BOUND, UPPER_BOUND
     }
 
     public TranspositionTable() {
@@ -43,16 +47,12 @@ public class TranspositionTable {
 
     public TranspositionTable(int memoryUsageInMB) {
         int entrySizeInBytes = 8;  // packing all data into a long (64 bits / 8 bytes);
-        hashSize = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes;
-        entryCount = 0;
-        mask = hashSize - 1; // m = n & (d - 1) will compute the modulo (base 2) where n -> numerator, d -> denominator, m is modulo.
-        data = new long[hashSize];
-        keys = new long[hashSize];
-        movesData = new long[hashSize];
-    }
-
-    public enum NodeType {
-        EXACT, LOWER_BOUND, UPPER_BOUND
+        maxEntries = (memoryUsageInMB * 1024 * 1024) / entrySizeInBytes;
+        activeEntries = 0;
+        mask = maxEntries - 1; // m = n & (d - 1) will compute the modulo (base 2) where n -> numerator, d -> denominator, m is modulo.
+        data = new long[maxEntries];
+        keys = new long[maxEntries];
+        movesData = new long[maxEntries];
     }
 
     /*
@@ -115,7 +115,7 @@ public class TranspositionTable {
             keys[index] = key ^ d;
             data[index] = d;
             movesData[index] = best.toLong();
-            entryCount++;
+            activeEntries++;
 
             return true;
         }
@@ -124,9 +124,10 @@ public class TranspositionTable {
     }
 
     public void clear() {
-        Arrays.fill(keys, 0L);
+        activeEntries = 0;
         Arrays.fill(data, 0L);
-        entryCount = 0;
+        Arrays.fill(keys, 0L);
+        Arrays.fill(movesData, 0L);
     }
 
     private long buildData(int score, int depth, NodeType nodeType) {
@@ -170,11 +171,16 @@ public class TranspositionTable {
         return new Entry(key, newScore, moveData, nodeType, depth, 0);
     }
 
-    public int getEntryCount() {
-        return entryCount;
+    public int getActiveEntries() {
+        return activeEntries;
     }
 
-    public int getHashSize() {
-        return hashSize;
+    public int getMaxEntries() {
+        return maxEntries;
+    }
+
+    // 0 is empty, 1000 is full
+    public int getHashfull() {
+        return (1000 * activeEntries) / maxEntries;
     }
 }

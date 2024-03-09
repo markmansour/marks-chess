@@ -1,9 +1,7 @@
 package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
-import com.stateofflux.chess.model.pieces.Piece;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -17,9 +15,8 @@ public class RandomEvaluationPlayerTest {
         Evaluator evaluator = new MinusOneZeroOneEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -32,9 +29,8 @@ public class RandomEvaluationPlayerTest {
         Player human = new HumanPlayer(PlayerColor.WHITE, evaluator);
         Player chessAI = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         // chessAI.setSearchDepth(3);
-        game.setPlayers(human, chessAI);
 
-        game.play();
+        game.play(human, chessAI);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -50,13 +46,7 @@ public class RandomEvaluationPlayerTest {
         Evaluator simplaEvaluator = new SimpleEvaluator();
         Player negaMax = new AlphaBetaPlayer(PlayerColor.BLACK, simplaEvaluator);
 
-        // chessAI.setSearchDepth(3);
-        game.setPlayers(chessAI, negaMax);
-
-        // chessAI.setSearchDepth(3);
-        game.setPlayers(negaMax, chessAI);
-
-        game.play();
+        game.play(chessAI, negaMax);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();

@@ -10,7 +10,6 @@ public abstract class PieceMoves implements PieceMovesInterface {
     protected long captureMoves;
     protected final long occupiedBoard;
     protected long opponentBoard;
-    protected long currentPlayerBoard;
     protected final boolean isWhite;
 
     protected PieceMoves(Board board, int location) {
@@ -85,10 +84,8 @@ public abstract class PieceMoves implements PieceMovesInterface {
 
     protected void setBoards() {
         if (isWhite) {
-            this.currentPlayerBoard = board.getWhite();
             this.opponentBoard = board.getBlack();
         } else {
-            this.currentPlayerBoard = board.getBlack();
             this.opponentBoard = board.getWhite();
         }
     }

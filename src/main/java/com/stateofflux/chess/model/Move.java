@@ -240,8 +240,11 @@ public class Move {
         return isCapture() ? 1 : 0;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    // I don't want to override the Object#equals method as I don't want an expensive function to be called most
+    // of the time but not during storage in a Collection.  But on occasion in my test suite I do want to check
+    // that two objects have the same values.  I know this is very unusual.  This situation is due to me optimizing
+    // the speed of the program over general purpose usage.
+    public boolean equalsFullObject(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -259,6 +262,7 @@ public class Move {
         return promotionPiece == move.promotionPiece;
     }
 
+/*
     @Override
     public int hashCode() {
         int result = piece.hashCode();
@@ -273,4 +277,5 @@ public class Move {
         result = 31 * result + enPassantTarget;
         return result;
     }
+*/
 }

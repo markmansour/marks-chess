@@ -125,4 +125,8 @@ public enum Piece {
             default -> { return EMPTY; }
         }
     }
+
+    public int colorOffset() {
+        return isWhite() ? 0 : 1;
+    }
 }

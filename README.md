@@ -10,16 +10,16 @@ The project contains a chess engine with following abilities:
 * Understands checkmate, stalemate, the 50 rule move, insufficient materials, and repetition.
 * Basic UCI interface.
 * Uses bitboards (and [Magic bitboards](https://rhysre.net/fast-chess-move-generation-with-magic-bitboards.html)) for speed.  This was a lot of fun to write.
-* Perft 7 running (correctly) at 4MM nodes/second on my M2 macbook air.  Perft 7 for Java requires moving 
-  from ints to longs (64 bit) to support the higher number of nodes.
+* Perft 7 running (correctly) at 4MM nodes/second on my M2 macbook air.
 * Four working players.  
-  * RandomMovePlayer - generates moves to a depth of 1 and randomly picks a move.
-  * BasicNegaMaxPlayer - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
+  * [RandomMovePlayer](src/main/java/com/stateofflux/chess/model/player/RandomMovePlayer.java) - generates moves to a depth of 1 and randomly picks a move.
+  * [BasicNegaMaxPlayer](src/main/java/com/stateofflux/chess/model/player/BasicNegaMaxPlayer.java) - uses nagamax (minimax) with a [Simple Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function) 
     (values in centipawns) and [Piece-Square Tables](https://www.chessprogramming.org/Simplified_Evaluation_Function#Piece-Square_Tables).
-  * AlphaBetaPlayer with alpha/beta pruning (Simple evaluation and PSTs).
-  * AlphaBetaPlayerTT with alpha/beta and transposition tables.
+  * [AlphaBetaPlayer](src/main/java/com/stateofflux/chess/model/player/AlphaBetaPlayer.java) with alpha/beta pruning (Simple evaluation and PSTs).
+  * [AlphaBetaPlayerTT](src/main/java/com/stateofflux/chess/model/player/AlphaBetaPlayerWithTT.java) with alpha/beta and transposition tables.
 * Move ordering (basic version implemented to prioritize captures) and improved move ordering ([MVV-LVA](https://www.chessprogramming.org/MVV-LVA)).
 * Zobrist keys to find repetition and support speed improvements during search.
+* Iterative Deepening and Time management
 
 ## Design
 * **Game** - contains only game state such as clock moves, draw/checked/mate/repetition/50 move rule, the active player, and a history of moves.  Players make moves in the game object, which updates the underlying board.  The Game object deals in moves including move generation and enforces correctness of moves.
@@ -40,10 +40,10 @@ $ mvn package assembly:single
 
 ## Playing against other engines
 Build a single jar file with all dependencies, and call it from a shell script.  That
-shell script can be called from a chess engine.
+shell script can be called from a chess engine.  See [debugging](docs/debugging.md) and [tournament testing](docs/tournament%20testing%20marks%20chess.md)   for more configuration options.
 
 ```bash
-$ ~./app.sh
+$ ./bin/app.sh
 ```
 
 I use this script as a launch for GUIs such as [cutechess](https://github.com/cutechess/cutechess) or banksia on macOS.
@@ -112,24 +112,39 @@ Polyglot readers
 * Improved evaluation (king attacked)
 * Opening books (See [lichess openings](https://github.com/lichess-org/chess-openings/tree/master)), [BALSA](https://sites.google.com/site/computerschess/balsa-opening-test-suite), [beginners guide](http://horizonchess.com/FAQ/Winboard/openingbook.html), [Polyglot book format](http://hgm.nubati.net/book_format.html), [Chess Stack Exchange](https://chess.stackexchange.com/questions/5933/how-to-create-your-own-opening-book-for-your-own-chess-engine) thread, [Bluefever software video](https://www.youtube.com/watch?v=hGy5kR_mOdM)
 * End games
-* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.  [Tutorial from lc0](https://lczero.org/dev/wiki/testing-guide/) may be of help.
+* Calculate the rough [Elo](https://en.wikipedia.org/wiki/Elo_rating_system) for my engine.  Tools to review: [Baysian Elo](https://www.remi-coulom.fr/Bayesian-Elo/), [Openbench](https://github.com/AndyGrant/OpenBench), [Chess Tuning Tool](https://chess-tuning-tools.readthedocs.io/en/latest/index.html), and CuteChess for tournament simulation.  [Tutorial from lc0](https://lczero.org/dev/wiki/testing-guide/) may be of help.
 * Compare my chess engine against other engines using [Computer Chess Rating Lists](http://computerchess.org.uk/ccrl/).  Currently trying to beat "[Dumb](https://github.com/abulmo/Dumb/tree/master)" but not succeeding as it's Elo rating is 2698 (my bot isn't close to this (yet!))
 * Threaded search and evaluation
 * Time management
 * Neural Net chess player - see [Minic](https://github.com/tryingsomestuff/Minic), [maia](https://github.com/CSSLab/maia-chess), [sunfish](https://github.com/thomasahle/sunfish), [Bagatur](https://github.com/bagaturchess/Bagatur) (Java).  Perhaps [bullet](https://github.com/jw1912/bullet) would be useful for training?
 * Resignations
 
+## Neural Net Research
+* [Stockfish NNUE doc explaining how NNUEs work](https://github.com/official-stockfish/nnue-pytorch/blob/master/docs/nnue.md)
+* [Neural Networks for chess](https://github.com/asdfjkl/neural_network_chess) by Dominik Klein
+* [Coding Your First Neural Network FROM SCRATCH](https://code.likeagirl.io/coding-your-first-neural-network-from-scratch-0b28646b4043)
+* [DeepLearning4J](https://deeplearning4j.konduit.ai) - with links to learning resources
+
+## References
+* [Practical Artificial Intelligence](https://leanpub.com/javaai/read#search)
+* [Artificial Intelligence: A Modern Approach](https://aima.cs.berkeley.edu) [github](https://github.com/aimacode/aima-java) - Search, NN, deep learning.  See Chapter 6.3 for Alpha-Beta trees, Late Move Reduction
+
 ### Features (in priority order)
-1. [ ] verify alpha/beta search is working (seems to have a bug)
-2. [ ] iterative deepening
-3. [ ] timeouts
-4. [ ] integration with other bots - get a baseline ELO
-5. [ ] create basic neural net player
+* [x] verify alpha/beta search is working (seems to have a bug)
+* [x] iterative deepening
+* [x] timeouts
+* [x] integration with other bots - get a baseline ELO
+* [ ] create basic neural net player
+
+### Bugs
+* [ ] AlphaBetaWithTT occasionally generates illegal PV.
 
 ### Papercuts to address (in priority order)
-1. [ ] add copyright notice to files
-2. [ ] add stylecheck into build process
-3. [ ] improve coverage (95%+)
-4. [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
-5. [ ] I don't love my logging patterns.  Review and improve.
-6. [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)
+* [ ] add copyright notice to files
+* [ ] add stylecheck into build process
+* [ ] add dependency management checks ([dependabot](https://github.com/dependabot/dependabot-core)?) or ([renovatebot](https://docs.renovatebot.com/java/#maven-file-support)) to build process
+* [ ] improve coverage (95%+)
+* [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
+* [ ] I don't love my logging patterns.  Review and improve.
+* [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)
+* [ ] Improve speed of evaluation function.  It's pretty slow right now.

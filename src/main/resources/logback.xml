@@ -1,0 +1,49 @@
+<configuration>
+    <property name="LOGDIR" value="/Users/markmansour/IdeaProjects/marks-chess/log" />
+    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+
+    <appender name="PlainAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="alpha-beta-file-debugger" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <!-- in the absence of the class attribute, it is assumed that the
+             desired discriminator type is
+             ch.qos.logback.classic.sift.MDCBasedDiscriminator -->
+        <discriminator>
+            <key>ply</key>
+            <defaultValue>unknown</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${ply}" class="ch.qos.logback.core.FileAppender">
+                <file>${LOGDIR}/game-${bySecond}-ply-${ply}.xml</file>
+                <append>false</append>
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%msg%n</pattern>
+                </layout>
+            </appender>
+        </sift>
+    </appender>
+
+    <root level="error">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <logger name="UCI_Logger" level="info">
+        <appender-ref ref="PlainAppender"/>
+    </logger>
+
+    <logger name="com.stateofflux.chess.alpha-beta-debugging" level="info">
+        <appender-ref ref="alpha-beta-file-debugger" />
+    </logger>
+</configuration>

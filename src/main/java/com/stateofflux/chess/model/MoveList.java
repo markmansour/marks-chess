@@ -11,7 +11,7 @@ import java.util.List;
 public class MoveList<E> extends ForwardingList<E> {
     final List<E> delegate;
 
-    MoveList(List<E> delegate) {
+    public MoveList(List<E> delegate) {
         this.delegate = delegate;
     }
 

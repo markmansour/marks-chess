@@ -28,12 +28,8 @@ public abstract class Player {
 
     public abstract Move getNextMove(Game game);
 
-    public int evaluate(Game game, PlayerColor pc) {
-        return evaluate(game, 0);
-    }
-
-    public int evaluate(Game game, int depth) {
-        return evaluator.evaluate(game, depth);
+    public int evaluate(Game game, int depthTraversed) {
+        return evaluator.evaluate(game, depthTraversed);
     }
 
     public int getSearchDepth() {
@@ -41,11 +37,7 @@ public abstract class Player {
     }
 
     public String toString() {
-        return getClass().getSimpleName() + " " + color.toString() + " (depth: " + getSearchDepth() + ", nodes eval: ";
-    }
-
-    public int getBestMoveScore() {
-        return color.isWhite() ? 1 : -1;
+        return getClass().getSimpleName() + " (" + color.toString() + ", depth: " + getSearchDepth() + ")";
     }
 
     public int getNodesVisited() {
@@ -62,5 +54,9 @@ public abstract class Player {
 
     public void setIncrement(long increment) {
         // no-op
+    }
+
+    public Object getEvaluator() {
+        return evaluator;
     }
 }

@@ -4,8 +4,6 @@ import com.stateofflux.chess.model.Board;
 
 public class QueenMoves extends StraightLineMoves {
 
-    public static final int QUEEN_DIRECTIONS_MAX = 7;
-
     public QueenMoves(Board board, int location) {
         super(board, location);
     }

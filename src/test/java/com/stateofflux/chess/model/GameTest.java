@@ -684,8 +684,7 @@ public class GameTest {
         Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player randomPlayerTwo = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
         Game game = new Game();
-        game.setPlayers(randomPlayerOne, randomPlayerTwo);
-        game.play();
+        game.play(randomPlayerOne, randomPlayerTwo);
 
         game.printOccupied();
         assertTrue(game.isOver());

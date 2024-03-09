@@ -1,8 +1,10 @@
 package com.stateofflux.chess.model.player;
 
+import java.util.concurrent.TimeUnit;
+
 public class Timer {
-    private long startTime;
-    private long totalTimeAllocated;
+//    private long startTime;
+    private final long totalTimeAllocated;
     private long incrementAllocation;
     private long incrementStartTime;
 
@@ -15,9 +17,11 @@ public class Timer {
         totalTimeAllocated = totalTimeInNanos;
     }
 
+/*
     public void start() {
         startTime = java.lang.System.nanoTime();
     }
+*/
 
     public void startIncrementCountdown(long timeAllocation) {
         incrementStartTime = java.lang.System.nanoTime();

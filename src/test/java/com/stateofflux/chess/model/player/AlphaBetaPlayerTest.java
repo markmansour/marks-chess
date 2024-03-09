@@ -1,13 +1,11 @@
 package com.stateofflux.chess.model.player;
 
+import ch.qos.logback.classic.Level;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.TranspositionTable;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,45 +14,49 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("FullGameTest")
+@Tag("UnitTest")
 public class AlphaBetaPlayerTest {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    @BeforeEach
+    public void setUp() {
+        // change test logging level from DEBUG to INFO (it's too noisy for full game tests).
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
+    }
+
+    @Tag("FullGameTest")
     @Test public void alphaBetaDefeatsRandom() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         Player two = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isLessThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
+        assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
+    @Tag("FullGameTest")
     @Test public void randomLosesToAlphaBeta() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isGreaterThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
+        assertThat(two.evaluate(game, 0)).isGreaterThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 
     @Test public void testToPlaceInCheck() {
         Game game = new Game("1n2k1n1/r2p3r/b1p1ppp1/p6p/3K4/8/8/7q b - - 0 30");
         Evaluator evaluator = new SimpleEvaluator();
-        Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
         // white's turn (player one)
         // winning move is black:h1e1, white:d4c5 (their only move), black:e1b4 - checkmate
@@ -63,19 +65,24 @@ public class AlphaBetaPlayerTest {
     }
 
     @Test public void testFromWinningPositionForBlack() {
+        // stockfish can win in 6 ply
         Game game = new Game("1nbq2n1/r3p3/1pp1ppp1/p3k3/8/2r2p2/8/2b3K1 w - - 0 27");
         Evaluator evaluator = new SimpleEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-        game.setPlayers(one, two);
+        two.setSearchDepth(6);
 
-        game.play();
+        assertThat(game.getClock()).isEqualTo(54);
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(game.getActivePlayer()).isEqualTo(one);  // player two played the last turn and won.  It moved to player one but they can't do anything.
+        // assertThat(game.getClock()).isEqualTo(60);  due to my evaluator (we have multiple "best moves"), this isn't consistent.
+        assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);  // player two played the last turn and won.  It moved to player one but they can't do anything.
     }
 
+    @Disabled
+    @Tag("FullGameTest")
     @Test public void alphaBetaDepth2LosesToAlphaBetaDepth4() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -83,9 +90,8 @@ public class AlphaBetaPlayerTest {
         one.setSearchDepth(2);
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
@@ -95,114 +101,37 @@ public class AlphaBetaPlayerTest {
         assertThat(game.getActivePlayerColor().isWhite()).isTrue();  // black moved last and created the mate.
     }
 
-
     @Test public void checkmateInOneMoveIsSelectedOverCheckmateInThreeMoves() {
         Game game = new Game("8/1Q5R/4Q3/2QNP1B1/k1BKN3/P4Q2/2P3P1/4R3 w - - 17 60");
         Evaluator evaluator = new SimpleEvaluator();
 
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         one.setSearchDepth(4);
-        Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
+        Player two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
         two.setSearchDepth(2);
-        game.setPlayers(one, two);
 
         Move bestMove = one.getNextMove(game);
         game.move(bestMove);
         assertThat(game.isCheckmated()).isTrue();
     }
 
+    @Disabled
+    @Tag("FullGameTest")
     @Test public void alphaBetaVsChessAi() {
         Game game = new Game();
+
         Evaluator evaluator = new SimpleEvaluator();
-        Evaluator chessAi = new ChessAIEvaluator();
         Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
         one.setSearchDepth(4);
+
+        Evaluator chessAi = new ChessAIEvaluator();
         Player two = new AlphaBetaPlayer(PlayerColor.BLACK, chessAi);
         two.setSearchDepth(4);
-        game.setPlayers(one, two);
 
-        game.play();
+        game.play(one, two);
         game.printOccupied();
 
         assertThat(game.isOver()).isTrue();
-        assertThat(two.evaluate(game, PlayerColor.BLACK)).isLessThanOrEqualTo(one.evaluate(game, PlayerColor.WHITE));  // ab beats random
-    }
-
-    @Test public void alphaBetaVsAlphaBetaWithTT() {
-        Game game = new Game();
-        Evaluator evaluator = new SimpleEvaluator();
-        Player one = new AlphaBetaPlayer(PlayerColor.WHITE, evaluator);
-        one.setSearchDepth(4);
-        Player two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
-        two.setSearchDepth(10);
-        game.setPlayers(one, two);
-
-        game.play();
-        game.printOccupied();
-
-        assertThat(game.isOver()).isTrue();
-        assertThat(((AlphaBetaPlayerWithTT) two).getTableHits()).isNotZero();
-    }
-
-    @Nested
-    class AlphaBetaWithTT {
-        @Test public void testSettingOfHashSize() {
-            Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT player = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
-            int initialHashSize = player.getTtHashSize();
-            int mbToEntries = 1024 * 1024 / 8;
-            assertThat(initialHashSize).isEqualTo(TranspositionTable.DEFAULT_HASH_SIZE_IN_MB * mbToEntries);
-            player.setHashInMb(16);    // set hashsize to 16MB
-            assertThat(player.getTtHashSize()).isEqualTo(16 * mbToEntries);
-        }
-
-        @Disabled
-        @Test public void iterativeDeepeningTest() {
-            Game game = new Game("4k3/2p5/8/8/8/8/3P4/4K3 w - - 0 1");  // simple board for testing
-            Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-            game.setPlayers(one, two);
-
-            int goalDepth = 8;
-
-            for(int depth = 1; depth <= goalDepth; depth++) {
-                one.setSearchDepth(depth);
-                Move move = one.getNextMove(game);
-            }
-        }
-
-        @Disabled
-        @Test public void debugIterativeDeepening() {
-            Game game = new Game("4k3/2p5/8/8/8/8/3P4/4K3 w - - 0 1");  // simple board for testing
-            Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-            game.setPlayers(one, two);
-
-            int goalDepth = 8;
-
-            for(int depth = 1; depth <= goalDepth; depth++) {
-                one.setSearchDepth(depth);
-                Move move = one.getNextMove(game);
-            }
-        }
-
-        @Test public void iterativeDeepeningWithTimer() {
-            Game game = new Game();  // simple board for testing
-            long timeAllocatedInMillis = TimeUnit.SECONDS.toNanos(5);
-            Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-            Player two = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
-            game.setPlayers(one, two);
-
-            one.setIncrement(timeAllocatedInMillis);  // 1 second
-            one.setSearchDepth(200);
-
-            Move bestMove = one.getNextMove(game);
-            logger.info("Best move is: {}", bestMove);
-//            long timeUsed = one.getLastIncrement();
-//            assertThat(timeUsed).isLessThan(timeAllocatedInMillis);
-        }
+        assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
 }

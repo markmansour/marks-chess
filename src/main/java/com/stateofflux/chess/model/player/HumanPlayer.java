@@ -7,6 +7,7 @@ import com.stateofflux.chess.model.PlayerColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class HumanPlayer extends Player {
@@ -15,7 +16,7 @@ public class HumanPlayer extends Player {
 
     public HumanPlayer(PlayerColor pc, Evaluator evaluator) {
         super(pc, evaluator);
-        scanner = new Scanner(System.in);  // in IntelliJ - Help / Edit Custom VM options.  Add line: -Deditable.java.test.console=true
+        scanner = new Scanner(System.in, StandardCharsets.UTF_8);  // in IntelliJ - Help / Edit Custom VM options.  Add line: -Deditable.java.test.console=true
     }
 
     public Move getNextMove(Game game) {

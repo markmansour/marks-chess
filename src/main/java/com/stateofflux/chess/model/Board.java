@@ -126,17 +126,9 @@ public class Board {
         return location & 0x7;  // modulo 8
     }
 
-    public static int countSetBits(long n) {
-        // base case
-        if (n == 0)
-            return 0;
-        else
-            return 1 + countSetBits(n & (n - 1L));
-    }
-
     /** returns locations from 0-63 **/
     public static int[] bitboardToArray(long l) {
-        int bitsSet = countSetBits(l);
+        int bitsSet = Long.bitCount(l);
         int[] result = new int[bitsSet];
         int counter = 0;
 
@@ -172,7 +164,7 @@ public class Board {
 
     // --------------------------- Instance Methods ---------------------------
 
-    void printOccupiedBoard() {
+    public void printOccupiedBoard() {
         StringBuilder prettyBoard = new StringBuilder(64);
 
         for (int i = 0; i < 64; i++) {
