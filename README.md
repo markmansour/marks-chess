@@ -19,6 +19,7 @@ The project contains a chess engine with following abilities:
   * [AlphaBetaPlayerTT](src/main/java/com/stateofflux/chess/model/player/AlphaBetaPlayerWithTT.java) with alpha/beta and transposition tables.
 * Move ordering (basic version implemented to prioritize captures) and improved move ordering ([MVV-LVA](https://www.chessprogramming.org/MVV-LVA)).
 * Zobrist keys to find repetition and support speed improvements during search.
+* Iterative Deepening and Time management
 
 ## Design
 * **Game** - contains only game state such as clock moves, draw/checked/mate/repetition/50 move rule, the active player, and a history of moves.  Players make moves in the game object, which updates the underlying board.  The Game object deals in moves including move generation and enforces correctness of moves.
@@ -39,10 +40,10 @@ $ mvn package assembly:single
 
 ## Playing against other engines
 Build a single jar file with all dependencies, and call it from a shell script.  That
-shell script can be called from a chess engine.
+shell script can be called from a chess engine.  See [debugging](docs/debugging.md) and [tournament testing](docs/tournament%20testing%20marks%20chess.md)   for more configuration options.
 
 ```bash
-$ ~./app.sh
+$ ./bin/app.sh
 ```
 
 I use this script as a launch for GUIs such as [cutechess](https://github.com/cutechess/cutechess) or banksia on macOS.
@@ -132,13 +133,11 @@ Polyglot readers
 * [x] verify alpha/beta search is working (seems to have a bug)
 * [x] iterative deepening
 * [x] timeouts
-* [ ] integration with other bots - get a baseline ELO
+* [x] integration with other bots - get a baseline ELO
 * [ ] create basic neural net player
 
 ### Bugs
-* [ ] AlphaBetaWithTT occasionally generates illegal moves.
-* [ ] AlphaBetaWithTT pv results are often incorrect.
-
+* [ ] AlphaBetaWithTT occasionally generates illegal PV.
 
 ### Papercuts to address (in priority order)
 * [ ] add copyright notice to files

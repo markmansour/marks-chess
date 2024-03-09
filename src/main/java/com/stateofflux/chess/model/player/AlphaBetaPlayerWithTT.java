@@ -119,29 +119,30 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     }
 
     public MoveHistory alphaBetaRoot(Game game, int depth) {
-        int alpha = Evaluator.MIN_VALUE;
-        int beta = Evaluator.MAX_VALUE;
+        int alpha = evaluator.MIN_VALUE;
+        int beta = evaluator.MAX_VALUE;
         PlayerColor pc = this.getColor();
         int alphaOrig = alpha;
-        int value = Evaluator.MIN_VALUE;
+        int value = evaluator.MIN_VALUE;
         List<MoveHistory> bestMoves = new ArrayList<>();
         int score;
         int evaluatedCount = 0;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
-
         if (existingEntry != null && existingEntry.depth() >= getSearchDepth()) {
             tableHits++;
 
             if (existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+//                uci_logger.atDebug().log("info TT.EXACT match: {}", existingEntry.getBestMove());
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
-            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND) {
+//                uci_logger.atDebug().log("info TT.LOWER_BOUND match: {}", existingEntry.getBestMove());
                 alpha = Math.max(alpha, existingEntry.score());
-            else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
                 beta = Math.min(beta, existingEntry.score());
 
             if (alpha >= beta) {
-//                logger.atDebug().log("returning cached hit - a >= b");
+//                uci_logger.atDebug().log("info TT - alpha >= beta: {}", existingEntry.getBestMove());
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
             }
         }
@@ -257,13 +258,18 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             tableHits++;
 
             if (existingEntry.nt() == TranspositionTable.NodeType.EXACT) {
+//                uci_logger.atInfo().log("info TT.EXACT match: {}", existingEntry.getBestMove());
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
-            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.LOWER_BOUND) {
+//                uci_logger.atInfo().log("info TT.LOWER_BOUND match: {}", existingEntry.getBestMove());
                 alpha = Math.max(alpha, existingEntry.score());
-            else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
+            } else if (existingEntry.nt() == TranspositionTable.NodeType.UPPER_BOUND)
                 beta = Math.min(beta, existingEntry.score());
 
             if (alpha >= beta) {
+//                uci_logger.atInfo().log("info TT - alpha >= beta: {}", existingEntry.getBestMove());
+                // NOTE: I think this is where my PV bug is coming from.
+                assert existingEntry.getBestMove().equalsFullObject(lastMove);
                 return new MoveHistory(existingEntry.getBestMove(), existingEntry.score());  // TODO: we're not storing history to retrieve (yet!)
             }
         }
@@ -353,11 +359,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             game.undo();
 
             if (score == value) {
-                mh.addMove(lastMove, score);
                 bestMoves.add(mh);
             } else if (score > value) {
                 bestMoves.clear();
-                mh.addMove(lastMove, score);
                 bestMoves.add(mh);  // leaf node
 
                 value = score;
@@ -375,8 +379,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
 
-        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.pv());
+        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), bestMoveHistory.previousMovesToString());
         xml.atDebug().log("</node>");
+
+        bestMoveHistory.addMove(lastMove, value);
 
         return bestMoveHistory;
     }

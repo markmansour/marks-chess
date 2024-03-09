@@ -134,15 +134,4 @@ public class AlphaBetaPlayerTest {
         assertThat(game.isOver()).isTrue();
         assertThat(two.evaluate(game, 0)).isLessThanOrEqualTo(one.evaluate(game, 0));  // ab beats random
     }
-
-    @Test public void alphaBetaVsAlphaBetaWithTT() {
-        Game game = new Game();
-        Evaluator evaluator = new SimpleEvaluator();
-        AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-        one.setSearchDepth(4);
-
-        one.getNextMove(game);
-
-        assertThat(one.getTableHits()).isNotZero();
-    }
 }

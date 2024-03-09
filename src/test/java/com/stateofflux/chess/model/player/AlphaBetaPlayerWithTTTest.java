@@ -27,6 +27,19 @@ class AlphaBetaPlayerWithTTTest {
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("UCI_Logger")).setLevel(Level.WARN);
     }
 
+    @Test public void moveHistoryTest() {
+        Game game = new Game("3k4/8/8/8/8/8/3P4/3K4 w - - 0 1");
+        Evaluator evaluator = new SimpleEvaluator();
+
+        AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+        white.setSearchDepth(4);
+
+        Move bestMove = white.getNextMove(game);
+        logger.info("Best move is: {}", bestMove);  // this should NOT be h1g1 or a1b1
+        // d1c1 d8c7 c1d1 d1e1
+    }
+
+
     @Test public void simpleVsPesto() {
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.stateofflux.chess.alpha-beta-debugging")).setLevel(Level.WARN);  // turn off XML logging
 
@@ -201,6 +214,18 @@ class AlphaBetaPlayerWithTTTest {
         logger.info("Best move is: {}", bestMove);
         assertThat(bestMove.toLongSan()).isEqualTo("d8d1");
     }
+
+
+        @Test public void transpositionTableIsUsed() {
+            Game game = new Game();
+            Evaluator evaluator = new SimpleEvaluator();
+            AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+            one.setSearchDepth(4);
+
+            one.getNextMove(game);
+
+            assertThat(one.getTableHits()).isNotZero();
+        }
 
     @Nested
     class Blunders {
