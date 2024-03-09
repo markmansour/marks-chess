@@ -34,5 +34,10 @@ target/
 log/
 profile/
 
+# Version Control
+.vscode
+.idea
+*.iml
+
 # End of https://www.toptal.com/developers/gitignore/api/java
 .DS_Store
