@@ -70,3 +70,33 @@ Rank Name             Elo    +    - games score oppo. draws
    1 Stockfish 15.1   108   11   11  1100   74%  -108    4%
    2 ABTTd4          -108   11   11  1100   26%   108    4%
 ```
+
+# History of Results
+## Version 1 - 20240309
+[git sha 8f50187](https://github.com/markmansour/marks-chess/tree/8f50187)
+```bash
+cutechess-cli \                                                       ✔  10s   base   2.0.0-p247   09:46:33 
+  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 4 -bd 4" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABTTdinf" \
+  -engine cmd=/usr/local/bin/stockfish option.UCI_LimitStrength=true "option.Use NNUE=false" \
+  -each proto=uci tc=40/15 \
+  -pgnout $MARKS_CHESS_DIR/log/output_pgn_file.pgn \
+  -recover \
+  -concurrency 8 \
+  -games 2 \
+  -rounds 250 \
+  > $MARKS_CHESS_DIR/log/output_engine.log 2>&1
+```
+
+From cutechess
+```
+Score of ABTTdinf vs Stockfish 15.1: 114 - 364 - 22  [0.250] 500
+```
+
+bayeselo Elo
+```
+Rank Name             Elo    +    - games score oppo. draws
+   1 Stockfish 15.1   121   15   15   634   77%  -121    4%
+   2 ABTTdinf        -121   15   15   634   23%   121    4%
+```
+
+
