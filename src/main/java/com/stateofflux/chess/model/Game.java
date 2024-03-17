@@ -29,8 +29,8 @@ public class Game {
     private boolean outOfTime = false;
     private int movesWithoutCaptureOrPawnMove = 0;
 
-    private final ArrayList<History> historyOfMoves = new ArrayList<>();
-    private final ArrayList<Move> toRemove = new ArrayList<>(64);
+    private final List<History> historyOfMoves = new ArrayList<>();
+    private final List<Move> toRemove = new ArrayList<>(64);
 
     // --------------------------- Constructors ---------------------------
 

@@ -81,7 +81,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         logger.atDebug().log("starting iterative deepening with fen: \"{}\"", game.asFen());
 
-         xml.atDebug().log("<chess player=\"{}\" search-depth=\"{}\">", game.getActivePlayerColor(), searchDepth);
+         xml.atDebug().log("<chess player=\"{}\" search-depth=\"{}\" fen-string=\"{}\">", game.getActivePlayerColor(), searchDepth, game.asFen());
 
         // Iterative Deepening loop
         for (int depth = 1; depth <= searchDepth && !timedOut; depth++) {

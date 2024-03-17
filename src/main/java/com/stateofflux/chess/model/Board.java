@@ -284,6 +284,17 @@ public class Board {
         throw new AssertionError("Location not found: " + location);
     }
 
+    protected int getBoardIndex(int location, PlayerColor pc) {
+        int[] indices = pc.isWhite() ? Piece.WHITE_INDEX : Piece.BLACK_INDEX;
+
+        for (int index = 0; index < indices.length; index++) {
+            if ((this.boards[indices[index]] & (1L << location)) != 0)
+                return indices[index];
+        }
+
+        throw new AssertionError("Location not found: " + location);
+    }
+
     public long getBlackKingBoard()   { return boards[Piece.BLACK_KING.getIndex()]; }
     public long getBlackQueenBoard()  { return boards[Piece.BLACK_QUEEN.getIndex()]; }
     public long getBlackBishopBoard() { return boards[Piece.BLACK_BISHOP.getIndex()]; }
@@ -308,14 +319,14 @@ public class Board {
         Piece removedPiece;
 
         // remove the piece making the move from the board
-        int fromBoardIndex = this.getBoardIndex(m.getFrom());
+        int fromBoardIndex = this.getBoardIndex(m.getFrom(), m.getPiece().getColor());
         clearByBoard(m.getPiece(), fromBoardIndex, m.getFrom()); // clear
 
         // clear the destination location
         removed = m.getTo();
         removedPiece = get(m.getTo());
         if(removedPiece != Piece.EMPTY) {
-            clearByBoard(removedPiece, this.getBoardIndex(m.getTo()), removed);
+            clearByBoard(removedPiece, this.getBoardIndex(m.getTo(), removedPiece.getColor()), removed);
             // this.clearLocation(m.getPiece(), m.getTo());  // take the destination piece off the board if it exists.  It may be on any bitboard
         }
 

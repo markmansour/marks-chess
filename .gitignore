@@ -34,7 +34,7 @@ target/
 log/
 profile/
 
-# Version Control
+# IDE files
 .vscode
 .idea
 *.iml

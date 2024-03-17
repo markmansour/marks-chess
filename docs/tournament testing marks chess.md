@@ -16,10 +16,10 @@ cd $MARKS_CHESS_DIR
 ### Tournament example
 ```bash
 cutechess-cli \
-  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 100 -bd 100" dir=$MARKS_CHESS_DIR cmd=./app.sh  name="ABTTdinf" \
-  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 4 -bd 4" dir=$MARKS_CHESS_DIR cmd=./app.sh  name="ABTTd4" \
-  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 2 -bd 2" dir=$MARKS_CHESS_DIR cmd=./app.sh  name="ABTTd2" \
-  -engine arg="-w AlphaBetaPlayer -b AlphaBetaPlayer -wd 2 -bd 2" dir=$MARKS_CHESS_DIR cmd=./app.sh  name="ABd2" \
+  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 100 -bd 100" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABTTdinf" \
+  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 4 -bd 4" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABTTd4" \
+  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 2 -bd 2" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABTTd2" \
+  -engine arg="-w AlphaBetaPlayer -b AlphaBetaPlayer -wd 2 -bd 2" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABd2" \
   -engine cmd=/usr/local/bin/stockfish option.UCI_LimitStrength=true "option.Use NNUE=false" \
   -each proto=uci tc=40/15 \
   -pgnout $MARKS_CHESS_DIR/log/output_pgn_file.pgn \
@@ -75,15 +75,15 @@ Rank Name             Elo    +    - games score oppo. draws
 ## Version 1 - 20240309
 [git sha 8f50187](https://github.com/markmansour/marks-chess/tree/8f50187)
 ```bash
-cutechess-cli \                                                       ✔  10s   base   2.0.0-p247   09:46:33 
-  -engine arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 4 -bd 4" dir=$MARKS_CHESS_DIR cmd=./bin/app.sh  name="ABTTdinf" \
+cutechess-cli \
+  -engine name="ABTTdinf" cmd=./bin/app.sh arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 100 -bd 100" dir=$MARKS_CHESS_DIR \
   -engine cmd=/usr/local/bin/stockfish option.UCI_LimitStrength=true "option.Use NNUE=false" \
-  -each proto=uci tc=40/15 \
+  -each proto=uci tc=40/60 \
   -pgnout $MARKS_CHESS_DIR/log/output_pgn_file.pgn \
   -recover \
   -concurrency 8 \
   -games 2 \
-  -rounds 250 \
+  -rounds 50 \
   > $MARKS_CHESS_DIR/log/output_engine.log 2>&1
 ```
 

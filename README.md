@@ -86,7 +86,7 @@ The below notes are mainly for me, but I'll leave them in as they may help other
 * [Lichess Board Editor](https://lichess.org/editor) (great for creating testing scenarios)
 
 ## Implementations
-* [Shallow-Blue](https://github.com/GunshipPenguin/shallow-blue) (Java)
+* [Shallow-Blue](https://github.com/GunshipPenguin/shallow-blue) (C++)
 * [Chess AI](https://github.com/zeyu2001/chess-ai/tree/main) (JS)
 * [chesslib](https://github.com/bhlangonijr/chesslib) (Java)
 * [chess.js](https://github.com/jhlywa/chess.js/tree/master) (JavaScript)

@@ -31,9 +31,13 @@ public enum Piece {
     private final char pieceChar;
 
     public static final int SIZE;
+    public static final int[] WHITE_INDEX;
+    public static final int[] BLACK_INDEX;
 
     static {
         SIZE = values().length;
+        WHITE_INDEX = new int[] { 0, 1, 2, 3,  4,  5 };
+        BLACK_INDEX = new int[] { 6, 7, 8, 9, 10, 11 };
     }
 
     Piece(int index, PlayerColor color, char pieceChar) {
