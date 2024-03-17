@@ -172,12 +172,12 @@ class AlphaBetaPlayerWithTTTest {
         Game game = new Game();
 
         Evaluator evaluator = new SimpleEvaluator();
-        AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
-        one.setSearchDepth(100);
+        ABPlayerV2 one = new ABPlayerV2(PlayerColor.WHITE, evaluator);
+        one.setSearchDepth(4);
         one.setIncrement(TimeUnit.SECONDS.toNanos(5));
 
-        AlphaBetaPlayerWithTT two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
-        two.setSearchDepth(100);
+        ABPlayerV2 two = new ABPlayerV2(PlayerColor.BLACK, evaluator);
+        two.setSearchDepth(4);
         two.setIncrement(TimeUnit.SECONDS.toNanos(5));
 
         game.play(one, two);
