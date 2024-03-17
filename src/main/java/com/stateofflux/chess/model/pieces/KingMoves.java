@@ -9,7 +9,7 @@ public class KingMoves implements PieceMovesInterface {
     public static final long WHITE_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 1) | (1L << 2) | (1L << 3);
     public static final long WHITE_KING_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 5) | (1L << 6);
     public static final long BLACK_KING_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 61) | (1L << 62);
-    public static final long BLACK_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 58) | (1L << 59);
+    public static final long BLACK_QUEEN_SIDE_CASTLING_EMPTY_CHECK_BITBOARD = (1L << 57) | (1L << 58) | (1L << 59);
 
     static {
         initializeKingAttacks();

@@ -337,6 +337,11 @@ public class GameTest {
             assertThat(moves.asLongSan()).doesNotContain("e1c8");  // white king to black rook with blockers
             assertThat(moves).hasSize(19);
         }
+
+        @Test void hasBug() {
+            Game game = new Game("rn2kbnr/p3p2p/1p3pp1/8/7P/3p4/PP3PQ1/RNB1K1N1 b Qkq - 1 11");
+            assertThat(game.generateMoves().stream().map(Move::toLongSan).toList()).doesNotContain("e8c8");
+        }
     }
 
     @Nested
