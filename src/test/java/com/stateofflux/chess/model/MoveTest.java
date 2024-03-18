@@ -1,6 +1,7 @@
 package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.pieces.CastlingHelper;
+import com.stateofflux.chess.model.pieces.PawnMoves;
 import com.stateofflux.chess.model.pieces.Piece;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -10,6 +11,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
 public class MoveTest {
+    private long openingWhitePawns = 65280L;
+    private long openingBlackPawns = 71776119061217280L;
+
+    @Test
+    public void moveWithEnPassantMovementAndPawn() {
+        Move m = new Move(Piece.BLACK_PAWN, 50, 34, false);
+        long whitePawns = openingWhitePawns | (1L << 35);
+        long blackPawns = openingBlackPawns;
+        m.updateForEnPassant(whitePawns, blackPawns );  // place a white pawn to ensure enpassant
+        assertThat(m.getEnPassantTarget()).isEqualTo(42);
+    }
+
+    @Test
+    public void moveWithEnPassantMovementButNotPawn() {
+        Move m = new Move(Piece.BLACK_ROOK, 50, 34, false);
+        long whitePawns = openingWhitePawns | (1L << 35);
+        long blackPawns = openingBlackPawns & ~(1L << 50);
+        m.updateForEnPassant(whitePawns, blackPawns );  // place a white pawn to ensure enpassant
+        assertThat(m.getEnPassantTarget()).isEqualTo(PawnMoves.NO_EN_PASSANT_VALUE);
+    }
+
 
     @Nested
     class EncodeDecode {

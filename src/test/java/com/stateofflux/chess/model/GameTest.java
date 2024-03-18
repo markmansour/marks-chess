@@ -229,6 +229,20 @@ public class GameTest {
         assertThat(game.getBoard().getEnPassantTarget()).isEqualTo(45);
     }
 
+    @Test public void enPassantBug() {
+        // position startpos moves e2e4 e7e5 f2f4 e5f4 d1g4 g7g5 h2h3 d7d5 g4e2 f8g7 e4d5 g8e7 b1c3 b8d7 c3e4 e7f5 e2f3 d8e7 f1b5 f5d6 b5d3 h7h5 g1e2 e7e5
+        String[] longFormMoves = "e2e4 e7e5 f2f4 e5f4 d1g4 g7g5 h2h3 d7d5 g4e2 f8g7 e4d5 g8e7 b1c3 b8d7 c3e4 e7f5 e2f3 d8e7 f1b5 f5d6 b5d3 h7h5 g1e2 e7e5".split(" ");
+        Game game = new Game();
+        for(String move : longFormMoves)
+            game.moveLongNotation(move);
+
+        String expectedFen = "r1b1k2r/pppn1pb1/3n4/3Pq1pp/4Np2/3B1Q1P/PPPPN1P1/R1B1K2R w KQkq -";
+        assertThat(game.asFen()).startsWith(expectedFen);
+
+        List<Move> moves = game.generateMoves();
+        assertThat(moves.stream().map(Move::toLongSan).toList()).doesNotContain("d5e6");
+    }
+
     @Test public void initialTwoSquareOpeningNextToPawnButNoEnPassant() {
         Game game = new Game("6k1/8/8/8/6p1/8/5PR1/6K1 w - - 0 32");
         // 1. f4 Kf7 2. Kf2 Kg8 3. Kg1 Kh7 4. Kh2 Kg8 5. Kg1

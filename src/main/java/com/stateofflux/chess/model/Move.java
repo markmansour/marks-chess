@@ -137,6 +137,12 @@ public class Move {
 
     public void updateForEnPassant(long whitePawns, long blackPawns) {
         int location = getFrom();
+
+        if(((whitePawns | blackPawns) & (1L << location)) == 0) {
+            clearEnPassant();
+            return;
+        }
+
         int destination = getTo();
 
         // if the pawn is on their home position && if the destination is two moves away
