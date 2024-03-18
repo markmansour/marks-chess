@@ -151,6 +151,7 @@ public class App
                                 movesToGo = Integer.parseInt(params.get("movestogo"));
                             }
                             long incrementInNanos = TimeUnit.MILLISECONDS.toNanos(remainingTimeInMillis / movesToGo);
+                            incrementInNanos *= 0.9;  // leave 10% of the time for overruns.
                             p.setIncrement(incrementInNanos);
                             logger.atDebug().log("set increment for {} to {}ms", game.getActivePlayerColor(), TimeUnit.NANOSECONDS.toMillis(incrementInNanos));
                         }

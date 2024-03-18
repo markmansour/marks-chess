@@ -1,5 +1,6 @@
 package com.stateofflux.chess.model;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 
 import com.stateofflux.chess.model.pieces.*;
@@ -7,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Board {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Board.class);
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final long RANK_1 = 0xffL;
     public static final long RANK_2 = 0xff00L;
@@ -146,12 +147,12 @@ public class Board {
         String reversedLong = longToReversedBinaryString(board);
 
         for (int rank = 7; rank >= 0; rank--) {
-            LOGGER.info("{}: {}",
+            logger.atDebug().log("{}: {}",
                 rank + 1,
                 reversedLong.substring(rank * 8, (rank + 1) * 8).replace('0', '.'));
         }
 
-        LOGGER.info("   abcdefgh");
+        logger.atDebug().log("   abcdefgh");
     }
 
     public static String longToReversedBinaryString(long l) {
@@ -175,10 +176,10 @@ public class Board {
 
         for (int i = 7; i >= 0; i--) {
             ranks[i] = prettyBoard.subSequence(i * 8, (i + 1) * 8).toString().replace("", " ");
-            LOGGER.info("{}: {}", i + 1, ranks[i]);
+            logger.atDebug().log("{}: {}", i + 1, ranks[i]);
         }
-        LOGGER.info("-+-----------------");
-        LOGGER.info("    a b c d e f g h");
+        logger.atDebug().log("-+-----------------");
+        logger.atDebug().log("    a b c d e f g h");
     }
 
     public void setBoards(long[] boards) {

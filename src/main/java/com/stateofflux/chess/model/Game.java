@@ -827,24 +827,24 @@ public class Game {
     public void printOccupied() {
         board.printOccupiedBoard();
 
-        logger.atInfo().log("   abcdefgh");
-        logger.atInfo().log("--------------------------");
-        logger.atInfo().log("FEN:           {}", asFen());
-        logger.atInfo().log("isOver:        {}", isOver());
-        logger.atInfo().log("Winner is:     {}", getWinner());
-        logger.atInfo().log("move count:    {}", historyOfMoves.size());
-        logger.atInfo().log("moves:         {}", getMoveHistory());
-        logger.atInfo().log("");
-        logger.atInfo().log("isCheckmated:  {}", isCheckmated());
-        logger.atInfo().log("isDraw?:       {}", isDraw());
-        logger.atInfo().log("hasResigned:   {}", hasResigned());
-        logger.atInfo().log("isStalemate:   {}", isStalemate());
-        logger.atInfo().log("hasRepeated:   {}", isRepetition());
-        logger.atInfo().log("");
-        logger.atInfo().log("exceededMoves: {}", exceededMoves());
-        logger.atInfo().log("is spinning:   {}", isSpinning());
-        logger.atInfo().log("hasInsufficientMaterials: {}", hasInsufficientMaterials());
-        logger.atInfo().log("--------------------------");
+        logger.atDebug().log("   abcdefgh");
+        logger.atDebug().log("--------------------------");
+        logger.atDebug().log("FEN:           {}", asFen());
+        logger.atDebug().log("isOver:        {}", isOver());
+        logger.atDebug().log("Winner is:     {}", getWinner());
+        logger.atDebug().log("move count:    {}", historyOfMoves.size());
+        logger.atDebug().log("moves:         {}", getMoveHistory());
+        logger.atDebug().log("");
+        logger.atDebug().log("isCheckmated:  {}", isCheckmated());
+        logger.atDebug().log("isDraw?:       {}", isDraw());
+        logger.atDebug().log("hasResigned:   {}", hasResigned());
+        logger.atDebug().log("isStalemate:   {}", isStalemate());
+        logger.atDebug().log("hasRepeated:   {}", isRepetition());
+        logger.atDebug().log("");
+        logger.atDebug().log("exceededMoves: {}", exceededMoves());
+        logger.atDebug().log("is spinning:   {}", isSpinning());
+        logger.atDebug().log("hasInsufficientMaterials: {}", hasInsufficientMaterials());
+        logger.atDebug().log("--------------------------");
     }
 
     public String getWinner() {
