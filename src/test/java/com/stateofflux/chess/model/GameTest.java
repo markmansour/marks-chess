@@ -362,6 +362,13 @@ public class GameTest {
             Game game = new Game("rn2kbnr/p3p2p/1p3pp1/8/7P/3p4/PP3PQ1/RNB1K1N1 b Qkq - 1 11");
             assertThat(game.generateMoves().stream().map(Move::toLongSan).toList()).doesNotContain("e8c8");
         }
+
+        @Test void rookBeingTakenRemovesCastlingRights() {
+            Game game = new Game("N2k2nr/p2pnp1p/1p1p4/4b1p1/2P5/5B2/P4PbP/1R1QK1NR b K -");
+            game.moveLongNotation("g2h1");
+            assertThat(game.getBoard().getCastlingRights()).isEqualTo(0);
+        }
+
     }
 
     @Nested

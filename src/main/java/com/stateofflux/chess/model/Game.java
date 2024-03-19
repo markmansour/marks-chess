@@ -310,7 +310,7 @@ public class Game {
         int toSquare = FenString.squareToLocation(to);
         Piece piece = board.get(fromSquare);
 
-        Move m = new Move(piece, fromSquare, toSquare, false);
+        Move m = new Move(piece, fromSquare, toSquare, board.get(toSquare) != Piece.EMPTY);
 
         if((piece == Piece.WHITE_PAWN && toSquare >= 56) || (piece == Piece.BLACK_PAWN && toSquare <= 7))
             m.setPromotion(promotion);
