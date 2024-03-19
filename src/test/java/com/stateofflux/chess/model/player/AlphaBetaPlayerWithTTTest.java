@@ -197,7 +197,7 @@ class AlphaBetaPlayerWithTTTest {
             Game game = new Game("r1bqkbnr/pppppppp/8/8/3nP3/2N2N2/PPPP1PPP/R1BQKB1R b KQkq -");
 
             Evaluator evaluator = new SimpleEvaluator();
-            AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+            // AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
             Player black = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, evaluator);
 
             black.setIncrement(TimeUnit.SECONDS.toNanos(5));  // 1 second

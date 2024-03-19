@@ -692,10 +692,6 @@ public class Game {
         return isChecked() && generateMoves().isEmpty();
     }
 
-    public boolean isCheckmatedCheap() {
-        return isChecked() && pseudoLegalMovesFor(getActivePlayerColor()).isEmpty();
-    }
-
     // 3-fold repetition
     // https://en.wikipedia.org/wiki/Threefold_repetition
     public boolean isRepetition() {
