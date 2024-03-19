@@ -158,7 +158,6 @@
         </pluginManagement>
 
         <plugins>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -220,7 +219,7 @@
         <profile>
             <id>allTests</id>
             <properties>
-                <tests>fast,slow</tests>
+                <tests>UnitTest,PerformanceTest</tests>
             </properties>
         </profile>
     </profiles>
