@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RandomEvaluationPlayerTest {
     @Test public void randomVsRandom() {
         Game game = new Game();
-        Evaluator evaluator = new MinusOneZeroOneEvaluator();
+        Evaluator evaluator = new MaterialEvaluator();
         Player one = new RandomMovePlayer(PlayerColor.WHITE, evaluator);
         Player two = new RandomMovePlayer(PlayerColor.BLACK, evaluator);
 

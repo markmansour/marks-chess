@@ -153,6 +153,9 @@ public class ChessAIEvaluator extends PieceSquareEvaluator {
 
         Move lastMove = game.getLastMove();
 
+        if(lastMove == null)
+            return 0;
+
         if(lastMove.isCapture()) {
             bonus += PIECE_WEIGHTS.get(lastMove.getCapturePiece().getAlgebraicChar()) * sideMoved;
         }

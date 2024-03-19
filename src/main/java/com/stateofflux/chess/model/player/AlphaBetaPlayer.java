@@ -16,13 +16,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static Deque<Move> moveHistory = new ArrayDeque<>();
-
-    record MoveData(Move move, int score) {
-        public String toString() {
-            return move + " (" + score + ")";
-        }
-    }
 
     public AlphaBetaPlayer(PlayerColor color, Evaluator evaluator) {
         super(color, evaluator);
@@ -32,7 +25,6 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
     public Move getNextMove(Game game) {
         // LOGGER.info("Player ({}): {}", game.getActivePlayerColor(), game.getClock());
         MoveList<Move> moves = game.generateMoves();
-        List<MoveData> dataOnMoves = new ArrayList<>();
         List<Move> bestMoves = new ArrayList<>();
 
         moves.sort(getComparator());
@@ -50,12 +42,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             game.move(move);
             nodesVisited++;
 
-            moveHistory.addLast(move);
             int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
-            moveHistory.removeLast();
-
-            dataOnMoves.add(new MoveData(move, score));
 
             if(score == value) {
                 bestMoves.add(move);
@@ -83,13 +71,11 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         // we don't continue to pick the "first" result.
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        logger.atDebug().log("{} : depth remaining(α {}, β {}): {}.  all moves: {}.  how we got here: {}.  best move: {} ({})",
+        logger.atDebug().log("{} : depth remaining(α {}, β {}): {}.  best move: {} ({})",
             game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
             alpha,
             beta,
             depth,
-            dataOnMoves,
-            moveHistory,
             bestMove,
             value);
 
@@ -123,7 +109,6 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             return evaluate(game, getSearchDepth() - depth);
 
         MoveList<Move> moves = game.generateMoves();
-        List<MoveData> dataOnMoves = new ArrayList<>();
         List<Move> bestMoves = new ArrayList<>();
 
         // node is terminal
@@ -140,12 +125,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             game.move(move);
             nodesVisited++;
 
-            moveHistory.addLast(move);
             int score = -alphaBeta(game,depth - 1, -beta, -alpha, pc.otherColor());
             game.undo();
-            moveHistory.removeLast();
-
-            dataOnMoves.add(new MoveData(move, score));
 
             if(score == value) {
                 bestMoves.add(move);
@@ -167,16 +148,12 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
 
         Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
 
-        logger.atDebug().log("{}{} : depth: {} (α {}, β {}).  generated moves: {}.  pruned #: {}/{}.  how we got here: {}.  best move: {} ({})",
+        logger.atDebug().log("{}{} : depth: {} (α {}, β {}).  best move: {} ({})",
             " ".repeat((getSearchDepth() - depth) * 2),
             game.getActivePlayerColor().isWhite() ? "MAX" : "MIN",
             depth,
             alpha,
             beta,
-            dataOnMoves,
-            moves.size() - dataOnMoves.size(),
-            moves.size(),
-            moveHistory,
             bestMove,
             value);
 

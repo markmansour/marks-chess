@@ -672,6 +672,9 @@ public class Game {
     }
 
     public Move getLastMove() {
+        if(historyOfMoves.isEmpty())
+            return null;
+
         return historyOfMoves.get(historyOfMoves.size() - 1).move();
     }
 
