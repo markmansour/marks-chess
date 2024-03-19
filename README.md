@@ -64,11 +64,11 @@ script.  That shell script can be called from a chess engine.  See [debugging](d
 $ ./bin/app.sh
 ```
 
-
 I use this script as a launch for GUIs such as [cutechess](https://github.com/cutechess/cutechess) or banksia
 on macOS.
 
-# Why?  # Goals
+# Why?  
+## Goals
 * Have fun!  It's been years since I've regularly programmed and this project is my way of re-engaging with
   programming.  And there are 1000s of chess engines in existence, so I have absolutely no intention of
   commercializing this code.
