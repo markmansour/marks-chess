@@ -147,12 +147,12 @@ public class Board {
         String reversedLong = longToReversedBinaryString(board);
 
         for (int rank = 7; rank >= 0; rank--) {
-            logger.atDebug().log("{}: {}",
+            logger.atInfo().log("{}: {}",
                 rank + 1,
                 reversedLong.substring(rank * 8, (rank + 1) * 8).replace('0', '.'));
         }
 
-        logger.atDebug().log("   abcdefgh");
+        logger.atInfo().log("   abcdefgh");
     }
 
     public static String longToReversedBinaryString(long l) {
@@ -339,6 +339,7 @@ public class Board {
 
         if(m.isEnPassant()) {
             int target = m.getEnPassantTarget();
+            // TODO: I don't think this logic is right.  removed, removedPiece, and clearbyboard seem not needed in the use case I'm looking at.
             removed = target;
             removedPiece = get(target);
             clearByBoard(removedPiece, removedPiece.getIndex(), removed);// clear en passant target

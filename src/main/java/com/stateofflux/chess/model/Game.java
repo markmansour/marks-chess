@@ -151,15 +151,20 @@ public class Game {
         // simplified move/undo.
         long[] boardsBackup = getBoard().copyOfBoards();
         Piece[] piecesBackup = getBoard().copyOfPieceCache();
+        int backupEnPassant = getBoard().getEnPassantTarget();
         long hash = getZobristKey();
 
         this.getBoard().update(enPassantMove);
+        board.setEnPassantTarget(move.getEnPassantTarget());
+
         if(isPlayerInCheck(getActivePlayerColor().otherColor())) {
             exposesCheck = true;
         }
 
         this.getBoard().setBoards(boardsBackup);
         this.getBoard().setPieceCache(piecesBackup);
+        getBoard().setEnPassantTarget(backupEnPassant);
+
         board.calculateAllCacheBoards();  // this could also be backed up and restored rather than recalculated.
         board.forceZobristKey(hash);
 
@@ -455,8 +460,9 @@ public class Game {
     private void updateBoard(Move move) {
         int removed = this.getBoard().update(move);
         removeCastlingRightsFor(move, removed);
-        removeEnPassantIfAttackingPieceIsPinned(move);
-        board.setEnPassantTarget(move.getEnPassantTarget());
+        board.setEnPassantTarget(move.getEnPassantTarget());   // set en passant
+        removeEnPassantIfAttackingPieceIsPinned(move);         // determine if it should be removed (or not)
+        board.setEnPassantTarget(move.getEnPassantTarget());   // set the en passant with the updated info
     }
 
     public String getMoveHistory() {

@@ -229,6 +229,12 @@ public class GameTest {
         assertThat(game.getBoard().getEnPassantTarget()).isEqualTo(45);
     }
 
+    @Test public void enPassantTakeRemovesCheck() {
+        Game game = new Game("8/5R2/4p3/1p4kp/1P4p1/8/P1Q2PKP/1r6 w - -");
+        game.moveLongNotation("h2h4");  // game.move("h4+"); gives the same result.
+        assertThat(game.asFen()).startsWith("8/5R2/4p3/1p4kp/1P4pP/8/P1Q2PK1/1r6 b - h3");
+    }
+
     @Test public void enPassantBug() {
         // position startpos moves e2e4 e7e5 f2f4 e5f4 d1g4 g7g5 h2h3 d7d5 g4e2 f8g7 e4d5 g8e7 b1c3 b8d7 c3e4 e7f5 e2f3 d8e7 f1b5 f5d6 b5d3 h7h5 g1e2 e7e5
         String[] longFormMoves = "e2e4 e7e5 f2f4 e5f4 d1g4 g7g5 h2h3 d7d5 g4e2 f8g7 e4d5 g8e7 b1c3 b8d7 c3e4 e7f5 e2f3 d8e7 f1b5 f5d6 b5d3 h7h5 g1e2 e7e5".split(" ");

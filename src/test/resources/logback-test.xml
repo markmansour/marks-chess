@@ -3,6 +3,12 @@
     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
 
+    <appender name="PlainAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36}:%line - %msg%n</pattern>
@@ -31,6 +37,10 @@
     <root level="debug">
         <appender-ref ref="STDOUT" />
     </root>
+
+    <logger name="UCI_Logger" level="debug">
+        <appender-ref ref="PlainAppender"/>
+    </logger>
 
     <logger name="com.stateofflux.chess.alpha-beta-debugging" level="debug">
         <appender-ref ref="alpha-beta-file-debugger" />

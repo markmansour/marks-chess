@@ -18,7 +18,7 @@ public class Move {
     private int secondaryFrom;
     private int secondaryTo;
     private Piece promotionPiece;
-    private int enPassantTarget;
+    private int enPassantTarget;  // at the end of this move, it has the potential to create this en passant target (but not if it exposes check)
 
     public Move(Piece piece, String from, String to, boolean capture) {
         this(piece, FenString.squareToLocation(from), FenString.squareToLocation(to), capture);
