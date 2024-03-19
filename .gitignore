@@ -38,6 +38,9 @@ profile/
 .vscode
 .idea
 *.iml
+chess.code-workspace
+demo.iml
+.run
 
 # End of https://www.toptal.com/developers/gitignore/api/java
 .DS_Store
