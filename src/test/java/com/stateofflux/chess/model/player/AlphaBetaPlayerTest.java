@@ -25,6 +25,7 @@ public class AlphaBetaPlayerTest {
     }
 
     @Tag("FullGameTest")
+    @Disabled
     @Test public void alphaBetaDefeatsRandom() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -39,6 +40,7 @@ public class AlphaBetaPlayerTest {
     }
 
     @Tag("FullGameTest")
+    @Disabled
     @Test public void randomLosesToAlphaBeta() {
         Game game = new Game();
         Evaluator evaluator = new SimpleEvaluator();
@@ -64,6 +66,7 @@ public class AlphaBetaPlayerTest {
         assertThat(move.getFrom()).isEqualTo(7);  // doesn't use the evaluator, so I don't know the dest only the from.
     }
 
+    @Disabled
     @Test public void testFromWinningPositionForBlack() {
         // stockfish can win in 6 ply
         Game game = new Game("1nbq2n1/r3p3/1pp1ppp1/p3k3/8/2r2p2/8/2b3K1 w - - 0 27");

@@ -43,6 +43,7 @@
         <appender-ref ref="PlainAppender"/>
     </logger>
 
+    <!--  set to debug to generate XML files -->
     <logger name="com.stateofflux.chess.alpha-beta-debugging" level="info">
         <appender-ref ref="alpha-beta-file-debugger" />
     </logger>

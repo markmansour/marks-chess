@@ -23,7 +23,7 @@ class AlphaBetaPlayerWithTTTest {
     public void setUp() {
         // change test logging level from DEBUG to INFO (it's too noisy for full game tests).
         // ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
-        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("UCI_Logger")).setLevel(Level.WARN);
+        // ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("UCI_Logger")).setLevel(Level.WARN);
     }
 
     // useful for debugging
@@ -117,6 +117,45 @@ class AlphaBetaPlayerWithTTTest {
         white.setSearchDepth(i);
         nextMove = white.getNextMove(game);
         assertThat(nextMove.toLongSan()).containsAnyOf("e5f7", "g5g7");  // is coming back as f8g7, but e5f7 wins the game.  This works for standard AlphaBetaPlayer.
+    }
+
+    @Test void oddNumberedMovesAreBad() {
+        Game game = new Game();
+        Evaluator evaluator = new SimpleEvaluator();
+        AlphaBetaPlayerWithTT white = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, evaluator);
+        Move nextMove;
+        int i;
+/*
+
+        i = 1;
+        MDC.put("ply", "debug1");
+        white.setSearchDepth(i);
+        nextMove = white.getNextMove(game);
+        assertThat(nextMove.toLongSan()).containsAnyOf("e5f7", "g5g7");  // is coming back as f8g7, but e5f7 wins the game.  This works for standard AlphaBetaPlayer.
+        i = 2;
+        MDC.put("ply", "debug2");
+        white.setSearchDepth(i);
+        nextMove = white.getNextMove(game);
+        assertThat(nextMove.toLongSan()).containsAnyOf("e5f7", "g5g7");  // is coming back as f8g7, but e5f7 wins the game.  This works for standard AlphaBetaPlayer.
+
+        i = 3;
+        MDC.put("ply", "debug3");
+        white.setSearchDepth(i);
+        nextMove = white.getNextMove(game);
+        assertThat(nextMove.toLongSan()).containsAnyOf("e5f7", "g5g7");  // is coming back as f8g7, but e5f7 wins the game.  This works for standard AlphaBetaPlayer.
+
+        i = 4;
+        MDC.put("ply", "debug4");
+        white.setSearchDepth(i);
+        nextMove = white.getNextMove(game);
+        assertThat(nextMove.toLongSan()).containsAnyOf("e5f7", "g5g7");  // is coming back as f8g7, but e5f7 wins the game.  This works for standard AlphaBetaPlayer.
+*/
+
+        i = 5;
+        MDC.put("ply", "debug5");
+        white.setSearchDepth(i);
+        nextMove = white.getNextMove(game);
+        assertThat(nextMove.toLongSan()).isEqualTo("e2e4");
     }
 
     @Disabled("For debugging")

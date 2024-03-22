@@ -79,7 +79,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         if(xml.isDebugEnabled() && MDC.getCopyOfContextMap() != null && !MDC.getCopyOfContextMap().containsKey("ply"))
             MDC.put("ply", String.format("%03d", game.getClock()));
 
-        uci_logger.atInfo().log("info string depth set to {}; increment set to {}ms", maxDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
+        uci_logger.atDebug().log("info string depth set to {}; increment set to {}ms", maxDepth, TimeUnit.NANOSECONDS.toMillis(getIncrement()));
 
         logger.atDebug().log("starting iterative deepening with fen: \"{}\"", game.asFen());
 
