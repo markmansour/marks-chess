@@ -73,7 +73,6 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         timer.startIncrementCountdown(getIncrement());
         timedOut = false;
         int maxDepth = getSearchDepth();
-        Move bestMove = null;
         List<Move> bestVariation = new ArrayList<>();
 
         // Set the ply unless the caller has already set the ply string
@@ -96,6 +95,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             // throw away timed out values.  Is there a way to use them?
             if (!currentVariation.isEmpty() && !timedOut) {
                 bestVariation = new ArrayList<>(currentVariation);
+                logger.atDebug().log("taking the new best variation of {}", bestVariation);
+            } else {
+                logger.atDebug().log("Timed out");
             }
 
             // info depth 10 seldepth 14 multipv 1 score cp 27 nodes 144979 nps 2163865 hashfull 54 tbhits 0 time 67 pv e2e4 d7d5 e4d5 g8f6 g1f3 d8d5 b1c3 d5e6 d1e2
@@ -125,6 +127,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         if(xml.isDebugEnabled())
             MDC.remove("ply");
 
+        logger.atDebug().log("best variation: {}", bestVariation);
         return bestVariation.get(0);
     }
 

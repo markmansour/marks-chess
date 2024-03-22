@@ -34,15 +34,16 @@
         </sift>
     </appender>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="UCI_Logger" level="debug">
+    <logger name="UCI_Logger" level="info">
         <appender-ref ref="PlainAppender"/>
     </logger>
 
-    <logger name="com.stateofflux.chess.alpha-beta-debugging" level="debug">
+    <!-- this logger is used to output XML / hierarchical data for debugging -->
+    <logger name="com.stateofflux.chess.alpha-beta-debugging" level="warn">
         <appender-ref ref="alpha-beta-file-debugger" />
     </logger>
 </configuration>

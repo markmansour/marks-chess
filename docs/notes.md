@@ -5,6 +5,11 @@ The below notes are mainly for me, but I'll leave them in as they may help other
 * [another suggestion](https://www.reddit.com/r/chessprogramming/comments/fxiz8u/how_much_faster_are_bitboards_as_opposed_to_a_2d/).
 * [Comparative Advantage of Engine Improvements](https://www.reddit.com/r/ComputerChess/comments/yln9ef/comparative_advantage_of_engine_improvements/) (reddit)
 
+## Speed
+* Perft 7 running at 4MM nodes/second on my M2 macbook air (in comparison to 36MM from
+  [QBB Perft](https://github.com/lithander/QBB-Perft/tree/master) a highly optimized and specific
+  implementation).
+
 ## Overview of search
 * Alpha Beta worked example video [Algorithms Explained – minimax and alpha-beta pruning](https://www.youtube.com/watch?v=l-hh51ncgDI) by Sebastian Lague
 * [Alpha-Beta with Sibling Prediction Pruning in Chess - Jeroen W.T. Carolus](https://homepages.cwi.nl/%7Epaulk/theses/Carolus.pdf)
@@ -85,4 +90,4 @@ Polyglot readers
 * [ ] is there anything I've learned from this experience that I'd like to write up and share (blog)
 * [ ] I don't love my logging patterns.  Review and improve.
 * [ ] Improve speed of perft (Board functions that iterate through all boards to find pieces)
-* [ ] En passant logic could use a rewrite/cleanup.
+* [ ] En passant logic needs a rewrite/cleanup.

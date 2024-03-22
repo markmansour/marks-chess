@@ -40,7 +40,6 @@ public class PawnMovesTest {
         PieceMovesInterface bm = new PawnMoves(openingBoard, 52, -1);
 
         int[] nonCapturePositions = Board.bitboardToArray(bm.getNonCaptureMoves());
-        LOGGER.info("non capture positions: {}", nonCapturePositions);
 
         assertThat(bm.getNonCaptureMoves()).isZero();
         assertThat(bm.getCaptureMoves()).isZero();

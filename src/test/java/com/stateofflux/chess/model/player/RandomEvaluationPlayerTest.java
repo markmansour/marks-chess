@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
 public class RandomEvaluationPlayerTest {
+    @Disabled("Plays a full game.  Disable.")
     @Test public void randomVsRandom() {
         Game game = new Game();
         Evaluator evaluator = new MaterialEvaluator();

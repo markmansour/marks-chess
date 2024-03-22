@@ -22,14 +22,13 @@ class AlphaBetaPlayerWithTTTest {
     @BeforeEach
     public void setUp() {
         // change test logging level from DEBUG to INFO (it's too noisy for full game tests).
-        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
+        // ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("UCI_Logger")).setLevel(Level.WARN);
     }
 
-    @Disabled("Pesto is not guaranteed to be better")
+    // useful for debugging
+    @Disabled("Pesto is likely to win, but not guaranteed, therefore don't make this a mandatory test")
     @Test public void simpleVsPesto() {
-        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.stateofflux.chess.alpha-beta-debugging")).setLevel(Level.WARN);  // turn off XML logging
-
         Game game = new Game();
 
         Evaluator simpleEvaluator = new SimpleEvaluator();
@@ -40,7 +39,7 @@ class AlphaBetaPlayerWithTTTest {
         Evaluator pestoEvaluator = new PestoEvaluator();
         AlphaBetaPlayerWithTT two = new AlphaBetaPlayerWithTT(PlayerColor.BLACK, pestoEvaluator);
         two.setSearchDepth(100);
-        two.setIncrement(TimeUnit.SECONDS.toNanos(5));
+        two.setIncrement(TimeUnit.SECONDS.toNanos(1));
 
         game.play(one, two);
         game.printOccupied();
@@ -48,8 +47,8 @@ class AlphaBetaPlayerWithTTTest {
         assertThat(game.isOver()).isTrue();
         assertThat(game.isCheckmated()).isTrue();
 
-        // assert that depth 4 player wins
-        assertThat(game.getActivePlayerColor().isWhite()).isTrue();  // black moved last and created the mate.
+        // assert that SimpleEvaluator will win over PestoEvaluator.
+        assertThat(game.getActivePlayerColor().isBlack()).isTrue();  // white moved last and created the mate.
     }
 
     @Test public void testWinningAndTurnCombinations() {

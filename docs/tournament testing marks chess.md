@@ -49,6 +49,26 @@ cutechess-cli \
   > $MARKS_CHESS_DIR/log/output_engine_evaluators.log 2>&1
 ```
 
+### Using SPRT instead of fixed games
+```bash
+cutechess-cli \
+  -engine cmd=./bin/app.sh  name="ABTTd4-se"  arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 4 -bd 4 -e SimpleEvaluator"  dir=$MARKS_CHESS_DIR \
+  -engine cmd=/usr/local/bin/stockfish option.UCI_LimitStrength=true "option.Use NNUE=false" \
+  -each proto=uci \
+    tc=40/15 \
+  -pgnout $MARKS_CHESS_DIR/log/output_pgn_file.pgn \
+  -sprt elo0=0 elo1=50 alpha=0.05 beta=0.05 \
+  -recover \
+  -concurrency 8 \
+  -games 2 \
+  -rounds 2500 \
+  -repeat 2 \
+  -maxmoves 200 \
+  -ratinginterval 10 \
+  > $MARKS_CHESS_DIR/log/output_engine_evaluators.log 2>&1
+```
+
+
 ## Evalating Elo
 ```
 % ./bin/bayeselo

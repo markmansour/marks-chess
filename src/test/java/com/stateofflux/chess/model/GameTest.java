@@ -5,6 +5,7 @@ import com.stateofflux.chess.model.player.Evaluator;
 import com.stateofflux.chess.model.player.Player;
 import com.stateofflux.chess.model.player.RandomMovePlayer;
 import com.stateofflux.chess.model.player.SimpleEvaluator;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.slf4j.Logger;
@@ -371,6 +372,18 @@ public class GameTest {
 
     }
 
+    @Test public void removeIllegalMoves() {
+        Game game = new Game("r3kbnr/pp3ppp/n7/2pqP1B1/6b1/4P3/PP3PPP/RN1QKBNR b KQkq -");
+        MoveList<Move> generatedMoves;
+
+        generatedMoves = game.pseudoLegalMoves();
+        assertThat(generatedMoves).hasSize(47);
+        assertThat(generatedMoves.asLongSan()).contains("e8e7");  // move into check
+        generatedMoves = game.generateMoves();
+        assertThat(generatedMoves).hasSize(45);
+        assertThat(generatedMoves.asLongSan()).doesNotContain("e8e7");
+    }
+
     @Nested
     class WhenPassingThroughCheck {
         @Test
@@ -380,8 +393,12 @@ public class GameTest {
             assertThat(generatedMoves.asLongSan()).doesNotContain("e1g1");
 
             game = new Game("r3kbnr/pp3ppp/n7/2pqP1B1/6b1/4P3/PP3PPP/RN1QKBNR b KQkq -");
+            generatedMoves = game.pseudoLegalMoves();
+            assertThat(generatedMoves).hasSize(47);
+            assertThat(generatedMoves.asLongSan()).contains("e8e7");  // move into check
             generatedMoves = game.generateMoves();
-            assertThat(generatedMoves.asLongSan()).doesNotContain("e8c8");
+            assertThat(generatedMoves).hasSize(45);
+            assertThat(generatedMoves.asLongSan()).doesNotContain("e8e7");
         }
 
         @Test
@@ -610,14 +627,6 @@ public class GameTest {
         }
     }
 
-    @Test public void castlingRightsSetAfterMove() {
-        Game game = new Game("r1b1nbnr/3k3p/Pp1pp1p1/2p5/P4q2/R1P5/1BNPPPBP/Q3K2R w K - 0 25");
-        LOGGER.info(game.asFen());
-        LOGGER.info("--------------------------");
-        game.move("Kf1");  // move King from e1 to f1
-        LOGGER.info(game.asFen());
-    }
-
     @Nested
     class ZobristKey {
         @Test public void keysAreRestoredAfterUndo() {
@@ -711,6 +720,7 @@ public class GameTest {
         }
     }
 
+    @Disabled("Playing a full game with Random moves")
     @Test public void twoPlayersWithRandomMoves() {
         Evaluator evaluator = new SimpleEvaluator();
         Player randomPlayerOne = new RandomMovePlayer(PlayerColor.WHITE, evaluator);

@@ -100,7 +100,7 @@ public class Game {
             move(move);
             playerIndex++;
 
-            logger.atDebug().log("{}/{}({}): move({}) -> {} ({}) - nv: {}",
+            logger.atInfo().log("{}/{}({}): move({}) -> {} ({}) - nv: {}",
                 currentPlayer.getClass().getSimpleName(),
                 currentPlayer.getEvaluator().toString(),
                 currentPlayer.getSearchDepth(),
@@ -243,7 +243,7 @@ public class Game {
      * This method should not be called as part of the "move" method as it would be too expensive.
      */
     public MoveList<Move> generateMovesFor(PlayerColor playerColor) {
-        MoveList<Move> playerMoves = pseudoLegalMovesFor(playerColor);
+        MoveList<Move> playerMoves = pseudoLegalMoves(playerColor);
 
         if (depth > 0)
             return playerMoves;
@@ -253,11 +253,11 @@ public class Game {
         return playerMoves;
     }
 
-    public MoveList<Move> pseudoLegalMovesFor() {
-        return pseudoLegalMovesFor(getActivePlayerColor());
+    public MoveList<Move> pseudoLegalMoves() {
+        return pseudoLegalMoves(getActivePlayerColor());
     }
 
-    public MoveList<Move> pseudoLegalMovesFor(PlayerColor playerColor) {
+    public MoveList<Move> pseudoLegalMoves(PlayerColor playerColor) {
         MoveList<Move> playerMoves = new MoveList<>(new ArrayList<>(MOVE_LIST_CAPACITY));
 
         board.rookMoves(playerMoves, playerColor);

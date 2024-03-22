@@ -84,8 +84,8 @@ public abstract class PieceSquareEvaluator implements Evaluator {
         // a) it's faster than creating legal moves
         // b) the current game logic doesn't take the moving player into account when cleaning up moves.  e.g. if
         //    it is white's turn and I ask for black moves, it will remove any black moves that put white in check.
-        MoveList<Move> whiteMoves = game.pseudoLegalMovesFor(PlayerColor.WHITE);
-        MoveList<Move> blackMoves = game.pseudoLegalMovesFor(PlayerColor.BLACK);
+        MoveList<Move> whiteMoves = game.pseudoLegalMoves(PlayerColor.WHITE);
+        MoveList<Move> blackMoves = game.pseudoLegalMoves(PlayerColor.BLACK);
 
         // from the perspective of the white player
         int mobilityScore = mobilityWeight *
