@@ -36,4 +36,26 @@ class AlphaBetaPlayerWithTTQuiescenceTest {
         assertThat(two.hasPerformedQuiescence()).isTrue();
         assertThat(move.toLongSan()).isNotEqualTo("f1a6");
     }
+
+    @Test public void promotionTriggersQuiescence() {
+        Game game = new Game("8/1Pk5/8/8/8/8/8/4K3 w - - 0 1");
+
+        Evaluator simpleEvaluator = new SimpleEvaluator();
+
+        // test without quiescence
+        AlphaBetaPlayerWithTT one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, simpleEvaluator);
+        one.setSearchDepth(1);  // force a quick quiescence search.
+        one.setIncrement(TimeUnit.SECONDS.toNanos(3));
+        Move move = one.getNextMove(game);
+        assertThat(move.toLongSan()).isEqualTo("b7b8Q");
+
+        // test with quiescence
+        AlphaBetaPlayerWithTTQuiescence two = new AlphaBetaPlayerWithTTQuiescence(PlayerColor.WHITE, simpleEvaluator);
+        two.setSearchDepth(1);  // force a quick quiescence search.
+        two.setIncrement(TimeUnit.SECONDS.toNanos(3));
+        move = two.getNextMove(game);
+        assertThat(two.hasPerformedQuiescence()).isTrue();
+        assertThat(move.toLongSan()).isNotEqualTo("b7b8Q");
+    }
+
 }

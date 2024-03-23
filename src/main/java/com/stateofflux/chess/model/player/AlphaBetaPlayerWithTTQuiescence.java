@@ -28,7 +28,6 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
     private final Timer timer;
     private long increment;
     private boolean timedOut;
-    private Move lastMove;
     private boolean quiescenceWasUsed = false;
     private int currentSearchDepth;
     private int maxQuiescenceDepth;
@@ -113,7 +112,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
             xml.atDebug().log("<iteration depth=\"{}\">", depth);
 
             List<Move> currentVariation = new ArrayList<>();
-            int score = alphaBeta(game, depth, evaluator.MIN_VALUE, evaluator.MAX_VALUE, currentVariation);
+            int score = alphaBeta(game, depth, evaluator.MIN_VALUE, evaluator.MAX_VALUE, currentVariation, null);
 
             // throw away timed out values.  Is there a way to use them?
             if (!currentVariation.isEmpty() && !timedOut) {
@@ -156,7 +155,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
         return bestVariation.get(0);
     }
 
-    public int alphaBeta(Game game, int depth, int alpha, int beta, List<Move> principalVariation) {
+    public int alphaBeta(Game game, int depth, int alpha, int beta, List<Move> principalVariation, Move lastMove) {
         int alphaOrig = alpha;
 
         TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
@@ -194,10 +193,10 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
             principalVariation.clear();
             int evaluatedScore;
 
-            if(lastMove.isCapture()) {
+            if(isVolatile(lastMove)) {
                 // quiescence search
                 List<Move> childVariation = new ArrayList<>();
-                evaluatedScore = quiescence(game, getQuiescenceDepth(), -beta, -alpha, childVariation);
+                evaluatedScore = quiescence(game, getQuiescenceDepth(), -beta, -alpha, childVariation, lastMove);
             } else {
                 evaluatedScore = evaluate(game, getSearchDepth() - depth);
             }
@@ -207,7 +206,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
                 depth,
                 alpha,
                 beta,
-                lastMove.toLongSan(),
+                lastMove == null ? "null" : lastMove.toLongSan(),
                 evaluatedScore
             );
 
@@ -226,7 +225,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
                 depth,
                 alpha,
                 beta,
-                lastMove.toLongSan(),
+                lastMove == null ? "null" : lastMove.toLongSan(),
                 evaluatedScore
             );
 
@@ -243,7 +242,6 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
         for (Move move : moves) {
             game.move(move);
-            lastMove = move;
             nodesVisited++;
 
             // are we out of time?  Every 4096 nodes, check to see if we're out of time.
@@ -264,7 +262,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
             List<Move> childVariation = new ArrayList<>();
 
-            int score = -alphaBeta(game, depth - 1, -beta, -alpha, childVariation);
+            int score = -alphaBeta(game, depth - 1, -beta, -alpha, childVariation, move);
             evaluatedCount++;
             game.undo();
 
@@ -299,7 +297,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
     }
 
     // simplified alpha beta
-    public int quiescence(Game game, int depth, int alpha, int beta, List<Move> principalVariation) {
+    public int quiescence(Game game, int depth, int alpha, int beta, List<Move> principalVariation, Move lastMove) {
         quiescenceWasUsed = true;
 
         if (depth == 0) {
@@ -312,7 +310,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
                 currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1,
                 alpha,
                 beta,
-                lastMove.toLongSan(),
+                lastMove == null ? "null" : lastMove.toLongSan(),
                 evaluatedScore
             );
 
@@ -320,13 +318,13 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
         }
 
         MoveList<Move> moves = game.generateMoves();
-        moves.removeIf(m -> !m.isCapture());  // only review volatile moves, which we define as captures.  Remove all non-captures.
+        moves.removeIf(m -> !isVolatile(m));  // only review volatile moves, which we define as captures.  Remove all non-captures.
         moves.sort(getComparator());
 
         // node is terminal as there are no more moves.
         // or there are no volatile moves
         // then exit
-        if (moves.isEmpty() || !moves.get(0).isCapture()) {
+        if (moves.isEmpty() || !isVolatile(moves.get(0))) {
             principalVariation.clear();
             int evaluatedScore = evaluate(game, currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1);
 
@@ -351,7 +349,6 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
         for (Move move : moves) {
             game.move(move);
-            lastMove = move;
             nodesVisited++;
 
             // are we out of time?  Every 4096 nodes, check to see if we're out of time.
@@ -372,7 +369,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
             List<Move> childVariation = new ArrayList<>();
 
-            int score = -quiescence(game, depth - 1, -beta, -alpha, childVariation);
+            int score = -quiescence(game, depth - 1, -beta, -alpha, childVariation, move);
             evaluatedCount++;
             game.undo();
 
@@ -417,10 +414,10 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
         tt.put(game.getZobristKey(), value, best, nt, depth, game.getClock());
     }
 
-    private boolean isVolatile() {
-        xml.atDebug().log("<volatile capture>{}<volatile>", lastMove.isCapture());
+    private boolean isVolatile(Move move) {
+        xml.atDebug().log("<volatile capture>{}<volatile>", move.isCapture());
 
-        return lastMove.isCapture();
+        return move.isCapture() || move.isPromoting();
     }
 
     public int getTableHits() {
