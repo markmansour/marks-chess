@@ -107,7 +107,7 @@ public class App
 
             switch(lineParts[0]) {
                 case "uci" -> {
-                    uci_logger.atInfo().log("id name Mark's Chess Engine");
+                    uci_logger.atInfo().log("id name Mark's Chess Engine (v1.1)");
                     uci_logger.atInfo().log("id author Mark Mansour");
 
                     // e.g. option name Hash type spin default 64 min 1 max 65536
@@ -115,6 +115,7 @@ public class App
 //                     System.out.println("option name <OPTION-NAME> value");
                     uci_logger.atInfo().log("uciok");
                 }
+                case "stop" -> logger.atDebug().log("stop called");
                 case "isready" -> uci_logger.atInfo().log("readyok");
                 case "setoption" -> {
                     // e.g. setoption name Hash value 64
@@ -150,8 +151,17 @@ public class App
                             if(params.containsKey("movestogo")) {
                                 movesToGo = Integer.parseInt(params.get("movestogo"));
                             }
+
+                            /*
+                                // https://www.chessprogramming.org/Time_Management
+                                nMoves =  min( numberOfMovesOutOfBook, 10 );
+                                factor = 2 -  nMoves / 10
+                                target = timeLeft / numberOfMovesUntilNextTimeControl
+                                time   = factor * target
+                            */
+
                             long incrementInNanos = TimeUnit.MILLISECONDS.toNanos(remainingTimeInMillis / movesToGo);
-                            incrementInNanos = (long) (incrementInNanos * 0.9);  // leave 10% of the time for overruns.
+                            incrementInNanos = (long) (incrementInNanos * 0.85);  // leave 15% of the time for overruns.
                             p.setIncrement(incrementInNanos);
                             logger.atDebug().log("set increment for {} to {}ms", game.getActivePlayerColor(), TimeUnit.NANOSECONDS.toMillis(incrementInNanos));
                         }
