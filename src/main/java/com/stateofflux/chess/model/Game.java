@@ -90,11 +90,15 @@ public class Game {
 
     // --------------------------- Playing ---------------------------
     public void play(Player white, Player black) {
+        play(white, black, 200);
+    }
+
+    public void play(Player white, Player black, int maxPly) {
         Player[] players = { white, black };
         int playerIndex = 0;
         Player currentPlayer;
 
-        while(!isOver()) {
+        while(!isOver() && clock < maxPly) {
             currentPlayer = players[playerIndex % 2];
             Move move = currentPlayer.getNextMove(this);
             move(move);
