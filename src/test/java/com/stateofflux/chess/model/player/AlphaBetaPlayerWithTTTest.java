@@ -51,6 +51,30 @@ class AlphaBetaPlayerWithTTTest {
         assertThat(game.getActivePlayerColor().isBlack()).isTrue();  // white moved last and created the mate.
     }
 
+    // useful for debugging
+    @Disabled("Stardard Game, but too expensive to run as part of unit tests")
+    @Test public void standardGame() {
+        Game game = new Game();
+
+        Evaluator simpleEvaluator = new SimpleEvaluator();
+        Player one = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, simpleEvaluator);
+        one.setSearchDepth(100);
+        one.setIncrement(TimeUnit.SECONDS.toNanos(3));
+
+        Player two = new AlphaBetaPlayerWithTTQuiescence(PlayerColor.BLACK, simpleEvaluator);
+        two.setSearchDepth(100);
+        two.setIncrement(TimeUnit.SECONDS.toNanos(3));
+
+        game.play(one, two, 20);
+        game.printOccupied();
+
+        assertThat(game.isOver()).isTrue();
+        assertThat(game.isCheckmated()).isTrue();
+
+        // assert that SimpleEvaluator will win over PestoEvaluator.
+        assertThat(game.getActivePlayerColor().isWhite()).isTrue();  // white moved last and created the mate.
+    }
+
     @Test public void testWinningAndTurnCombinations() {
         String whiteWinningWhiteTurn = "5B1k/8/3B4/3NNBQ1/2BKP3/8/PPP2P1P/R6R w - -";
         String blackWinningBlackTurn = "r6r/p1p2ppp/8/3pkb2/1qbnn3/4b3/8/K1b5 b - -";
