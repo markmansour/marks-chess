@@ -96,7 +96,7 @@ public class App
     public void uciLoop() {
         logger.atInfo().log("log level info? " + logger.isInfoEnabled());
         logger.atDebug().log("log level debug? " + logger.isDebugEnabled());
-        StringBuilder sb = new StringBuilder();
+        // StringBuilder sb = new StringBuilder();
 
         final Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         Game game = null;
@@ -207,7 +207,7 @@ public class App
                 default -> uci_logger.atError().log("Unknown command: '{}'. Type help for more information.", line);
             }
 
-            sb.append(line).append(System.lineSeparator());
+            // sb.append(line).append(System.lineSeparator());
         }
 
         // logger.atDebug().log(sb.toString());

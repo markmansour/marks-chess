@@ -51,7 +51,7 @@ public class AlphaBetaPlayerWithTTPerfTest {
             two.setIncrement(TimeUnit.SECONDS.toNanos(1));
 
             asyncProfiler.start(Events.CPU, 1_000_000);
-            game.play(one, two);
+            game.play(one, two, 10);
         } finally {
             profile = asyncProfiler.dumpFlat(100);
             try {

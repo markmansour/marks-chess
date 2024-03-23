@@ -131,6 +131,21 @@ public class Board {
     public static int[] bitboardToArray(long l) {
         int bitsSet = Long.bitCount(l);
         int[] result = new int[bitsSet];
+        int offset;
+
+        for(int i = 0; i < bitsSet; i++) {
+            offset = Long.numberOfTrailingZeros(l);
+            result[i] = offset;
+            l &= (l - 1);
+        }
+
+        return result;
+    }
+
+
+    public static int[] bitboardToArray_orig(long l) {
+        int bitsSet = Long.bitCount(l);
+        int[] result = new int[bitsSet];
         int counter = 0;
 
         for (int i = 0; i < 64 && counter < bitsSet; i++) {
