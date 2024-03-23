@@ -46,7 +46,7 @@ cutechess-cli \
   -concurrency 8 \
   -games 2 \
   -rounds 30 \
-  > $MARKS_CHESS_DIR/log/output_engine_evaluators.log 2>&1
+  > $MARKS_CHESS_DIR/log/output_engine.log 2>&1
 ```
 
 ### Using SPRT instead of fixed games
@@ -65,8 +65,29 @@ cutechess-cli \
   -repeat 2 \
   -maxmoves 200 \
   -ratinginterval 10 \
-  > $MARKS_CHESS_DIR/log/output_engine_evaluators.log 2>&1
+  > $MARKS_CHESS_DIR/log/output_engine.log 2>&1
 ```
+SPRT new version vs old version
+
+```bash
+cutechess-cli \
+  -engine cmd=./bin/app.sh  name="AB-v1"    arg="-w AlphaBetaPlayerWithTT -b AlphaBetaPlayerWithTT -wd 100 -bd 100 -e SimpleEvaluator"                      dir=$MARKS_CHESS_DIR/../marks-chess-v1/ \
+  -engine cmd=./bin/app.sh  name="AB-v1.1"  arg="-w AlphaBetaPlayerWithTTQuiescence -b AlphaBetaPlayerWithTTQuiescence -wd 100 -bd 100 -e SimpleEvaluator"  dir=$MARKS_CHESS_DIR \
+  -each proto=uci \
+    tc=40/60 \
+  -pgnout $MARKS_CHESS_DIR/log/output_pgn_file.pgn \
+  -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
+  -recover \
+  -concurrency 8 \
+  -games 2 \
+  -rounds 2500 \
+  -repeat 2 \
+  -maxmoves 200 \
+  -ratinginterval 10 \
+  -debug \
+  > $MARKS_CHESS_DIR/log/output_engine.log 2>&1
+```
+
 
 
 ## Evalating Elo
