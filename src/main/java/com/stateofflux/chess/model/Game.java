@@ -264,6 +264,12 @@ public class Game {
     public MoveList<Move> pseudoLegalMoves(PlayerColor playerColor) {
         MoveList<Move> playerMoves = new MoveList<>(new ArrayList<>(MOVE_LIST_CAPACITY));
 
+        // Note - pseudoLegalMoves is called during the Evaluation method and it takes about 30% of the overall computation time.
+        // I've looked at optimizing the existing algos and I can't make big gains.  I need a different approach to make
+        // big gains.  What I've tried:
+        // * using static functions to generate captures and non captures instead of instantiating object
+        // * returning arrays instead of passing in playerMoves - I did not try to eliminate MoveList entirely.
+        //
         board.rookMoves(playerMoves, playerColor);
         board.knightMoves(playerMoves, playerColor);
         board.bishopMoves(playerMoves, playerColor);

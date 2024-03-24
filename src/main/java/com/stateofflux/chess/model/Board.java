@@ -553,7 +553,7 @@ public class Board {
         int index = (color == PlayerColor.WHITE) ? Piece.WHITE_KING.getIndex() : Piece.BLACK_KING.getIndex();
         if(this.boards[index] == 0) // the king has been removed from the board.  This can happen when looking for check
             return -1;
-        return PieceMoves.bitscanForward(this.boards[index]);
+        return StraightLineMoves.bitscanForward(this.boards[index]);
     }
 
     public int[] getPieceLocationsAsArray(Piece one, Piece two, PlayerColor activePlayerColor) {
@@ -869,7 +869,7 @@ public class Board {
                 attackBoard &= opponentBoard;
             }
 
-            attackCount = PieceMoves.popCount(attackBoard);
+            attackCount = StraightLineMoves.popCount(attackBoard);
 
             for(int j = 0; j < attackCount; j++) {
                 int bitPos = Long.numberOfTrailingZeros(attackBoard);
@@ -905,7 +905,7 @@ public class Board {
                 attackBoard &= opponentBoard;
             }
 
-            attackCount = PieceMoves.popCount(attackBoard);
+            attackCount = StraightLineMoves.popCount(attackBoard);
 
             for(int j = 0; j < attackCount; j++) {
                 int bitPos = Long.numberOfTrailingZeros(attackBoard);
