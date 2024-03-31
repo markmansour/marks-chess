@@ -189,7 +189,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
          * So, if white just had its turn, and it is in a dominant position we want to return a negative number as it
          * will be flipped once the recursion unwinds.
          */
-        if (depth == 0) {
+        if (depth == 0 || game.isOver()) {
             principalVariation.clear();
             int evaluatedScore;
 
@@ -298,48 +298,43 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
     // simplified alpha beta
     public int quiescence(Game game, int depth, int alpha, int beta, List<Move> principalVariation, Move lastMove) {
+        int standPat = evaluate(game, currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1);
+
+        // if the evaluation score is larger than beta, then we're in a really bad position and we don't need
+        // to search any further.
+        if (standPat >= beta) {
+            return beta;
+        }
+
+        // if the standard pat is larger than alpha, then we can improve our position.  Update alpha to the new
+        // score and keep searching.
+        if (standPat > alpha) {
+            alpha = standPat;
+        }
+
         quiescenceWasUsed = true;
 
-        if (depth == 0) {
-            principalVariation.clear();
-            int evaluatedScore = evaluate(game, currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1);
+        // blunder engine checks to see if the board is in check, and if so gen all moves, otherwise only generate
+        // captures and promos
+        MoveList<Move> moves = getQuiescenceMoves(game);
 
-            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" full-depth=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
+/*
+        if (moves.isEmpty()) {
+            principalVariation.clear();
+            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
                 depth,
-                currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1,
                 alpha,
                 beta,
                 lastMove == null ? "null" : lastMove.toLongSan(),
-                evaluatedScore
+                standPat
             );
 
-            return evaluatedScore;
+            return standPat;
         }
+*/
 
-        MoveList<Move> moves = game.generateMoves();
-        moves.removeIf(m -> !isVolatile(m));  // only review volatile moves, which we define as captures.  Remove all non-captures.
         moves.sort(getComparator());
-
-        // node is terminal as there are no more moves.
-        // or there are no volatile moves
-        // then exit
-        if (moves.isEmpty() || !isVolatile(moves.get(0))) {
-            principalVariation.clear();
-            int evaluatedScore = evaluate(game, currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1);
-
-            xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" full-depth=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
-                game.getActivePlayerColor(),
-                depth,
-                currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1,
-                alpha,
-                beta,
-                lastMove.toLongSan(),
-                evaluatedScore
-            );
-
-            return evaluatedScore;
-        }
 
         int value = Evaluator.MIN_VALUE;
         List<List<Move>> bestVariations = new ArrayList<>();
@@ -368,11 +363,11 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
             }
 
             List<Move> childVariation = new ArrayList<>();
-
             int score = -quiescence(game, depth - 1, -beta, -alpha, childVariation, move);
             evaluatedCount++;
             game.undo();
 
+            // If our evaluation is worse than beta (our opponent), then stop searching as we can't improve.
             if (score == value) {
                 childVariation.add(0, move);
                 bestVariations.add(new ArrayList<>(childVariation));
@@ -386,19 +381,30 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
             alpha = Math.max(alpha, value);
 
-            if (alpha >= beta)
-                break;  // Alpha-beta cutoff
+            if (alpha >= beta) {
+                break; // Fail-hard beta cutoff
+            }
         }
 
-        principalVariation.clear();
-        int index = ThreadLocalRandom.current().nextInt(bestVariations.size());
-        principalVariation.addAll(bestVariations.get(index));
-        Move bestMove = bestVariations.get(index).get(0);
 
-        xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), principalVariation.stream().map(Move::toLongSan).collect(Collectors.joining(" ")));
+        if(!bestVariations.isEmpty()) {
+            principalVariation.clear();
+            int index = ThreadLocalRandom.current().nextInt(bestVariations.size());
+            principalVariation.addAll(bestVariations.get(index));
+            Move bestMove = bestVariations.get(index).get(0);
+            xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), principalVariation.stream().map(Move::toLongSan).collect(Collectors.joining(" ")));
+        } else
+            xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"none\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, principalVariation.stream().map(Move::toLongSan).collect(Collectors.joining(" ")));
+
         xml.atDebug().log("</node>");
 
         return value;
+    }
+
+    private MoveList<Move> getQuiescenceMoves(Game game) {
+        MoveList<Move> moves = game.generateMoves();
+        moves.removeIf(m -> !isVolatile(m));  // only review volatile moves, which we define as captures.  Remove all non-captures.
+        return moves;
     }
 
     private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth) {
@@ -414,6 +420,9 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
         tt.put(game.getZobristKey(), value, best, nt, depth, game.getClock());
     }
 
+    // the original paper calls these "tactical disruptions"
+    // consider including moves into check at ply 1
+    // could also consider other interesting situations like forks, trapped pieces, etc.
     private boolean isVolatile(Move move) {
         xml.atDebug().log("<volatile capture>{}<volatile>", move.isCapture());
 
