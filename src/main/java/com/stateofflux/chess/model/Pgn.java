@@ -88,7 +88,7 @@ public class Pgn {
             if ((line = br.readLine()) == null) break; // end of the file
             if ((line.isBlank())) break;  // end of the game
             // trim comments in the form of "{}" or ";"
-            line = line.replaceAll("[{].*[}]", "");  // throw away comments
+            line = line.replaceAll("[{].*?[}]", "");  // throw away comments
             line = line.replaceAll(";.*$", "");  // throw away comments
             moveTextSb.append(line).append(' ');
         }
