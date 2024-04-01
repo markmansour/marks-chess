@@ -1,5 +1,12 @@
 # Changelog
 
+
+## V1.1 DATE
+
+Bugs
+* 50 move rule accounts for moves from both players.
+* PGN parser no longer loses moves due to greedy commenting parsing.
+
 ## v1. 20240322
 Chess Engine / Chess move generator written in Java.  
 
