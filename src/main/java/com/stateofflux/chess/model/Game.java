@@ -738,7 +738,7 @@ public class Game {
     }
 
     public boolean past50moves() {
-        return movesWithoutCaptureOrPawnMove >= 50;
+        return movesWithoutCaptureOrPawnMove >= 100;
     }
 
     public boolean hasInsufficientMaterials() {
