@@ -46,4 +46,4 @@ demo.iml
 .DS_Store
 
 # binaries
-elodiff
+bin/elodiff

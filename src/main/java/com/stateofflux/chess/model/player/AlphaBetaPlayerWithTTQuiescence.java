@@ -21,7 +21,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
     private static final long DEFAULT_TIME_ALLOCATION = TimeUnit.MINUTES.toNanos(5);
     private static final long DEFAULT_INCREMENT_ALLOCATION = TimeUnit.SECONDS.toNanos(5);
-    private static final int DEFAULT_QUIESCENCE_DEPTH = 1;
+    private static final int DEFAULT_QUIESCENCE_DEPTH = 10;
 
     private TranspositionTable tt;
     private int tableHits;
@@ -194,9 +194,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
             int evaluatedScore;
 
             if(isVolatile(lastMove)) {
-                // quiescence search
-                List<Move> childVariation = new ArrayList<>();
-                evaluatedScore = quiescence(game, getQuiescenceDepth(), -beta, -alpha, childVariation, lastMove);
+                evaluatedScore = quiescence(game, getQuiescenceDepth(), alpha, beta, new ArrayList<>(), lastMove);
             } else {
                 evaluatedScore = evaluate(game, getSearchDepth() - depth);
             }
@@ -298,7 +296,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
     // simplified alpha beta
     public int quiescence(Game game, int depth, int alpha, int beta, List<Move> principalVariation, Move lastMove) {
-        int standPat = evaluate(game, currentSearchDepth + getDefaultQuiescenceDepth() - depth + 1);
+        int standPat = evaluate(game, currentSearchDepth + getQuiescenceDepth() - depth + 1);
 
         // if the evaluation score is larger than beta, then we're in a really bad position and we don't need
         // to search any further.
@@ -318,7 +316,6 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
         // captures and promos
         MoveList<Move> moves = getQuiescenceMoves(game);
 
-/*
         if (moves.isEmpty()) {
             principalVariation.clear();
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
@@ -330,9 +327,8 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
                 standPat
             );
 
-            return standPat;
+            return standPat;  // to negate the -nve in the -quiessence() call.
         }
-*/
 
         moves.sort(getComparator());
 
@@ -364,6 +360,7 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
 
             List<Move> childVariation = new ArrayList<>();
             int score = -quiescence(game, depth - 1, -beta, -alpha, childVariation, move);
+
             evaluatedCount++;
             game.undo();
 
@@ -421,12 +418,13 @@ public class AlphaBetaPlayerWithTTQuiescence extends BasicNegaMaxPlayer {
     }
 
     // the original paper calls these "tactical disruptions"
-    // consider including moves into check at ply 1
-    // could also consider other interesting situations like forks, trapped pieces, etc.
+    // let's start with captures only.
+    // consider including pawn promotions, moves into check at ply 1, and
+    // other interesting situations like forks, trapped pieces, etc.
     private boolean isVolatile(Move move) {
         xml.atDebug().log("<volatile capture>{}<volatile>", move.isCapture());
 
-        return move.isCapture() || move.isPromoting();
+        return move.isCapture();
     }
 
     public int getTableHits() {
