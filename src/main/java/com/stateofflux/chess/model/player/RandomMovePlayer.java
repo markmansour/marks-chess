@@ -7,7 +7,6 @@ import com.stateofflux.chess.model.PlayerColor;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.security.SecureRandom;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomMovePlayer extends Player {
     protected final SecureRandom rand;

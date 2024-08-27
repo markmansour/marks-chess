@@ -1,7 +1,6 @@
 package com.stateofflux.chess.model.pieces;
 
 import com.stateofflux.chess.model.Board;
-import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 

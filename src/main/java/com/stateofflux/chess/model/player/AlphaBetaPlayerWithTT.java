@@ -90,7 +90,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             xml.atDebug().log("<iteration depth=\"{}\">", depth);
 
             List<Move> currentVariation = new ArrayList<>();
-            int score = alphaBeta(game, depth, evaluator.MIN_VALUE, evaluator.MAX_VALUE, currentVariation);
+            int score = alphaBeta(game, depth, Evaluator.MIN_VALUE, Evaluator.MAX_VALUE, currentVariation);
 
             // throw away timed out values.  Is there a way to use them?
             if (!currentVariation.isEmpty() && !timedOut) {
