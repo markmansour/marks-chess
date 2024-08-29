@@ -3,7 +3,6 @@ package com.stateofflux.chess.model;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import com.stateofflux.chess.model.pieces.CastlingHelper;
 import com.stateofflux.chess.model.pieces.PawnMoves;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

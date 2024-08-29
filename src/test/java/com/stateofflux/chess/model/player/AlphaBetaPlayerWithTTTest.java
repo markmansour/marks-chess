@@ -1,6 +1,5 @@
 package com.stateofflux.chess.model.player;
 
-import ch.qos.logback.classic.Level;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;

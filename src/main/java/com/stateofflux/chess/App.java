@@ -200,6 +200,8 @@ public class App
             sb.append(line).append(System.lineSeparator());
         }
 
+        scanner.close();
+
         // logger.atDebug().log(sb.toString());
     }
 

@@ -6,7 +6,6 @@ import com.stateofflux.chess.model.Move;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

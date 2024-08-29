@@ -1,7 +1,6 @@
 package com.stateofflux.chess.model;
 
 import com.stateofflux.chess.model.pieces.Piece;
-import com.stateofflux.chess.model.player.Evaluator;
 
 import java.io.Serializable;
 

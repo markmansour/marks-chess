@@ -2,7 +2,6 @@ package com.stateofflux.chess.model.player;
 
 import com.stateofflux.chess.model.Board;
 import com.stateofflux.chess.model.Game;
-import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.pieces.*;
 
 public class PestoEvaluator implements Evaluator {
@@ -165,7 +164,7 @@ public class PestoEvaluator implements Evaluator {
     int mg_table[][] = new int[12][64];
     int eg_table[][] = new int[12][64];
 
-    public void PestoEvaluator()
+    public PestoEvaluator()
     {
         int pc, p, sq;
         for (p = 0, pc = 0; p <= 5; pc += 2, p++) {
