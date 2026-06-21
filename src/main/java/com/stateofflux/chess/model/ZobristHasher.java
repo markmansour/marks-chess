@@ -149,7 +149,7 @@ public class ZobristHasher {
     }
 
     public void updateCastlingRights(int castlingRights) {
-        key ^= zorbistRandomKeys[castlingRights + 300];
+        key ^= getCastleRightsKey(castlingRights);
     }
 
     public void updatePiece(Piece piece, int square) {
@@ -164,19 +164,26 @@ public class ZobristHasher {
         key = zk;
     }
 
-    private long getCastleRightsKey(int castlingRights) {
-        return zorbistRandomKeys[castlingRights + 300];
+    // Each category of key occupies a disjoint, non-overlapping slice of the random table so that
+    // distinct atoms never share a slot (which would make them XOR-cancel and conflate positions).
+    static final int PIECE_SQUARE_OFFSET = 0;    // 12 pieces * 64 squares -> [0, 768)
+    static final int CASTLING_OFFSET = 768;      // 16 castling masks      -> [768, 784)
+    static final int SIDE_OFFSET = 784;          // player colors          -> [784, 787)
+    static final int EN_PASSANT_OFFSET = 800;    // 64 squares             -> [800, 864)
+
+    long getCastleRightsKey(int castlingRights) {
+        return zorbistRandomKeys[CASTLING_OFFSET + castlingRights];
     }
 
-    private long getSideKey(PlayerColor side) {
-        return zorbistRandomKeys[3 * side.ordinal() + 500];
+    long getSideKey(PlayerColor side) {
+        return zorbistRandomKeys[SIDE_OFFSET + side.ordinal()];
     }
 
-    private long getEnPassantKey(int enPassantTarget) {
-        return zorbistRandomKeys[3 * enPassantTarget + 400];
+    long getEnPassantKey(int enPassantTarget) {
+        return zorbistRandomKeys[EN_PASSANT_OFFSET + enPassantTarget];
     }
 
-    private long getPieceSquareKey(Piece piece, int square) {
-        return zorbistRandomKeys[57 * piece.getIndex() + 13 * square];
+    long getPieceSquareKey(Piece piece, int square) {
+        return zorbistRandomKeys[PIECE_SQUARE_OFFSET + 64 * piece.getIndex() + square];
     }
 }
