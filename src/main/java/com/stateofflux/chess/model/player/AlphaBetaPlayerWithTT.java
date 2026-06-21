@@ -254,6 +254,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         moves.sort(getComparator());
 
+        // Hash-move ordering: search the transposition table's stored best move first. This is the
+        // main payoff of the TT for move ordering. Matching against the generated move list also
+        // validates the move, so a garbage move from a key collision is simply ignored.
+        if (existingEntry != null)
+            orderHashMoveFirst(moves, existingEntry.getBestMove());
+
         int value = Evaluator.MIN_VALUE;
         List<List<Move>> bestVariations = new ArrayList<>();
         int evaluatedCount = 0;
@@ -315,6 +321,24 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         xml.atDebug().log("</node>");
 
         return value;
+    }
+
+    /**
+     * Moves the transposition table's stored best move to the front of {@code moves} so it is
+     * searched first. The move is identified by its from/to/promotion; if no legal move matches
+     * (e.g. the entry came from a colliding position) the list is left unchanged.
+     */
+    void orderHashMoveFirst(MoveList<Move> moves, Move hashMove) {
+        for (int i = 1; i < moves.size(); i++) {
+            Move m = moves.get(i);
+            if (m.getFrom() == hashMove.getFrom()
+                && m.getTo() == hashMove.getTo()
+                && m.getPromotionPiece() == hashMove.getPromotionPiece()) {
+                moves.remove(i);
+                moves.add(0, m);
+                return;
+            }
+        }
     }
 
     private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth) {
