@@ -9,7 +9,7 @@ import static java.lang.Long.bitCount;
  * Returns the value of the board from White's perspective.
  */
 public abstract class PieceSquareEvaluator implements Evaluator {
-    protected static int PAWN_VALUE = 100;
+    protected static final int PAWN_VALUE = 100;
     protected static final int ROOK_VALUE = 500;
     protected static final int KNIGHT_VALUE = 320;
     protected static final int BISHOP_VALUE = 330;
@@ -19,7 +19,11 @@ public abstract class PieceSquareEvaluator implements Evaluator {
     // final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     protected int[][] pieceSquareTables;
-    protected boolean endGame = false;
+    // The king's table changes in the end game. These hold the end-game variant; selection happens
+    // per evaluation (see boardScore) rather than by mutating pieceSquareTables, so no state leaks
+    // between evaluations or across the players that share an evaluator instance.
+    protected int[] whiteKingEndGameTable;
+    protected int[] blackKingEndGameTable;
 
     public PieceSquareEvaluator() {
         pieceSquareTables = new int[12][];
@@ -126,19 +130,33 @@ public abstract class PieceSquareEvaluator implements Evaluator {
     protected int boardScore(Game game) {
         int score = 0;
         Board b = game.getBoard();
-        checkForEndGame(game);
+        boolean endGame = isEndGame(game);
 
         for (int i = 0; i < 64; i++) {
             Piece p = b.get(i);
             if (p.isEmpty()) continue;
 
-            score += pieceSquareTables[p.getIndex()][i] * (p.isWhite() ? 1 : -1);
+            score += tableFor(p, endGame)[i] * (p.isWhite() ? 1 : -1);
         }
 
         return score;
     }
 
-     abstract void checkForEndGame(Game game);
+    /*
+     * End game once either side is down to fewer than four pieces. Computed fresh each evaluation
+     * so it reflects the position being scored, not some earlier position the evaluator has seen.
+     */
+    protected boolean isEndGame(Game game) {
+        return bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4;
+    }
+
+    private int[] tableFor(Piece p, boolean endGame) {
+        if (endGame) {
+            if (p == Piece.WHITE_KING && whiteKingEndGameTable != null) return whiteKingEndGameTable;
+            if (p == Piece.BLACK_KING && blackKingEndGameTable != null) return blackKingEndGameTable;
+        }
+        return pieceSquareTables[p.getIndex()];
+    }
 
     @Override
     public String toString() {

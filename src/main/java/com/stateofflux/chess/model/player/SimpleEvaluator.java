@@ -3,8 +3,6 @@ package com.stateofflux.chess.model.player;
 import com.stateofflux.chess.model.*;
 import com.stateofflux.chess.model.pieces.Piece;
 
-import static java.lang.Long.bitCount;
-
 public class SimpleEvaluator extends PieceSquareEvaluator {
     /*
      Tables from: https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -112,16 +110,9 @@ public class SimpleEvaluator extends PieceSquareEvaluator {
         pieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(ROOK_TABLE));
         pieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
         pieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
-    }
 
-    protected void checkForEndGame(Game game) {
-        if (endGame) return;
-
-        if (bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
-            this.endGame = true;
-            pieceSquareTables[Piece.WHITE_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(KING_ENDGAME_TABLE);
-            pieceSquareTables[Piece.BLACK_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(PieceSquareEvaluator.transposeWhiteToBlack(KING_ENDGAME_TABLE));
-        }
+        whiteKingEndGameTable = visualToArrayLayout(KING_ENDGAME_TABLE);
+        blackKingEndGameTable = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
     }
 
     @Override

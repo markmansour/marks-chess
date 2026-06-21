@@ -122,6 +122,9 @@ public class ChessAIEvaluator extends PieceSquareEvaluator {
         pieceSquareTables[Piece.BLACK_ROOK.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(ROOK_TABLE));
         pieceSquareTables[Piece.WHITE_PAWN.getIndex()]   = visualToArrayLayout(PAWN_TABLE);
         pieceSquareTables[Piece.BLACK_PAWN.getIndex()]   = visualToArrayLayout(transposeWhiteToBlack(PAWN_TABLE));
+
+        whiteKingEndGameTable = visualToArrayLayout(KING_ENDGAME_TABLE);
+        blackKingEndGameTable = visualToArrayLayout(transposeWhiteToBlack(KING_ENDGAME_TABLE));
     }
 
     // view from white's perspective
@@ -166,16 +169,6 @@ public class ChessAIEvaluator extends PieceSquareEvaluator {
 
         // return bonus + materialScore + boardScore;
         return bonus + materialScore + (boardScore * sideMoved);
-    }
-
-    protected void checkForEndGame(Game game) {
-        if (endGame) return;
-
-        if (bitCount(game.getBoard().getBlack()) < 4 || bitCount(game.getBoard().getWhite()) < 4) {
-            this.endGame = true;
-            pieceSquareTables[Piece.WHITE_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(KING_ENDGAME_TABLE);
-            pieceSquareTables[Piece.BLACK_KING.getIndex()] = PieceSquareEvaluator.visualToArrayLayout(PieceSquareEvaluator.transposeWhiteToBlack(KING_ENDGAME_TABLE));
-        }
     }
 
     @Override
