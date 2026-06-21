@@ -1,11 +1,36 @@
 # Changelog
 
 
-## V1.1 DATE
+## v1.1 20260621
 
 Bugs
 * 50 move rule accounts for moves from both players.
 * PGN parser no longer loses moves due to greedy commenting parsing.
+* PeSTO evaluator scores correctly. Its piece-value, game-phase and board-orientation
+  tables were misaligned with the engine's piece indexing, so the start position scored
+  -398 instead of 0.
+* The black player is built with the black colour (it was constructed as white).
+* FEN move counters round-trip. The half-move clock and full-move counter are stored
+  independently, seeded from the loaded FEN, and restored on undo, so loading and
+  re-emitting a FEN preserves both counters and the 50-move rule reflects the loaded clock.
+* Zobrist keys give the piece-square, castling, en-passant and side-to-move categories
+  disjoint index ranges, eliminating key collisions that could produce false
+  threefold-repetition draws.
+
+Search
+* Checkmate and stalemate are scored at terminal nodes, so the engine reliably finds
+  forced mate (preferring shorter mates) and treats stalemate as a draw.
+* The transposition table's stored best move is searched first (hash-move ordering) and is
+  validated against the legal moves, so a colliding entry can never surface an illegal move.
+* Transposition table mate scores are corrected by the search distance from the root rather
+  than the absolute game move number, keeping stored mate scores valid across searches.
+* Move tie-breaks are randomised only at the root; interior nodes are deterministic, making
+  the principal variation reproducible.
+
+Evaluation
+* End-game detection is computed per position instead of latching a flag and mutating shared
+  state, so reaching an end game in one search line no longer corrupts the evaluation of
+  later, piece-rich positions (or the opponent, who shares the evaluator).
 
 ## v1. 20240322
 Chess Engine / Chess move generator written in Java.  
