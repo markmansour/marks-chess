@@ -83,7 +83,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Move King")
-            .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 1");
+            .isEqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2");
     }
 
     @Test
@@ -95,7 +95,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/pp1ppppp/8/2p5/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 1");
+            .isEqualTo("rnbqkbnr/pp1ppppp/8/2p5/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
     }
 
     @Test
@@ -107,7 +107,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR b Kkq - 1 1");
+            .isEqualTo("rnbqkbnr/1ppppppp/8/p7/P7/R7/1PPPPPPP/1NBQKBNR b Kkq - 1 2");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/1ppppppp/8/p7/8/BP6/P1PPPPPP/RN1QKBNR b KQkq - 1 1");
+            .isEqualTo("rnbqkbnr/1ppppppp/8/p7/8/BP6/P1PPPPPP/RN1QKBNR b KQkq - 1 2");
     }
 
     @Test
@@ -129,7 +129,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 0");
+            .isEqualTo("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class BoardTest {
 
         assertThat(game.asFen())
             .as("Initial board setup")
-            .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 1 0");
+            .isEqualTo("rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq - 0 1");
     }
 
     @Test
@@ -177,7 +177,7 @@ public class BoardTest {
             MoveList<Move> moves = game.generateMoves();
             Move move = moves.stream().filter(Move::isCapture).findFirst().get();
             game.move(move);
-            assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppp1ppp/8/4P3/8/8/PPP1PPPP/RNBQKBNR b KQkq - 1 1");
+            assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppp1ppp/8/4P3/8/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1");
             assertThat(move.getCapturePiece()).isEqualTo(Piece.BLACK_PAWN);
         }
 

@@ -36,7 +36,7 @@ public class GameTest {
     @Test
     public void testDefaultGameSetup() {
         Game g = new Game();
-        assertThat(g.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0");
+        assertThat(g.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     }
 
     @Test
@@ -54,7 +54,7 @@ public class GameTest {
         Game game = new Game();
         assertThat(game.getActivePlayerColor()).isEqualTo(PlayerColor.WHITE);
         game.move("e3"); // from e2 to e3
-        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 1 0");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
     }
 
     @Test
@@ -63,7 +63,7 @@ public class GameTest {
 
         game.move("e4"); // from e2 to e4
 
-        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 1 0");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
     }
 
     @Test
@@ -71,7 +71,7 @@ public class GameTest {
         Game game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P5/8/PP1PPPPP/RNBQKBNR w KQkq -");
         game.move("cxd5"); // from c4 to d5
 
-        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/3P4/8/8/PP1PPPPP/RNBQKBNR b KQkq - 1 1");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/3P4/8/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1");
     }
 
     @Test
@@ -83,12 +83,12 @@ public class GameTest {
         assertThat(gameMoves).hasSize(30);
         game.move("dxc4"); // from d5 to c4 - loctation 35 to 26
 
-        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2p1P3/8/PP1P1PPP/RNBQKBNR w KQkq - 1 1");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2p1P3/8/PP1P1PPP/RNBQKBNR w KQkq - 0 2");
 
         // second scenario
         game = new Game("rnbqkbnr/ppp1pppp/8/3p4/2P1P3/8/PP1P1PPP/RNBQKBNR b KQkq -");
         game.move("dxe4"); // from d5 to c4
-        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2P1p3/8/PP1P1PPP/RNBQKBNR w KQkq - 1 1");
+        assertThat(game.asFen()).isEqualTo("rnbqkbnr/ppp1pppp/8/8/2P1p3/8/PP1P1PPP/RNBQKBNR w KQkq - 0 2");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class GameTest {
         Game game = new Game("r1bqkbnr/p1pppppp/n7/1P6/8/8/1PPPPPPP/RNBQKBNR w KQkq -");
         game.move("Rxa6"); // from a1 to a6
 
-        assertThat(game.asFen()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR b Kkq - 1 1");
+        assertThat(game.asFen()).isEqualTo("r1bqkbnr/p1pppppp/R7/1P6/8/8/1PPPPPPP/1NBQKBNR b Kkq - 0 1");
     }
 
     @Test
@@ -263,7 +263,7 @@ public class GameTest {
     @Test public void takeKnightWithPawn() {
         Game game = new Game("rnbqkb1r/ppp2ppp/3p4/8/8/2n2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 6");
         game.move("dxc3"); // move from d4 to c3 (but takes from d2)
-        assertThat(game.asFen()).isEqualTo("rnbqkb1r/ppp2ppp/3p4/8/8/2P2N2/PPP2PPP/R1BQKB1R b KQkq - 1 6");
+        assertThat(game.asFen()).isEqualTo("rnbqkb1r/ppp2ppp/3p4/8/8/2P2N2/PPP2PPP/R1BQKB1R b KQkq - 0 6");
     }
 
     @Nested
@@ -466,26 +466,26 @@ public class GameTest {
             game.move("a8=Q+");
 
             // draws
-            assertThat(game.asFen()).isEqualTo("Q7/1k6/8/8/8/8/6Kp/8 b - - 1 1");
+            assertThat(game.asFen()).isEqualTo("Q7/1k6/8/8/8/8/6Kp/8 b - - 0 1");
         }
 
         @Test public void promotionTakingQueen () {
             Game game = new Game("1q6/P6k/8/5N1K/8/8/8/8 w - -");
             assertThat(game.generateMoves().asLongSan()).contains("a7a8N", "a7a8B", "a7a8R", "a7a8Q");
             game.move("axb8=Q");
-            assertThat(game.asFen()).isEqualTo("1Q6/7k/8/5N1K/8/8/8/8 b - - 1 1");
+            assertThat(game.asFen()).isEqualTo("1Q6/7k/8/5N1K/8/8/8/8 b - - 0 1");
         }
 
         @Test void blackPawnPromotion() {
             Game game = new Game("rnbqkbnr/1ppppppp/8/8/8/8/p1PPPPPP/2BQKBNR b Kkq - 0 1");
             game.move("a1=b");  // promote to bishop
-            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 1 1");
+            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 0 2");
         }
 
         @Test void promotionWithIncorrectReplacement() {
             Game game = new Game("rnbqkbnr/1ppppppp/8/8/8/8/p1PPPPPP/2BQKBNR b Kkq - 0 1");
             game.move("a1=B");  // promote to white bishop, which is the wrong color.
-            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 1 1");
+            assertThat(game.asFen()).isEqualTo("rnbqkbnr/1ppppppp/8/8/8/8/2PPPPPP/b1BQKBNR w Kkq - 0 2");
         }
     }
 
@@ -504,7 +504,7 @@ public class GameTest {
         game.move("Nxd4");
         game.move("Bb4");
 
-        assertThat(game.asFen()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq - 0 5");
+        assertThat(game.asFen()).isEqualTo("rnbqk2r/pp1p1ppp/5n2/4p3/1bPN4/2N5/PP2PPPP/R1BQKB1R w KQkq - 1 6");
     }
 
     @Nested
@@ -882,6 +882,66 @@ Kh3 {0.00/6 1.5s} 136. Be5 {0.00/5 1.3s, Draw by fifty moves rule} 1/2-1/2
             Pgn pgn = new Pgn(pgnString);
             Game game = new Game(pgn);
             assertThat(game.isOver()).isTrue();
+        }
+    }
+
+    @Nested
+    class MoveCounters {
+        @Test public void fenWithCountersRoundTrips() {
+            String[] fens = {
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                "4k3/8/8/8/8/8/8/4K3 b - - 5 39",
+                "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 12 27"
+            };
+            for(String fen : fens)
+                assertThat(new Game(fen).asFen()).isEqualTo(fen);
+        }
+
+        @Test public void newGameStartsAtHalfmoveZeroFullmoveOne() {
+            Game game = new Game();
+            assertThat(game.getHalfMoveClock()).isZero();
+            assertThat(game.getFullMoveCounter()).isEqualTo(1);
+        }
+
+        @Test public void fullMoveCounterIncrementsAfterBlackMove() {
+            Game game = new Game();
+            assertThat(game.getFullMoveCounter()).isEqualTo(1);
+            game.move("e4");                                 // white moved
+            assertThat(game.getFullMoveCounter()).isEqualTo(1);
+            game.move("e5");                                 // black moved
+            assertThat(game.getFullMoveCounter()).isEqualTo(2);
+        }
+
+        @Test public void halfMoveClockResetsOnPawnMoveAndIncrementsOnPieceMove() {
+            Game game = new Game("4k3/8/8/8/8/8/8/R3K3 w - - 10 5");
+            assertThat(game.getHalfMoveClock()).isEqualTo(10);
+            game.moveLongNotation("a1a2");                   // quiet rook move
+            assertThat(game.getHalfMoveClock()).isEqualTo(11);
+        }
+
+        @Test public void fiftyMoveRuleIsSeededFromFen() {
+            Game game = new Game("4k3/8/8/8/8/8/8/R3K3 w - - 99 1");
+            assertThat(game.past50moves()).isFalse();
+            game.moveLongNotation("a1a2");                   // quiet move pushes the count to 100
+            assertThat(game.past50moves()).isTrue();
+        }
+
+        @Test public void undoRestoresHalfMoveAndFullMoveCounters() {
+            Game game = new Game("4k3/8/8/8/8/8/8/R3K3 w - - 10 5");
+            game.moveLongNotation("a1a2");
+            assertThat(game.getHalfMoveClock()).isEqualTo(11);
+            game.undo();
+            assertThat(game.getHalfMoveClock()).isEqualTo(10);
+            assertThat(game.getFullMoveCounter()).isEqualTo(5);
+        }
+
+        @Test public void undoRestoresHalfMoveClockAfterReset() {
+            // A pawn move resets the half-move clock; undo must restore the prior value.
+            Game game = new Game("4k3/8/8/8/8/8/4P3/4K3 w - - 7 5");
+            game.moveLongNotation("e2e4");
+            assertThat(game.getHalfMoveClock()).isZero();
+            game.undo();
+            assertThat(game.getHalfMoveClock()).isEqualTo(7);
         }
     }
 }

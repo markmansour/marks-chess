@@ -17,7 +17,7 @@ public class Game {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final int MOVE_LIST_CAPACITY = 220;
 
-    record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache, long hash) {}
+    record History(Move move, long[] boards, int enPassantTarget, boolean check, int castlingRights, Piece[] pieceCache, long hash, int movesWithoutCaptureOrPawnMove, int fullmoveCounter) {}
 
     protected final Board board;
     protected PlayerColor activePlayerColor;
@@ -27,7 +27,8 @@ public class Game {
     private final int depth;
     private int clock;
     private boolean outOfTime = false;
-    private int movesWithoutCaptureOrPawnMove = 0;
+    private int movesWithoutCaptureOrPawnMove = 0;   // the FEN halfmove clock (for the 50-move rule)
+    private int fullmoveCounter = 1;                  // the FEN fullmove counter
 
     private final List<History> historyOfMoves = new ArrayList<>();
     private final List<Move> toRemove = new ArrayList<>(64);
@@ -56,7 +57,9 @@ public class Game {
         setActivePlayerColor(fen.getActivePlayerColor());
         board.setCastlingRightsFromFen(fen.getCastlingRights());
         board.setEnPassantTargetFromFen(fen.getEnPassantTarget());
-        setClock(fen.getFullmoveCounter() * 2 + fen.getHalfmoveClock()); // TODO: THis is not right.  We don't know how many moves have been taken.
+        setClock(0);   // ply counter for this session; absolute prior plies are unknown
+        movesWithoutCaptureOrPawnMove = fen.getHalfmoveClock();
+        fullmoveCounter = fen.getFullmoveCounter();
         setActivePlayerIsInCheck();
     }
 
@@ -398,7 +401,9 @@ public class Game {
             check,
             board.getCastlingRights(),
             copyOfPieceCache,
-            board.getZobristKey()
+            board.getZobristKey(),
+            movesWithoutCaptureOrPawnMove,
+            fullmoveCounter
         ));
 
         updateBoard(move);
@@ -406,6 +411,9 @@ public class Game {
         setActivePlayerIsInCheck();
         incrementClock();
         update50MoveRule(move);
+        // The fullmove counter advances after black completes a move (active player is now white).
+        if(getActivePlayerColor().isWhite())
+            fullmoveCounter++;
     }
 
     public Move undo() {
@@ -426,6 +434,8 @@ public class Game {
         board.forceZobristKey(h.hash);
 
         decrementClock();
+        movesWithoutCaptureOrPawnMove = h.movesWithoutCaptureOrPawnMove();
+        fullmoveCounter = h.fullmoveCounter();
 
         return h.move;
     }
@@ -765,11 +775,11 @@ public class Game {
     public void decrementClock() { this.clock--; }
 
     public int getFullMoveCounter() {
-        return this.clock >> 1;  // divide by 2
+        return this.fullmoveCounter;
     }
 
     public int getHalfMoveClock() {
-        return this.clock & 1;  // module 2
+        return this.movesWithoutCaptureOrPawnMove;
     }
 
     // --------------------------- Performance and Debugging ---------------------------
