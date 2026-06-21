@@ -5,8 +5,9 @@ import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.pieces.*;
 
 public class PestoEvaluator implements Evaluator {
-    int mg_value[] = { 82, 337, 365, 477, 1025,  0};
-    int eg_value[] = { 94, 281, 297, 512,  936,  0};
+    // Ordered to match mg_pesto_table / Piece indices: king, queen, rook, bishop, knight, pawn.
+    int mg_value[] = {  0, 1025, 477, 365, 337, 82};
+    int eg_value[] = {  0,  936, 512, 297, 281, 94};
 
     int mg_pawn_table[] = {
         0,   0,   0,   0,   0,   0,  0,   0,
@@ -160,19 +161,22 @@ public class PestoEvaluator implements Evaluator {
         eg_pawn_table
     };
 
-    int gamephaseInc[] = {0,0,1,1,1,1,2,2,4,4,0,0};
+    // Indexed by Piece.getIndex(): white {king,queen,rook,bishop,knight,pawn} 0-5, black 6-11.
+    int gamephaseInc[] = {0,4,2,1,1,0, 0,4,2,1,1,0};
     int mg_table[][] = new int[12][64];
     int eg_table[][] = new int[12][64];
 
     public PestoEvaluator()
     {
-        int pc, p, sq;
-        for (p = 0, pc = 0; p <= 5; pc += 2, p++) {
-            for (sq = 0; sq < 64; sq++) {
-                mg_table[pc]  [sq] = mg_value[p] + mg_pesto_table[p][sq];
-                eg_table[pc]  [sq] = eg_value[p] + eg_pesto_table[p][sq];
-                mg_table[pc+1][sq] = mg_value[p] + mg_pesto_table[p][sq^56];
-                eg_table[pc+1][sq] = eg_value[p] + eg_pesto_table[p][sq^56];
+        // mg_pesto_table is in Piece type order {king,queen,rook,bishop,knight,pawn}, written
+        // a8-first. This board numbers squares a1=0 (rank*8+file), so white pieces look up the
+        // rank-flipped square (sq^56) and black pieces (indices 6-11) use the square directly.
+        for (int p = 0; p <= 5; p++) {
+            for (int sq = 0; sq < 64; sq++) {
+                mg_table[p]    [sq] = mg_value[p] + mg_pesto_table[p][sq^56];
+                eg_table[p]    [sq] = eg_value[p] + eg_pesto_table[p][sq^56];
+                mg_table[p + 6][sq] = mg_value[p] + mg_pesto_table[p][sq];
+                eg_table[p + 6][sq] = eg_value[p] + eg_pesto_table[p][sq];
             }
         }
     }
