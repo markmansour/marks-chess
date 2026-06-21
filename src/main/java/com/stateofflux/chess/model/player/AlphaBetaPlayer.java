@@ -109,9 +109,13 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
         MoveList<Move> moves = game.generateMoves();
         List<Move> bestMoves = new ArrayList<>();
 
-        // node is terminal
-        if(moves.isEmpty())  // mate, draw, etc.
-            return evaluate(game, getSearchDepth() - depth);
+        // node is terminal: the side to move has no legal moves. That is checkmate (it is in
+        // check) or stalemate (it is not). Score it here rather than in the evaluator, using the
+        // distance from the root so that shorter mates are preferred.
+        if(moves.isEmpty()) {
+            int ply = getSearchDepth() - depth;
+            return game.isChecked() ? -(Evaluator.MATE_VALUE - ply) : 0;
+        }
 
         moves.sort(getComparator());
 

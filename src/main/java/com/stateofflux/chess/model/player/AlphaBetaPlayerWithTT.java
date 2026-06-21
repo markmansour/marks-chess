@@ -232,10 +232,13 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         MoveList<Move> moves = game.generateMoves();
 
-        // node is terminal as there are no more moves.
+        // node is terminal as there are no more moves: checkmate (side to move is in check) or
+        // stalemate (a draw). Score it here using the distance from the root so that shorter
+        // mates are preferred, rather than handing it to the material evaluator.
         if (moves.isEmpty()) {
             principalVariation.clear();
-            int evaluatedScore = evaluate(game, getSearchDepth() - depth);
+            int ply = getSearchDepth() - depth;
+            int terminalScore = game.isChecked() ? -(Evaluator.MATE_VALUE - ply) : 0;
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
@@ -243,10 +246,10 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 alpha,
                 beta,
                 lastMove.toLongSan(),
-                evaluatedScore
+                terminalScore
             );
 
-            return evaluatedScore;
+            return terminalScore;
         }
 
         moves.sort(getComparator());
