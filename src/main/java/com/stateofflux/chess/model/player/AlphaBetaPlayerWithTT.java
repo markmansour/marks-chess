@@ -28,6 +28,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     private long increment;
     private boolean timedOut;
     private Move lastMove;
+    private List<Move> principalVariation = new ArrayList<>();
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
         this(color, evaluator, DEFAULT_TIME_ALLOCATION);
@@ -128,7 +129,13 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             MDC.remove("ply");
 
         logger.atDebug().log("best variation: {}", bestVariation);
+        principalVariation = bestVariation;
         return bestVariation.get(0);
+    }
+
+    /** The principal variation found by the most recent search. */
+    public List<Move> getPrincipalVariation() {
+        return principalVariation;
     }
 
     /*
@@ -313,7 +320,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         }
 
         principalVariation.clear();
-        int index = ThreadLocalRandom.current().nextInt(bestVariations.size());
+        // Randomise tie-breaks only at the root (for variety). Inside the tree pick the first best
+        // variation deterministically so the PV and the stored TT move are reproducible.
+        int index = (ply == 0) ? ThreadLocalRandom.current().nextInt(bestVariations.size()) : 0;
         principalVariation.addAll(bestVariations.get(index));
         Move bestMove = bestVariations.get(index).get(0);
 

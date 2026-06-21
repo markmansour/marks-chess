@@ -148,7 +148,8 @@ public class AlphaBetaPlayer extends BasicNegaMaxPlayer {
             }
         }
 
-        Move bestMove = bestMoves.get(ThreadLocalRandom.current().nextInt(bestMoves.size()));
+        // Deterministic inside the tree; only the root (getNextMove) randomises tie-breaks.
+        Move bestMove = bestMoves.get(0);
 
         logger.atDebug().log("{}{} : depth: {} (α {}, β {}).  best move: {} ({})",
             " ".repeat((getSearchDepth() - depth) * 2),
