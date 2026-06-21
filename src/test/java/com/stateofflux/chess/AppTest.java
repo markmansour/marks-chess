@@ -1,5 +1,6 @@
 package com.stateofflux.chess;
 
+import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -30,6 +31,14 @@ class AppTest {
     public void restoreDefaultSystemInOut() {
         System.setIn(sysInBackup);
         System.setOut(sysOutBackup);
+    }
+
+    @Test public void playersAreConstructedWithMatchingColors() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        AppArgs aa = new AppArgs();
+        App app = new App(aa);
+
+        assertThat(app.getWhitePlayer().getColor()).isEqualTo(PlayerColor.WHITE);
+        assertThat(app.getBlackPlayer().getColor()).isEqualTo(PlayerColor.BLACK);
     }
 
     @Test public void testUciInterface() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {

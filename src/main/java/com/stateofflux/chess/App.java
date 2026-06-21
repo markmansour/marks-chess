@@ -86,11 +86,19 @@ public class App
         // Player blackPlayer = new AlphaBetaPlayer(PlayerColor.BLACK, evaluator);
         Class<?> blackPlayerClass = Class.forName("com.stateofflux.chess.model.player." + aa.blackStrategy);
         Constructor<?> blackPlayerConstructor = blackPlayerClass.getConstructor(PlayerColor.class, Evaluator.class);
-        blackPlayer = (Player) blackPlayerConstructor.newInstance(PlayerColor.WHITE, evaluator);
+        blackPlayer = (Player) blackPlayerConstructor.newInstance(PlayerColor.BLACK, evaluator);
 
         // give the players a reasonable chance of winning.
         whitePlayer.setSearchDepth(aa.whiteDepth);
         blackPlayer.setSearchDepth(aa.blackDepth);
+    }
+
+    public Player getWhitePlayer() {
+        return whitePlayer;
+    }
+
+    public Player getBlackPlayer() {
+        return blackPlayer;
     }
 
     public void uciLoop() {
