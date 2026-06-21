@@ -2,6 +2,7 @@ package com.stateofflux.chess.model;
 
 
 import com.stateofflux.chess.model.pieces.Piece;
+import com.stateofflux.chess.model.player.Evaluator;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +10,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("UnitTest")
 public class TranspositionTableTest {
+
+    // Mate scores are stored relative to the node (so they are reusable from any path) by adjusting
+    // for the ply at store time, and converted back to root-relative at retrieval time.
+    @Test public void winningMateScoreIsAdjustedByPly() {
+        TranspositionTable tt = new TranspositionTable();
+        long key = 123456789L;
+        Move m = new Move(Piece.EMPTY, 0, 0, false);
+        int mateScore = Evaluator.MATE_VALUE - 10;   // winning mate, root-relative at store
+
+        tt.put(key, mateScore, m, TranspositionTable.NodeType.EXACT, 4, 5);   // stored at ply 5
+        TranspositionTable.Entry entry = tt.get(key, 8);                      // retrieved at ply 8
+
+        assertThat(entry.score()).isEqualTo(mateScore + 5 - 8);
+    }
+
+    @Test public void losingMateScoreIsAdjustedByPly() {
+        TranspositionTable tt = new TranspositionTable();
+        long key = 987654321L;
+        Move m = new Move(Piece.EMPTY, 0, 0, false);
+        int mateScore = -(Evaluator.MATE_VALUE - 10);
+
+        tt.put(key, mateScore, m, TranspositionTable.NodeType.EXACT, 4, 5);
+        TranspositionTable.Entry entry = tt.get(key, 8);
+
+        assertThat(entry.score()).isEqualTo(mateScore - 5 + 8);
+    }
+
+    @Test public void nonMateScoreIsNotAdjustedByPly() {
+        TranspositionTable tt = new TranspositionTable();
+        long key = 555L;
+        Move m = new Move(Piece.EMPTY, 0, 0, false);
+
+        tt.put(key, 250, m, TranspositionTable.NodeType.EXACT, 4, 5);
+        assertThat(tt.get(key, 9).score()).isEqualTo(250);
+    }
     @Test
     public void basicTT() {
         TranspositionTable tt = new TranspositionTable();

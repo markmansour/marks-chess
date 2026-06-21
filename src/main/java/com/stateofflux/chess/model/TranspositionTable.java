@@ -31,6 +31,12 @@ public class TranspositionTable {
 
     public static final int DEFAULT_HASH_SIZE_IN_MB = 16;
 
+    // A score is a mate score if it is within MAX_PLY of MATE_VALUE. Mate scores are encoded as
+    // MATE_VALUE - distanceToMate, so the exact value MATE_VALUE is rarely seen and a window is
+    // needed to recognise them.
+    private static final int MAX_PLY = 1000;
+    private static final int IS_MATE_SCORE = MATE_VALUE - MAX_PLY;
+
     public record Entry(long key, int score, long best, NodeType nt, int depth, int age) {
         public Move getBestMove() {
             return Move.buildFrom(best);
@@ -100,9 +106,9 @@ public class TranspositionTable {
         Entry entry = get(key, ply);
         if(entry == null || depth > entry.depth || nodeType == NodeType.EXACT) {
             int newScore;
-            if(score >= MATE_VALUE)
+            if(score >= IS_MATE_SCORE)
                 newScore = score + ply;
-            else if(score <= -MATE_VALUE)
+            else if(score <= -IS_MATE_SCORE)
                 newScore = score - ply;
             else
                 newScore = score;
@@ -161,9 +167,9 @@ public class TranspositionTable {
         NodeType nodeType = NodeType.values()[(int) (data & 0xFFFFL)];
 
         int newScore;
-        if(score > MATE_VALUE)
+        if(score >= IS_MATE_SCORE)
             newScore = score - ply;
-        else if(score < -MATE_VALUE)
+        else if(score <= -IS_MATE_SCORE)
             newScore = score + ply;
         else
             newScore = score;

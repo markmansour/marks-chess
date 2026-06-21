@@ -90,7 +90,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             xml.atDebug().log("<iteration depth=\"{}\">", depth);
 
             List<Move> currentVariation = new ArrayList<>();
-            int score = alphaBeta(game, depth, Evaluator.MIN_VALUE, Evaluator.MAX_VALUE, currentVariation);
+            int score = alphaBeta(game, depth, Evaluator.MIN_VALUE, Evaluator.MAX_VALUE, 0, currentVariation);
 
             // throw away timed out values.  Is there a way to use them?
             if (!currentVariation.isEmpty() && !timedOut) {
@@ -180,10 +180,13 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
      * (* Initial call for Player A's root node *)
      *    negamax(rootNode, depth, −∞, +∞, 1)
      */
-    public int alphaBeta(Game game, int depth, int alpha, int beta, List<Move> principalVariation) {
+    public int alphaBeta(Game game, int depth, int alpha, int beta, int ply, List<Move> principalVariation) {
         int alphaOrig = alpha;
 
-        TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), game.getClock());
+        // ply is the distance from the root of this search. It is used for mate-distance bookkeeping
+        // in the transposition table and for terminal mate scoring; using the absolute game clock
+        // here would bake the game's move number into stored mate scores and corrupt them.
+        TranspositionTable.Entry existingEntry = tt.get(game.getZobristKey(), ply);
         if (existingEntry != null && existingEntry.depth() >= depth) {
             tableHits++;
 
@@ -216,7 +219,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
          */
         if (depth == 0) {
             principalVariation.clear();
-            int evaluatedScore = evaluate(game, getSearchDepth() - depth);
+            int evaluatedScore = evaluate(game, ply);
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
                 game.getActivePlayerColor(),
@@ -237,7 +240,6 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         // mates are preferred, rather than handing it to the material evaluator.
         if (moves.isEmpty()) {
             principalVariation.clear();
-            int ply = getSearchDepth() - depth;
             int terminalScore = game.isChecked() ? -(Evaluator.MATE_VALUE - ply) : 0;
 
             xml.atDebug().log("<evaluate player=\"{}\" depth-remaining=\"{}\" alpha=\"{}\" beta=\"{}\" move=\"{}\" score=\"{}\"/>",
@@ -289,7 +291,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
             List<Move> childVariation = new ArrayList<>();
 
-            int score = -alphaBeta(game, depth - 1, -beta, -alpha, childVariation);
+            int score = -alphaBeta(game, depth - 1, -beta, -alpha, ply + 1, childVariation);
             evaluatedCount++;
             game.undo();
 
@@ -315,7 +317,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         principalVariation.addAll(bestVariations.get(index));
         Move bestMove = bestVariations.get(index).get(0);
 
-        updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth);
+        updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth, ply);
 
         xml.atDebug().log("<summary alpha=\"{}\" beta=\"{}\" score= \"{}\" total=\"{}\" pruned=\"{}\" best-move=\"{}\" history=\"{}\"/>", alpha, beta, value, moves.size(), moves.size() - evaluatedCount, bestMove.toLongSan(), principalVariation.stream().map(Move::toLongSan).collect(Collectors.joining(" ")));
         xml.atDebug().log("</node>");
@@ -341,7 +343,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         }
     }
 
-    private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth) {
+    private void updateTranspositionTable(Game game, int value, Move best, int alphaOrig, int beta, int depth, int ply) {
         TranspositionTable.NodeType nt;
         if (value <= alphaOrig)
             nt = TranspositionTable.NodeType.UPPER_BOUND;
@@ -350,8 +352,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         else
             nt = TranspositionTable.NodeType.EXACT;
 
-        // TranspositionTable.Entry newEntry = new TranspositionTable.Entry(game.getZobristKey(), null, depth, value, nt, 0);
-        tt.put(game.getZobristKey(), value, best, nt, depth, game.getClock());
+        // ply (distance from the search root), not the absolute game clock, so stored mate scores
+        // are node-relative and reusable across searches.
+        tt.put(game.getZobristKey(), value, best, nt, depth, ply);
     }
 
     public int getTableHits() {
