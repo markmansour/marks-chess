@@ -1,6 +1,6 @@
 # Mark's Chess
 [![CI workflow](https://github.com/markmansour/marks-chess/actions/workflows/maven.yml/badge.svg)](https://github.com/markmansour/marks-chess/actions/workflows/maven.yml)
-[![Coverage](.github/badges/jacoco.svg)](https://github.com/markmansour/marks-chess/actions/workflows/build.yml)
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/markmansour/marks-chess/actions/workflows/maven.yml)
 
 This is a straight forward chess engine written in Java.  The chess engine comes with a basic UCI interface.
 There are thorough unit tests.  There is *no* GUI.
@@ -60,7 +60,8 @@ If you're building the project on the command line then to get started:
 
 ```bash
 $ git clone https://github.com/markmansour/marks-chess.git
-$ cd marks-chess $ mvn package assembly:single
+$ cd marks-chess 
+$ mvn package assembly:single
 $ ./bin/app.sh
 ```
 
@@ -122,6 +123,12 @@ To run a full game:
 ```
 
 The unit tests have many useful examples.
+
+## Performance testing
+Move generation and search performance are tracked with deterministic node-count gates (run on
+every PR) and a throughput trend (perft nodes/sec, charted by CI). See
+[performance testing](docs/performance-testing.md) for how to run the benchmarks, read the trend,
+and update a baseline.
 
 ## Playing against other engines 
 Build a single jar file with all dependencies, and call it from a shell
