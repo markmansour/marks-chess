@@ -29,6 +29,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     private boolean timedOut;
     private Move lastMove;
     private List<Move> principalVariation = new ArrayList<>();
+    private List<Move> rootBestMoves = new ArrayList<>();   // equal-scoring root moves of the current search
     private boolean hashMoveOrdering = true;
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
@@ -76,6 +77,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
         timedOut = false;
         int maxDepth = getSearchDepth();
         List<Move> bestVariation = new ArrayList<>();
+        List<Move> chosenRootMoves = new ArrayList<>();
 
         // Set the ply unless the caller has already set the ply string
         if(xml.isDebugEnabled() && MDC.getCopyOfContextMap() != null && !MDC.getCopyOfContextMap().containsKey("ply"))
@@ -97,6 +99,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
             // throw away timed out values.  Is there a way to use them?
             if (!currentVariation.isEmpty() && !timedOut) {
                 bestVariation = new ArrayList<>(currentVariation);
+                chosenRootMoves = new ArrayList<>(rootBestMoves);
                 logger.atDebug().log("taking the new best variation of {}", bestVariation);
             } else {
                 logger.atDebug().log("Timed out");
@@ -131,6 +134,12 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         logger.atDebug().log("best variation: {}", bestVariation);
         principalVariation = bestVariation;
+
+        // Play a random move among the equal-scoring root moves for variety. This does not touch the
+        // search, the PV, or the TT, so node counts stay reproducible.
+        if (!chosenRootMoves.isEmpty())
+            return chosenRootMoves.get(ThreadLocalRandom.current().nextInt(chosenRootMoves.size()));
+
         return bestVariation.get(0);
     }
 
@@ -330,12 +339,18 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
                 break;  // Alpha-beta cutoff
         }
 
+        // The PV and the stored TT move are always the first best variation, so the search is fully
+        // deterministic (reproducible PV, TT, and node counts). Tie-break variety for the move
+        // actually played is applied later, in getNextMove, without affecting the search.
         principalVariation.clear();
-        // Randomise tie-breaks only at the root (for variety). Inside the tree pick the first best
-        // variation deterministically so the PV and the stored TT move are reproducible.
-        int index = (ply == 0) ? ThreadLocalRandom.current().nextInt(bestVariations.size()) : 0;
-        principalVariation.addAll(bestVariations.get(index));
-        Move bestMove = bestVariations.get(index).get(0);
+        principalVariation.addAll(bestVariations.get(0));
+        Move bestMove = bestVariations.get(0).get(0);
+
+        if (ply == 0) {
+            rootBestMoves.clear();
+            for (List<Move> variation : bestVariations)
+                rootBestMoves.add(variation.get(0));
+        }
 
         updateTranspositionTable(game, value, bestMove, alphaOrig, beta, depth, ply);
 

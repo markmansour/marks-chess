@@ -1,12 +1,13 @@
 package com.stateofflux.chess.model.player;
 
+import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.Move;
 import com.stateofflux.chess.model.PlayerColor;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,5 +37,21 @@ public class PrincipalVariationDeterminismTest {
 
         for (int i = 0; i < 12; i++)
             assertThat(pvOf(game)).isEqualTo(firstPv);
+    }
+
+    @Test public void nodeCountIsReproducibleAcrossSearches() {
+        // The search (PV, TT, and therefore node count) must be deterministic. Only the move
+        // actually returned is randomised among equal root moves, which does not affect the tree.
+        long first = nodesSearched(FenString.INITIAL_BOARD);
+        for (int i = 0; i < 5; i++)
+            assertThat(nodesSearched(FenString.INITIAL_BOARD)).isEqualTo(first);
+    }
+
+    private long nodesSearched(String fen) {
+        AlphaBetaPlayerWithTT player = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, new PestoEvaluator());
+        player.setSearchDepth(4);
+        player.setIncrement(TimeUnit.MINUTES.toNanos(5));   // no timeout: deterministic node count
+        player.getNextMove(new Game(fen));
+        return player.getNodesVisited();
     }
 }
