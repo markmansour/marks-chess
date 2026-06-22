@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782147077182,
+  "lastUpdate": 1782151596945,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -65,6 +65,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 4869610,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "b4aa889f09a66cdd502e0c2db24aed25731dade8",
+          "message": "Upgrade to Java 25, refresh dependencies, fix Dependabot alerts\n\nRuntime & build\n* Language target Java 17 -> 25 (compiler release, CI setup-java, README).\n* JUnit 5.14.4, AssertJ 3.27.7, Guava 33.4.8, Logback 1.5.34, SLF4J 2.0.17\n  (off the 2.1.0-alpha), spotbugs-annotations 4.9.3, async-profiler 4.4.\n* Maven plugins bumped (compiler 3.15.0, surefire 3.5.6, jacoco 0.8.15,\n  jar 3.4.2, project-info-reports 3.9.0, clean/install/deploy/site).\n* JaCoCo 0.8.15 runs on current JDKs, so coverage no longer needs skipping.\n* GitHub Actions to current majors: checkout v7, setup-java v5, codecov v7,\n  maven-dependency-submission v5 -- clears the Node 20 deprecation.\n\nFixes\n* Removed an erroneous jacoco-maven-plugin entry from <dependencies> (it is a\n  build plugin, not a library); it had pulled build-time deps -- including the\n  vulnerable plexus-utils -- onto the application classpath.\n* GameTest no longer imports junit.framework (vintage JUnit 3, only present via\n  that erroneous dependency); switched the assertion to AssertJ.\n\nSecurity (Dependabot)\n* logback-core ACE and related -> logback 1.5.34.\n* assertj-core XXE in isXmlEqualTo -> 3.27.7.\n* plexus-utils directory traversal -> removed from the app classpath; pinned to\n  3.6.1 on the JaCoCo plugin for the build classpath.\n\nVerified with a clean build and full test suite (221 tests) on JDK 25.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T11:05:50-07:00",
+          "tree_id": "85e5013b5bb7dc9c45cc95030a78f5d0057fe4d0",
+          "url": "https://github.com/markmansour/marks-chess/commit/b4aa889f09a66cdd502e0c2db24aed25731dade8"
+        },
+        "date": 1782151596114,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4651633,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5612092,
             "unit": "nodes/sec"
           }
         ]
