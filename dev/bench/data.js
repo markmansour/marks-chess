@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782168345957,
+  "lastUpdate": 1782168349771,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -371,6 +371,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5100627,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0f18ea6cbb29a9f49d441e18217c430633a432d5",
+          "message": "Bump org.apache.maven.plugins:maven-jar-plugin from 3.4.2 to 3.5.0 (#10)\n\nBumps [org.apache.maven.plugins:maven-jar-plugin](https://github.com/apache/maven-jar-plugin) from 3.4.2 to 3.5.0.\n- [Release notes](https://github.com/apache/maven-jar-plugin/releases)\n- [Commits](https://github.com/apache/maven-jar-plugin/compare/maven-jar-plugin-3.4.2...maven-jar-plugin-3.5.0)\n\n---\nupdated-dependencies:\n- dependency-name: org.apache.maven.plugins:maven-jar-plugin\n  dependency-version: 3.5.0\n  dependency-type: direct:development\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-22T15:45:17-07:00",
+          "tree_id": "12b75000f624d212add8461f8f598f98db5156b3",
+          "url": "https://github.com/markmansour/marks-chess/commit/0f18ea6cbb29a9f49d441e18217c430633a432d5"
+        },
+        "date": 1782168349033,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4737691,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5152084,
             "unit": "nodes/sec"
           }
         ]
