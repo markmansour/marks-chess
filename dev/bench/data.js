@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782151596945,
+  "lastUpdate": 1782152286020,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -99,6 +99,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5612092,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "26c25a9acd56e9d9a50e67cfc6b8ecfced708978",
+          "message": "Link the live performance chart in the README\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T11:17:42-07:00",
+          "tree_id": "85efcfc866886a9faed4d8a8efa28ff3e55f868c",
+          "url": "https://github.com/markmansour/marks-chess/commit/26c25a9acd56e9d9a50e67cfc6b8ecfced708978"
+        },
+        "date": 1782152285710,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4788985,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5258176,
             "unit": "nodes/sec"
           }
         ]
