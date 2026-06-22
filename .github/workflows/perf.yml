@@ -1,0 +1,47 @@
+name: Performance
+
+# Move-generation throughput (perft nodes/sec) tracked over time with
+# github-action-benchmark. Throughput is a timing metric, so this is a trend with a soft alert,
+# not a hard gate. The deterministic node-count gates live in the normal unit suite (see
+# HashMoveOrderingRegressionTest) and run on every PR via maven.yml.
+#
+# Runs on pushes to main (a stable, comparable baseline) and on demand. GitHub-hosted runners are
+# noisy, so the alert threshold is generous and a regression comments rather than fails the build.
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write       # push results to the gh-pages branch
+  deployments: write
+
+jobs:
+  perft-throughput:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Run perft throughput benchmark
+        run: mvn -B test -Dtest.groups=PerformanceTest -Dtest=PerftBenchmark -Djacoco.skip=true
+
+      - name: Track throughput over time
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Perft throughput
+          tool: customBiggerIsBetter
+          output-file-path: perf-results/perft-bench.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
+          alert-threshold: '150%'        # alert if throughput drops below ~67% of the prior result
+          comment-on-alert: true
+          fail-on-alert: false           # noisy runners: report, don't break the build

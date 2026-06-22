@@ -48,5 +48,7 @@ demo.iml
 # binaries
 elodiff
 
-# performance history log (regenerated on perf runs; baseline.csv is the committed contract)
+# performance run outputs (regenerated on perf runs; baseline.csv is the committed contract,
+# and CI tracks perft-bench.json on the gh-pages branch)
 perf-results/history.csv
+perf-results/perft-bench.json
