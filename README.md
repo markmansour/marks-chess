@@ -52,7 +52,7 @@ High level class design:
   In traditional chess engines this is called artificial intelligence.
 
 ## Build Built against
-[Amazon Corretto JDK 17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/what-is-corretto-17.html)
+[Amazon Corretto JDK 25](https://docs.aws.amazon.com/corretto/latest/corretto-25-ug/what-is-corretto-25.html)
 and Apache Maven 3.9+.
 
 If you're building the project on the command line then to get started:

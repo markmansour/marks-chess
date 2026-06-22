@@ -15,9 +15,22 @@ Performance testing
   github-action-benchmark. See [performance testing](performance-testing.md).
 
 Build & CI
+* Upgraded the language target to Java 25 (from 17) and refreshed dependencies and Maven plugins to
+  their latest releases (JUnit 5.14, AssertJ 3.27, Guava 33.4, Logback 1.5.34, SLF4J 2.0.17 off the
+  alpha, JaCoCo 0.8.15, async-profiler 4.4). JaCoCo now runs on current JDKs, so coverage no longer
+  needs to be skipped locally.
+* Removed an erroneous `jacoco-maven-plugin` entry from `<dependencies>` (it belongs only in the
+  build plugins) which had pulled build-time libraries onto the application classpath.
+* Bumped GitHub Actions to current major versions (checkout v7, setup-java v5, codecov v7,
+  dependency-submission v5), clearing the Node 20 runtime deprecation.
 * Fixed the CI build, which failed on the deprecated `actions/upload-artifact@v2`.
 * Replaced the self-committing JaCoCo coverage badge with Codecov, so CI no longer commits to `main`
   on every run.
+
+Security
+* Resolved the open Dependabot alerts: Logback (logback-core arbitrary-code-execution and related,
+  via 1.5.34), AssertJ (XXE in `isXmlEqualTo`, via 3.27.7), and plexus-utils (directory traversal —
+  removed from the application classpath, and pinned to 3.6.1 on the JaCoCo plugin).
 
 ## v1.1 20260621
 

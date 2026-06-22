@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.*;
 
 @Tag("UnitTest")
@@ -729,7 +728,7 @@ public class GameTest {
         game.play(randomPlayerOne, randomPlayerTwo);
 
         game.printOccupied();
-        assertTrue(game.isOver());
+        assertThat(game.isOver()).isTrue();
     }
 
     @Nested
