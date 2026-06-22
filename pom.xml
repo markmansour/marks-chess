@@ -17,6 +17,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- Which JUnit tag(s) to run. Default to the fast unit tests; override on the command line,
+             e.g. mvn test -Dtest.groups=PerformanceTest -->
+        <test.groups>UnitTest</test.groups>
     </properties>
 
     <dependencyManagement>
@@ -202,7 +205,7 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <groups>UnitTest</groups>
+                    <groups>${test.groups}</groups>
                 </configuration>
             </plugin>
 

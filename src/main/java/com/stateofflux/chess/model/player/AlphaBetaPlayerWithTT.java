@@ -29,6 +29,7 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     private boolean timedOut;
     private Move lastMove;
     private List<Move> principalVariation = new ArrayList<>();
+    private boolean hashMoveOrdering = true;
 
     public AlphaBetaPlayerWithTT(PlayerColor color, Evaluator evaluator) {
         this(color, evaluator, DEFAULT_TIME_ALLOCATION);
@@ -136,6 +137,15 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
     /** The principal variation found by the most recent search. */
     public List<Move> getPrincipalVariation() {
         return principalVariation;
+    }
+
+    /** Enable or disable hash-move ordering (on by default). Used to measure its effect A/B. */
+    public void setHashMoveOrdering(boolean enabled) {
+        this.hashMoveOrdering = enabled;
+    }
+
+    public boolean isHashMoveOrdering() {
+        return hashMoveOrdering;
     }
 
     /*
@@ -265,8 +275,9 @@ public class AlphaBetaPlayerWithTT extends BasicNegaMaxPlayer {
 
         // Hash-move ordering: search the transposition table's stored best move first. This is the
         // main payoff of the TT for move ordering. Matching against the generated move list also
-        // validates the move, so a garbage move from a key collision is simply ignored.
-        if (existingEntry != null)
+        // validates the move, so a garbage move from a key collision is simply ignored. The toggle
+        // exists so the gain can be measured A/B in a single process.
+        if (hashMoveOrdering && existingEntry != null)
             orderHashMoveFirst(moves, existingEntry.getBestMove());
 
         int value = Evaluator.MIN_VALUE;

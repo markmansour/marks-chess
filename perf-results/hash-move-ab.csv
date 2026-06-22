@@ -1,0 +1,5 @@
+timestamp,git_sha,jdk,position,depth,nodes_on,nodes_off,saved_pct
+2026-06-22T01:44:26.528426Z,f4b0a3e,23.0.1,startpos,5,33930,44404,23.6
+2026-06-22T01:44:26.528426Z,f4b0a3e,23.0.1,kiwipete,5,72596,71881,-1.0
+2026-06-22T01:44:26.528426Z,f4b0a3e,23.0.1,midgame,5,64717,69133,6.4
+2026-06-22T01:44:26.528426Z,f4b0a3e,23.0.1,endgame,5,644,1595,59.6
