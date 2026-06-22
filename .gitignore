@@ -47,3 +47,6 @@ demo.iml
 
 # binaries
 elodiff
+
+# performance history log (regenerated on perf runs; baseline.csv is the committed contract)
+perf-results/history.csv

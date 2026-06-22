@@ -1,7 +1,6 @@
 package com.stateofflux.chess.perft;
 
 import ch.qos.logback.classic.Level;
-import com.stateofflux.chess.model.FenString;
 import com.stateofflux.chess.model.Game;
 import com.stateofflux.chess.model.PlayerColor;
 import com.stateofflux.chess.model.player.AlphaBetaPlayerWithTT;
@@ -15,104 +14,97 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.stateofflux.chess.perft.PerfBaseline.Case;
+import static com.stateofflux.chess.perft.PerfBaseline.CASES;
+import static com.stateofflux.chess.perft.PerfBaseline.BASELINE;
+import static com.stateofflux.chess.perft.PerfBaseline.HISTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * In-process A/B measurement of hash-move ordering (issue #6). For each position the same fixed-depth
- * search runs with ordering on and off; the metric is nodes-to-depth (ordering changes how many nodes
- * are visited, not how fast each is visited). Results are appended to perf-results/hash-move-ab.csv,
- * tagged with the git SHA and JDK, so the gain can be tracked over time.
+ * Records the hash-move-ordering A/B baseline (issue #6). For each position it runs the same
+ * fixed-depth search with ordering on and off in one process; the metric is nodes-to-depth, which is
+ * deterministic and machine-independent, so re-running on unchanged code reproduces the file exactly.
  *
- * Run with: mvn test -Dgroups=PerformanceTest -Dtest=HashMoveOrderingBenchmark -Djacoco.skip=true
+ *   - overwrites perf-results/baseline.csv  (committed contract: position,depth,nodes_on,nodes_off)
+ *   - appends  perf-results/history.csv     (gitignored: timestamp,sha,jdk,...,ms_on,ms_off,nps)
+ *
+ * Run with: mvn test -Dtest.groups=PerformanceTest -Dtest=HashMoveOrderingBenchmark -Djacoco.skip=true
  */
 @Tag("PerformanceTest")
 public class HashMoveOrderingBenchmark {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private static final int DEPTH = 5;
-    private static final Path CSV = Path.of("perf-results", "hash-move-ab.csv");
-
-    private record Position(String name, String fen) {}
-
-    private static final List<Position> POSITIONS = List.of(
-        new Position("startpos", FenString.INITIAL_BOARD),
-        new Position("kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"),
-        new Position("midgame",  "r1bq1rk1/pp2bppp/2n2n2/2pp4/3P4/2N1PN2/PP2BPPP/R1BQ1RK1 w - - 0 9"),
-        new Position("endgame",  "8/2k5/3p4/p2P1p2/P2P1P2/8/8/3K4 w - - 0 1")
-    );
 
     @BeforeAll
     public static void quietLogs() {
         ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
     }
 
-    @Test public void measureHashMoveOrdering() throws IOException {
-        String sha = gitSha();
+    @Test public void recordBaseline() throws IOException {
+        String sha = PerfBaseline.gitSha();
         String jdk = System.getProperty("java.version");
         String timestamp = Instant.now().toString();
 
-        logger.atWarn().log("Hash-move ordering A/B (depth {}), sha {}, jdk {}", DEPTH, sha, jdk);
-        logger.atWarn().log(String.format("%-10s %12s %12s %8s", "position", "nodes(on)", "nodes(off)", "saved"));
+        logger.atWarn().log("Hash-move ordering A/B  (sha {}, jdk {})", sha, jdk);
+        logger.atWarn().log(String.format("%-10s %5s %12s %12s %8s", "position", "depth", "nodes(on)", "nodes(off)", "saved"));
 
+        StringBuilder baseline = new StringBuilder("position,depth,nodes_on,nodes_off\n");
+        StringBuilder history = new StringBuilder();
         long totalOn = 0;
         long totalOff = 0;
-        StringBuilder csv = new StringBuilder();
 
-        for (Position p : POSITIONS) {
-            long nodesOff = search(p.fen(), false);   // warm up + measure the harder case first
-            long nodesOn = search(p.fen(), true);
-            totalOn += nodesOn;
-            totalOff += nodesOff;
+        for (Case c : CASES) {
+            Result off = search(c, false);   // warm up + measure the harder case first
+            Result on = search(c, true);
+            totalOn += on.nodes;
+            totalOff += off.nodes;
 
-            double saved = nodesOff == 0 ? 0 : (100.0 * (nodesOff - nodesOn) / nodesOff);
-            logger.atWarn().log(String.format("%-10s %12d %12d %7.1f%%", p.name(), nodesOn, nodesOff, saved));
-            csv.append(String.join(",",
-                timestamp, sha, jdk, p.name(), String.valueOf(DEPTH),
-                String.valueOf(nodesOn), String.valueOf(nodesOff), String.format("%.1f", saved))).append('\n');
+            double saved = off.nodes == 0 ? 0 : (100.0 * (off.nodes - on.nodes) / off.nodes);
+            long npsOn = on.millis == 0 ? 0 : on.nodes * 1000 / on.millis;
+
+            logger.atWarn().log(String.format("%-10s %5d %12d %12d %7.1f%%", c.name(), c.depth(), on.nodes, off.nodes, saved));
+            baseline.append(String.join(",", c.name(), String.valueOf(c.depth()),
+                String.valueOf(on.nodes), String.valueOf(off.nodes))).append('\n');
+            history.append(String.join(",", timestamp, sha, jdk, c.name(), String.valueOf(c.depth()),
+                String.valueOf(on.nodes), String.valueOf(off.nodes),
+                String.valueOf(on.millis), String.valueOf(off.millis), String.valueOf(npsOn))).append('\n');
         }
 
         double totalSaved = totalOff == 0 ? 0 : (100.0 * (totalOff - totalOn) / totalOff);
-        logger.atWarn().log(String.format("%-10s %12d %12d %7.1f%%", "TOTAL", totalOn, totalOff, totalSaved));
+        logger.atWarn().log(String.format("%-10s %5s %12d %12d %7.1f%%", "TOTAL", "", totalOn, totalOff, totalSaved));
 
-        appendCsv(csv.toString());
+        writeBaseline(baseline.toString());
+        appendHistory(history.toString());
 
-        // Hash-move ordering should never visit more nodes overall than searching without it.
-        assertThat(totalOn).isLessThanOrEqualTo(totalOff);
+        assertThat(totalOn).isLessThanOrEqualTo(totalOff);   // ordering must never cost nodes overall
     }
 
-    private long search(String fen, boolean hashMoveOrdering) {
+    private record Result(long nodes, long millis) {}
+
+    private Result search(Case c, boolean hashMoveOrdering) {
         AlphaBetaPlayerWithTT player = new AlphaBetaPlayerWithTT(PlayerColor.WHITE, new PestoEvaluator());
-        player.setSearchDepth(DEPTH);
-        player.setIncrement(TimeUnit.MINUTES.toNanos(10));   // no timeout: fixed-depth search
+        player.setSearchDepth(c.depth());
+        player.setIncrement(TimeUnit.MINUTES.toNanos(10));   // no timeout: fixed-depth, deterministic
         player.setHashMoveOrdering(hashMoveOrdering);
-        player.getNextMove(new Game(fen));
-        return player.getNodesVisited();
+
+        long start = System.nanoTime();
+        player.getNextMove(new Game(c.fen()));
+        long millis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+        return new Result(player.getNodesVisited(), millis);
     }
 
-    private void appendCsv(String rows) throws IOException {
-        Files.createDirectories(CSV.getParent());
-        boolean fresh = Files.notExists(CSV);
-        StringBuilder out = new StringBuilder();
-        if (fresh)
-            out.append("timestamp,git_sha,jdk,position,depth,nodes_on,nodes_off,saved_pct\n");
-        out.append(rows);
-        Files.writeString(CSV, out.toString(),
+    private void writeBaseline(String contents) throws IOException {
+        Files.createDirectories(BASELINE.getParent());
+        Files.writeString(BASELINE, contents);   // overwrite: deterministic, no churn on unchanged code
+    }
+
+    private void appendHistory(String rows) throws IOException {
+        Files.createDirectories(HISTORY.getParent());
+        boolean fresh = Files.notExists(HISTORY);
+        String header = fresh ? "timestamp,git_sha,jdk,position,depth,nodes_on,nodes_off,ms_on,ms_off,nps_on\n" : "";
+        Files.writeString(HISTORY, header + rows,
             java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
-    }
-
-    private String gitSha() {
-        try {
-            Process p = new ProcessBuilder("git", "rev-parse", "--short", "HEAD").start();
-            String sha = new String(p.getInputStream().readAllBytes()).strip();
-            p.waitFor(2, TimeUnit.SECONDS);
-            return sha.isBlank() ? "unknown" : sha;
-        } catch (Exception e) {
-            return "unknown";
-        }
     }
 }
