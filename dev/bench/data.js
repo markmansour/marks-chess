@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782168341220,
+  "lastUpdate": 1782168345957,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -337,6 +337,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5506203,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6e83bdf152ff1d72cbb662563929e1d37cc83cbc",
+          "message": "Bump org.apache.maven.plugins:maven-site-plugin from 3.21.0 to 3.22.0 (#11)\n\nBumps [org.apache.maven.plugins:maven-site-plugin](https://github.com/apache/maven-site-plugin) from 3.21.0 to 3.22.0.\n- [Release notes](https://github.com/apache/maven-site-plugin/releases)\n- [Commits](https://github.com/apache/maven-site-plugin/compare/maven-site-plugin-3.21.0...maven-site-plugin-3.22.0)\n\n---\nupdated-dependencies:\n- dependency-name: org.apache.maven.plugins:maven-site-plugin\n  dependency-version: 3.22.0\n  dependency-type: direct:development\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-22T15:45:14-07:00",
+          "tree_id": "c8f437d5f79e303d32812c081a7b75efe7d105f5",
+          "url": "https://github.com/markmansour/marks-chess/commit/6e83bdf152ff1d72cbb662563929e1d37cc83cbc"
+        },
+        "date": 1782168345368,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4798430,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5100627,
             "unit": "nodes/sec"
           }
         ]
