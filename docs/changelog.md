@@ -1,6 +1,24 @@
 # Changelog
 
 
+## Unreleased
+
+Search
+* The search is fully deterministic: the principal variation, transposition-table entries, and node
+  counts are reproducible. Only the move actually played is randomised, chosen among equal-scoring
+  root moves after the search so it cannot affect the result.
+
+Performance testing
+* Added an A/B benchmark and a deterministic node-count regression gate for hash-move ordering; the
+  gate runs in the normal test suite, so every PR is protected.
+* Added a perft move-generation throughput benchmark, tracked over time in CI with
+  github-action-benchmark. See [performance testing](performance-testing.md).
+
+Build & CI
+* Fixed the CI build, which failed on the deprecated `actions/upload-artifact@v2`.
+* Replaced the self-committing JaCoCo coverage badge with Codecov, so CI no longer commits to `main`
+  on every run.
+
 ## v1.1 20260621
 
 Bugs
