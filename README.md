@@ -126,9 +126,10 @@ The unit tests have many useful examples.
 
 ## Performance testing
 Move generation and search performance are tracked with deterministic node-count gates (run on
-every PR) and a throughput trend (perft nodes/sec, charted by CI). See
-[performance testing](docs/performance-testing.md) for how to run the benchmarks, read the trend,
-and update a baseline.
+every PR) and a throughput trend (perft nodes/sec, charted by CI). The live throughput chart is at
+[markmansour.github.io/marks-chess/dev/bench](https://markmansour.github.io/marks-chess/dev/bench/).
+See [performance testing](docs/performance-testing.md) for how to run the benchmarks, read the
+trend, and update a baseline.
 
 ## Playing against other engines 
 Build a single jar file with all dependencies, and call it from a shell
