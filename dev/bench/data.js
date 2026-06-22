@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782152525636,
+  "lastUpdate": 1782152779829,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -167,6 +167,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5299095,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "37528defb5af4fe45de0eaa7aa348bceef9dba69",
+          "message": "Fix CodeQL build for Java 25\n\nCodeQL autobuild set up JDK 17 and failed to compile the project, which now\ntargets release 25. Set up JDK 25 and replace autobuild with an explicit\n`mvn clean compile` (tests skipped; CodeQL only needs the sources compiled).\nAlso bumped checkout to v7 and setup-java to v5.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T11:25:51-07:00",
+          "tree_id": "4ff99d8dfd394a106b5795f19537589c7536dbb7",
+          "url": "https://github.com/markmansour/marks-chess/commit/37528defb5af4fe45de0eaa7aa348bceef9dba69"
+        },
+        "date": 1782152778953,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 5016091,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5425767,
             "unit": "nodes/sec"
           }
         ]
