@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782146362764,
+  "lastUpdate": 1782147077182,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -31,6 +31,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5037734,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "d13b99388dced452cd3f3ab05b15f64b25073094",
+          "message": "Replace self-committing JaCoCo badge with Codecov\n\nThe coverage badge was generated and committed to main on every CI run, which\npolluted history. Switched to Codecov: CI uploads target/site/jacoco/jacoco.xml\nand the README badge points at codecov.io, so nothing is committed back to the\nrepo. Removed the generate/log/commit badge steps and the committed badge SVG.\n\nUpdated the changelog for the post-v1.1 search-determinism, performance-testing,\nand CI changes.\n\nRequires a one-time setup: add the repository on codecov.io and set the\nCODECOV_TOKEN repository secret.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T09:50:44-07:00",
+          "tree_id": "7c31d45bcf15975c1f0634a45ad9617af18aa325",
+          "url": "https://github.com/markmansour/marks-chess/commit/d13b99388dced452cd3f3ab05b15f64b25073094"
+        },
+        "date": 1782147076568,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4112940,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 4869610,
             "unit": "nodes/sec"
           }
         ]
