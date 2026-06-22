@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782152779829,
+  "lastUpdate": 1782153928004,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -201,6 +201,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5425767,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "67be5723761f40b44935cffd60ef12aaaed56c5f",
+          "message": "Fix Dependabot config and make logback-core directly manageable\n\nThe Dependabot updater errored on two counts:\n- .github/dependabot.yml was the unedited starter template with an empty\n  package-ecosystem (\"\"), which is invalid. Set it to \"maven\" and added a\n  \"github-actions\" ecosystem so action versions are kept current too.\n- logback-core (the artifact the security alerts are against) was only a\n  transitive dependency of logback-classic, which Dependabot cannot update\n  directly. Declared it explicitly at the patched 1.5.34, per GitHub's\n  documented remediation for transitive-dependency alerts.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T11:44:50-07:00",
+          "tree_id": "ed4dbbdae6c8430da7e0e0bf3276b1b455805052",
+          "url": "https://github.com/markmansour/marks-chess/commit/67be5723761f40b44935cffd60ef12aaaed56c5f"
+        },
+        "date": 1782153927222,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4530362,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5075283,
             "unit": "nodes/sec"
           }
         ]
