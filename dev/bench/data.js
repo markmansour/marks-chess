@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782168349771,
+  "lastUpdate": 1782168351120,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -405,6 +405,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5152084,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "33c45ae3d72dec3fcac9db286b863863ab280fb7",
+          "message": "Bump org.codehaus.plexus:plexus-utils from 3.6.1 to 4.0.3 (#9)\n\nBumps [org.codehaus.plexus:plexus-utils](https://github.com/codehaus-plexus/plexus-utils) from 3.6.1 to 4.0.3.\n- [Release notes](https://github.com/codehaus-plexus/plexus-utils/releases)\n- [Commits](https://github.com/codehaus-plexus/plexus-utils/compare/plexus-utils-3.6.1...plexus-utils-4.0.3)\n\n---\nupdated-dependencies:\n- dependency-name: org.codehaus.plexus:plexus-utils\n  dependency-version: 4.0.3\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-22T15:45:19-07:00",
+          "tree_id": "42a815d728af4e27bd846e7df86934976d7b1f43",
+          "url": "https://github.com/markmansour/marks-chess/commit/33c45ae3d72dec3fcac9db286b863863ab280fb7"
+        },
+        "date": 1782168350598,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4760869,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5244676,
             "unit": "nodes/sec"
           }
         ]
