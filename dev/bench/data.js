@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782152286020,
+  "lastUpdate": 1782152525636,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -133,6 +133,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5258176,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "119617370+markmansour@users.noreply.github.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "538fa12236729b3dcd60cd2ed55b741a4e0a7a29",
+          "message": "Create SECURITY.md for security policy\n\nAdded a security policy document outlining supported versions and vulnerability reporting.",
+          "timestamp": "2026-06-22T11:21:37-07:00",
+          "tree_id": "2d2b0d78f601d30a4c6c2d981238ac2a06f69f8f",
+          "url": "https://github.com/markmansour/marks-chess/commit/538fa12236729b3dcd60cd2ed55b741a4e0a7a29"
+        },
+        "date": 1782152524763,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4638330,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5299095,
             "unit": "nodes/sec"
           }
         ]
