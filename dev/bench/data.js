@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782153928004,
+  "lastUpdate": 1782164876187,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -235,6 +235,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5075283,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "mark@stateofflux.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "distinct": true,
+          "id": "979d8542cdbd069f49ba1daae005fa291f2335a1",
+          "message": "Remove Maven dependency submission from CI\n\nThe maven-dependency-submission-action causes three problems:\n1. Failed security-update PRs: it records manifests with absolute runner paths\n   (e.g. /home/runner/work/marks-chess/marks-chess/pom.xml), but when Dependabot\n   tries to update, it clones to a different path and can't find the manifest.\n2. Stale snapshot lag: the action retains old submissions, so the dependency\n   graph unions vulnerable and fixed versions until GitHub prunes them (hours+).\n3. Transitive-dep capture: it captured the bogus jacoco <dependency> we removed,\n   contributing to the stale plexus-utils 3.0.24 in alerts.\n\nGitHub's native Maven dependency detection reads pom.xml with relative paths\n(works with Dependabot's clone) and always reflects the current manifest\n(no stale snapshots). We trade some transitive-precision for simplicity and\nDependabot security-update functionality. The 6 existing alerts will age out\non GitHub's schedule (hours to a day); removing the action stops new bad\nsnapshots from being submitted.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>",
+          "timestamp": "2026-06-22T14:47:26-07:00",
+          "tree_id": "1fa11859ee49dd2ebb7892e95cab65b1bf8bda9d",
+          "url": "https://github.com/markmansour/marks-chess/commit/979d8542cdbd069f49ba1daae005fa291f2335a1"
+        },
+        "date": 1782164875839,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4746935,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5543559,
             "unit": "nodes/sec"
           }
         ]
