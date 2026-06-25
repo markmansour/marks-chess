@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782418636077,
+  "lastUpdate": 1782418663841,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -507,6 +507,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5197968,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2ce49fcc6d476c273a87a21c1d12c4e82c9a3301",
+          "message": "Bump com.google.guava:guava from 33.4.8-jre to 33.6.0-jre (#16)\n\nBumps [com.google.guava:guava](https://github.com/google/guava) from 33.4.8-jre to 33.6.0-jre.\n- [Release notes](https://github.com/google/guava/releases)\n- [Commits](https://github.com/google/guava/commits)\n\n---\nupdated-dependencies:\n- dependency-name: com.google.guava:guava\n  dependency-version: 33.6.0-jre\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-25T13:17:16-07:00",
+          "tree_id": "0da0a4ba24dc259c2da117a39ae8e5d27c3e8884",
+          "url": "https://github.com/markmansour/marks-chess/commit/2ce49fcc6d476c273a87a21c1d12c4e82c9a3301"
+        },
+        "date": 1782418663534,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4841401,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5397097,
             "unit": "nodes/sec"
           }
         ]
