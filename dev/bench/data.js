@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782418663841,
+  "lastUpdate": 1782418679635,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -541,6 +541,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5397097,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20b7990e593cd412bdbd30606805546ba133554a",
+          "message": "Bump org.slf4j:slf4j-api from 2.0.17 to 2.0.18 (#14)\n\nBumps org.slf4j:slf4j-api from 2.0.17 to 2.0.18.\n\n---\nupdated-dependencies:\n- dependency-name: org.slf4j:slf4j-api\n  dependency-version: 2.0.18\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-25T13:17:28-07:00",
+          "tree_id": "e603a438b8154efc4ae54039c701c1e35e52ddb5",
+          "url": "https://github.com/markmansour/marks-chess/commit/20b7990e593cd412bdbd30606805546ba133554a"
+        },
+        "date": 1782418679333,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4914756,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5491401,
             "unit": "nodes/sec"
           }
         ]
