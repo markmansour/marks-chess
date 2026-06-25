@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782418679635,
+  "lastUpdate": 1782418708510,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -575,6 +575,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5491401,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4fcb55363b4f0260287663a68fa0aaa4ff7e8866",
+          "message": "Bump org.apache.maven.plugins:maven-assembly-plugin from 3.7.1 to 3.8.0 (#15)\n\nBumps [org.apache.maven.plugins:maven-assembly-plugin](https://github.com/apache/maven-assembly-plugin) from 3.7.1 to 3.8.0.\n- [Release notes](https://github.com/apache/maven-assembly-plugin/releases)\n- [Commits](https://github.com/apache/maven-assembly-plugin/compare/maven-assembly-plugin-3.7.1...v3.8.0)\n\n---\nupdated-dependencies:\n- dependency-name: org.apache.maven.plugins:maven-assembly-plugin\n  dependency-version: 3.8.0\n  dependency-type: direct:development\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-06-25T13:17:58-07:00",
+          "tree_id": "4b4eeaf97ef2f3f08360802a0b3882e1a13e499f",
+          "url": "https://github.com/markmansour/marks-chess/commit/4fcb55363b4f0260287663a68fa0aaa4ff7e8866"
+        },
+        "date": 1782418708237,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4929695,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5075283,
             "unit": "nodes/sec"
           }
         ]
