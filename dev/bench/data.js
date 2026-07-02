@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783025316183,
+  "lastUpdate": 1783025953705,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -711,6 +711,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5650903,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "119617370+markmansour@users.noreply.github.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cc5d4d832da9647710c7256f7d2fe8f92be14dd4",
+          "message": "Allow approval and auto-merge for minor updates (#23)\n\nUpdated conditions for approving and merging Dependabot PRs to include minor version updates.",
+          "timestamp": "2026-07-02T13:58:46-07:00",
+          "tree_id": "94534a3faaf7bda9a9942b75ee98bffcd7e8e227",
+          "url": "https://github.com/markmansour/marks-chess/commit/cc5d4d832da9647710c7256f7d2fe8f92be14dd4"
+        },
+        "date": 1783025952867,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4939704,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5674448,
             "unit": "nodes/sec"
           }
         ]
