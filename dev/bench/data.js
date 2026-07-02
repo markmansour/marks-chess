@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783024634174,
+  "lastUpdate": 1783025316183,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -677,6 +677,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5551091,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "119617370+markmansour@users.noreply.github.com",
+            "name": "Mark Mansour",
+            "username": "markmansour"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4efc064ae060ace2cc344b3e3bd67c72f821c238",
+          "message": "Refactor Dependabot auto-merge workflow\n\nUpdated the Dependabot auto-merge workflow for security and functionality improvements.",
+          "timestamp": "2026-07-02T13:48:12-07:00",
+          "tree_id": "4bb7763fc828551470a6af9fa230c3996a1056f5",
+          "url": "https://github.com/markmansour/marks-chess/commit/4efc064ae060ace2cc344b3e3bd67c72f821c238"
+        },
+        "date": 1783025315771,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4760869,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5650903,
             "unit": "nodes/sec"
           }
         ]
