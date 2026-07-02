@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783025969550,
+  "lastUpdate": 1783025987643,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -779,6 +779,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 4823616,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e342167e4d4b95e030c5aab1b6181817e01b3e52",
+          "message": "Bump org.junit:junit-bom from 6.1.0 to 6.1.1 (#20)\n\nBumps [org.junit:junit-bom](https://github.com/junit-team/junit-framework) from 6.1.0 to 6.1.1.\n- [Release notes](https://github.com/junit-team/junit-framework/releases)\n- [Commits](https://github.com/junit-team/junit-framework/compare/r6.1.0...r6.1.1)\n\n---\nupdated-dependencies:\n- dependency-name: org.junit:junit-bom\n  dependency-version: 6.1.1\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-07-02T13:59:19-07:00",
+          "tree_id": "2a27c7253afa7978f8941b4720b8fcab855506b5",
+          "url": "https://github.com/markmansour/marks-chess/commit/e342167e4d4b95e030c5aab1b6181817e01b3e52"
+        },
+        "date": 1783025987319,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4751571,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5244676,
             "unit": "nodes/sec"
           }
         ]
