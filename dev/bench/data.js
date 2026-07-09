@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783633234412,
+  "lastUpdate": 1783633357907,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -881,6 +881,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5244676,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8da064f31045e259088d61bad2cfadfd381a3885",
+          "message": "Bump ch.qos.logback:logback-core from 1.5.37 to 1.5.38 (#25)\n\nBumps [ch.qos.logback:logback-core](https://github.com/qos-ch/logback) from 1.5.37 to 1.5.38.\n- [Release notes](https://github.com/qos-ch/logback/releases)\n- [Commits](https://github.com/qos-ch/logback/compare/v_1.5.37...v_1.5.38)\n\n---\nupdated-dependencies:\n- dependency-name: ch.qos.logback:logback-core\n  dependency-version: 1.5.38\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-07-09T14:42:07-07:00",
+          "tree_id": "aff3554caaa3b63085d8997f3b1f241f210486e7",
+          "url": "https://github.com/markmansour/marks-chess/commit/8da064f31045e259088d61bad2cfadfd381a3885"
+        },
+        "date": 1783633357100,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4836589,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5521085,
             "unit": "nodes/sec"
           }
         ]
