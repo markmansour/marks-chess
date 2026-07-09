@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783633357907,
+  "lastUpdate": 1783633378428,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -915,6 +915,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5521085,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0abfd5480bad4ca434aeb18320d6e3818c74576f",
+          "message": "Bump ch.qos.logback:logback-classic from 1.5.37 to 1.5.38 (#26)\n\nBumps [ch.qos.logback:logback-classic](https://github.com/qos-ch/logback) from 1.5.37 to 1.5.38.\n- [Release notes](https://github.com/qos-ch/logback/releases)\n- [Commits](https://github.com/qos-ch/logback/compare/v_1.5.37...v_1.5.38)\n\n---\nupdated-dependencies:\n- dependency-name: ch.qos.logback:logback-classic\n  dependency-version: 1.5.38\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-07-09T14:42:27-07:00",
+          "tree_id": "53630e7ce6310fbfb6820234ff07d6ce24bd5610",
+          "url": "https://github.com/markmansour/marks-chess/commit/0abfd5480bad4ca434aeb18320d6e3818c74576f"
+        },
+        "date": 1783633377914,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4909797,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5119803,
             "unit": "nodes/sec"
           }
         ]
