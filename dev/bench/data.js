@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784304170578,
+  "lastUpdate": 1784304181110,
   "repoUrl": "https://github.com/markmansour/marks-chess",
   "entries": {
     "Perft throughput": [
@@ -983,6 +983,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "perft kiwipete d4",
             "value": 5581424,
+            "unit": "nodes/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2115af5a72394124469f0d16c4075e48f0a2db75",
+          "message": "Bump com.github.spotbugs:spotbugs-annotations from 4.10.2 to 4.10.3 (#28)\n\nBumps [com.github.spotbugs:spotbugs-annotations](https://github.com/spotbugs/spotbugs) from 4.10.2 to 4.10.3.\n- [Release notes](https://github.com/spotbugs/spotbugs/releases)\n- [Changelog](https://github.com/spotbugs/spotbugs/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/spotbugs/spotbugs/compare/4.10.2...4.10.3)\n\n---\nupdated-dependencies:\n- dependency-name: com.github.spotbugs:spotbugs-annotations\n  dependency-version: 4.10.3\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-07-17T09:02:29-07:00",
+          "tree_id": "1d2ee3532e3ea99d6871bf29fc236d85fd873fc6",
+          "url": "https://github.com/markmansour/marks-chess/commit/2115af5a72394124469f0d16c4075e48f0a2db75"
+        },
+        "date": 1784304180580,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "perft startpos d5",
+            "value": 4949754,
+            "unit": "nodes/sec"
+          },
+          {
+            "name": "perft kiwipete d4",
+            "value": 5278556,
             "unit": "nodes/sec"
           }
         ]
